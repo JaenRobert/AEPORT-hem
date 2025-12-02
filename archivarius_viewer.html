@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="sv">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Archivarius Viewer</title>
+    <link rel="stylesheet" href="css/archivarius_styles.css">
+</head>
+<body>
+    <div id="archivarius-viewer">
+        <div class="viewer-header">
+            <div>
+                <strong>Archivarius</strong>
+                <div class="archivarius-meta">Live Archive Viewer</div>
+            </div>
+            <div class="archivarius-actions">
+                <button class="archivarius-btn" id="btnExport">Export</button>
+                <button class="archivarius-btn secondary" id="btnClose">Close</button>
+            </div>
+        </div>
+
+        <div class="viewer-body">
+            <div class="left-pane" id="leftPane">
+                <!-- list of items -->
+            </div>
+            <div class="right-pane" id="rightPane">
+                <div id="emptyState">No item selected.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple viewer UI
+        const leftPane = document.getElementById('leftPane');
+        const rightPane = document.getElementById('rightPane');
+        const btnExport = document.getElementById('btnExport');
+        const btnClose = document.getElementById('btnClose');
+
+        btnClose.addEventListener('click', () => {
+            document.getElementById('archivarius-viewer').style.display = 'none';
+        });
+
+        btnExport.addEventListener('click', () => {
+            if (window.ÆRCHIVARIUS) {
+                const db = ÆRCHIVARIUS.exportDatabase();
+                const rel = ÆRCHIVARIUS.exportRelations();
+                const idx = JSON.stringify(ÆRCHIVARIUS.indices || {});
+
+                const a = document.createElement('a');
+                const blob = new Blob([db], { type: 'application/json' });
+                a.href = URL.createObjectURL(blob);
+                a.download = 'archivarius_db.json';
+                a.click();
+
+                const b = document.createElement('a');
+                const blob2 = new Blob([rel], { type: 'application/json' });
+                b.href = URL.createObjectURL(blob2);
+                b.download = 'archivarius_relations.json';
+                b.click();
+
+                const c = document.createElement('a');
+                const blob3 = new Blob([idx], { type: 'application/json' });
+                c.href = URL.createObjectURL(blob3);
+                c.download = 'archivarius_index.json';
+                c.click();
+            }
+        });
+
+        function renderList() {
+            leftPane.innerHTML = '';
+            const archive = window.ÆRCHIVARIUS?.archive || [];
+            archive.slice(0,100).forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'archivarius-item';
+                div.innerHTML = `<div class='archivarius-title'>${item.filename}</div><div class='archivarius-meta'>${item.aeTime?.timestamp || item.uploadedAt}</div>`;
+                div.onclick = () => showItem(item.id);
+                leftPane.appendChild(div);
+            });
+        }
+
+        function showItem(id) {
+            const item = window.ÆRCHIVARIUS?.archive.find(a => a.id === id);
+            if (!item) return;
+            rightPane.innerHTML = `<h3>${item.filename}</h3><div class='archivarius-meta'>${item.aeTime?.readable || item.uploadedAt}</div>`;
+
+            const facts = window.ÆRCHIVARIUS?.database?.[item.id]?.[0]?.facts || [];
+            const factWrap = document.createElement('div');
+            factWrap.className = 'archivarius-facts';
+            facts.forEach(f => {
+                const fdiv = document.createElement('div');
+                fdiv.className = 'archivarius-fact';
+                fdiv.textContent = f.text;
+                factWrap.appendChild(fdiv);
+            });
+            rightPane.appendChild(factWrap);
+
+            const raw = document.createElement('pre');
+            raw.style.marginTop = '12px';
+            raw.style.whiteSpace = 'pre-wrap';
+            raw.textContent = String(item.content).slice(0, 2000);
+            rightPane.appendChild(raw);
+        }
+
+        // Live updates
+        if (window.AesiRealtime && window.AesiRealtime.eventBus) {
+            AesiRealtime.on('archivarius-file-added', (entry) => {
+                renderList();
+            });
+        }
+
+        // Poll for initial
+        setTimeout(renderList, 500);
+    </script>
+</body>
+</html>

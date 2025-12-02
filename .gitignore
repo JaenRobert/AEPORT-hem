@@ -1,0 +1,14 @@
+# Ignore conversation logs and environment files
+conversations/
+.env
+documents/
+
+# Python caches
+__pycache__/
+
+# Node/Vite
+node_modules/
+/dist
+
+# Local Netlify folder
+.netlify

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ÆSI LIVE CHAT</title>
+    <style>
+        body { background: #050505; color: #e5e5e5; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; height: 100vh; margin: 0; }
+        
+        /* HEADER */
+        header { background: #000; border-bottom: 1px solid #333; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        h1 { margin: 0; font-size: 1.2rem; color: #fff; letter-spacing: 1px; }
+        .status { font-size: 0.8rem; color: #666; font-family: monospace; }
+        .online { color: #10b981; }
+
+        /* CHAT AREA */
+        #chat-window { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        
+        .msg { max-width: 80%; padding: 10px 15px; border-radius: 8px; font-size: 0.95rem; line-height: 1.5; }
+        .user { align-self: flex-end; background: #6366f1; color: white; }
+        .ai { align-self: flex-start; background: #111; border: 1px solid #333; border-left: 3px solid #888; }
+        
+        /* NODE COLORS */
+        .ai[data-node="REFLEX"] { border-left-color: #3b82f6; }
+        .ai[data-node="E1TAN"] { border-left-color: #10a37f; }
+        .ai[data-node="CLAUDE"] { border-left-color: #ef4444; }
+        
+        .sender { font-size: 0.7rem; display: block; margin-bottom: 4px; opacity: 0.7; font-weight: bold; }
+
+        /* INPUT AREA */
+        #input-area { background: #000; padding: 20px; border-top: 1px solid #333; display: flex; gap: 10px; }
+        select { background: #111; color: #fff; border: 1px solid #333; padding: 10px; border-radius: 5px; outline: none; }
+        input { flex: 1; background: #111; color: #fff; border: 1px solid #333; padding: 10px; border-radius: 5px; outline: none; font-size: 1rem; }
+        input:focus { border-color: #6366f1; }
+        button { background: #6366f1; color: white; border: none; padding: 0 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        button:hover { opacity: 0.9; }
+
+        /* GLOBAL NAVIGATION MENU */
+        #navMenu { position: fixed; top: 0; left: -300px; width: 300px; height: 100vh; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white; transition: left 0.3s ease; z-index: 1000; overflow-y: auto; box-shadow: 4px 0 20px rgba(0,0,0,0.3); }
+        #navMenu.open { left: 0; }
+        #navMenuOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0); transition: background 0.3s ease; z-index: 999; pointer-events: none; }
+        #navMenuOverlay.open { background: rgba(0,0,0,0.5); pointer-events: all; }
+        
+        .nav-menu-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .nav-menu-header h2 { margin: 0; font-size: 18px; font-weight: bold; }
+        .nav-menu-close { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
+        
+        .nav-menu-items { list-style: none; margin: 0; padding: 0; }
+        .nav-menu-items li { border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .nav-menu-items a { display: block; padding: 16px 20px; color: white; text-decoration: none; font-weight: 500; transition: all 0.2s; }
+        .nav-menu-items a:hover { background: rgba(99,102,241,0.2); padding-left: 28px; }
+        .nav-menu-items a.active { background: rgba(99,102,241,0.3); border-left: 4px solid #4F46E5; padding-left: 16px; }
+        
+        .hamburger-btn { position: fixed; bottom-right: 20px; bottom: 20px; right: 20px; width: 50px; height: 50px; background: #4F46E5; border: none; border-radius: 50%; cursor: pointer; color: white; font-size: 24px; box-shadow: 0 4px 12px rgba(79,70,229,0.4); transition: all 0.2s; z-index: 998; }
+        .hamburger-btn:hover { background: #4338ca; transform: scale(1.1); }
+        .hamburger-btn:active { transform: scale(0.95); }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>ÆSI <span style="color:#6366f1">//</span> LINK</h1>
+        <div class="status">MOTOR: <span id="status-dot">●</span></div>
+    </header>
+
+    <div id="chat-window">
+        <div class="msg ai" data-node="SYSTEM">
+            <span class="sender">SYSTEM</span>
+            Kanal öppen. Välj nod och tala.
+        </div>
+    </div>
+
+    <div id="input-area">
+        <select id="nodeSelect">
+            <option value="E1TAN">E1TAN</option>
+            <option value="REFLEX">REFLEX</option>
+            <option value="CLAUDE">CLAUDE</option>
+            <option value="HAFTED">HAFTED</option>
+            <option value="SMILE">SMILE</option>
+            <option value="ERNIE">ERNIE</option>
+        </select>
+        <input type="text" id="userInput" placeholder="Skriv meddelande..." autofocus>
+        <button onclick="send()">SÄND</button>
+    </div>
+
+    <script>
+        const chat = document.getElementById('chat-window');
+        const statusDot = document.getElementById('status-dot');
+
+        async function send() {
+            const input = document.getElementById('userInput');
+            const node = document.getElementById('nodeSelect').value;
+            const text = input.value.trim();
+            if(!text) return;
+
+            // 1. Visa ditt meddelande
+            addMsg("DU", text, "user");
+            input.value = "";
+
+            try {
+                // 2. Skicka till Python-motorn
+                const res = await fetch('http://localhost:8000/pulse', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ text: text, node: node })
+                });
+                
+                const data = await res.json();
+                
+                // 3. Visa svaret
+                addMsg(node, data.reply, "ai", node);
+                statusDot.className = "online"; // Motorn svarar!
+
+            } catch (err) {
+                addMsg("SYSTEM", "⚠️ Ingen kontakt med motorn. Kör 'python aesi_core.py'.", "ai");
+                statusDot.style.color = "red";
+            }
+        }
+
+        function addMsg(sender, text, type, nodeName) {
+            const div = document.createElement('div');
+            div.className = `msg ${type}`;
+            if(nodeName) div.setAttribute('data-node', nodeName);
+            div.innerHTML = `<span class="sender">${sender}</span>${text}`;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        // Enter-tangenten
+        document.getElementById('userInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') send();
+        });
+
+        // GLOBAL NAVIGATION
+        function toggleNavMenu() {
+            const menu = document.getElementById('navMenu');
+            const overlay = document.getElementById('navMenuOverlay');
+            menu.classList.toggle('open');
+            overlay.classList.toggle('open');
+        }
+
+        // Stäng meny när man klickar på en länk
+        document.querySelectorAll('#navMenu a').forEach(link => {
+            link.addEventListener('click', () => toggleNavMenu());
+        });
+
+        // Stäng meny när man klickar på overlay
+        document.getElementById('navMenuOverlay').addEventListener('click', toggleNavMenu);
+    </script>
+
+    <!-- GLOBAL NAVIGATION MENU -->
+    <div id="navMenuOverlay" onclick="toggleNavMenu()"></div>
+    <nav id="navMenu">
+        <div class="nav-menu-header">
+            <h2>NAVIGERA</h2>
+            <button class="nav-menu-close" onclick="toggleNavMenu()">✕</button>
+        </div>
+        <ul class="nav-menu-items">
+            <li><a href="index.html">📊 PORTAL</a></li>
+            <li><a href="console.html">⚙️ ADMIN KONSOL</a></li>
+            <li><a href="chat.html" class="active">💬 LIVE CHAT</a></li>
+        </ul>
+    </nav>
+
+    <button class="hamburger-btn" id="navToggle" onclick="toggleNavMenu()">☰</button>
+</body>
+</html>

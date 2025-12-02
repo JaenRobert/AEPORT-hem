@@ -1,0 +1,179 @@
+/* ======================================================
+   ÆSI MODULES LAYOUT - Three-zone grid system
+   ====================================================== */
+
+#aesi-modules-container {
+    width: 100%;
+    background: #050505;
+    color: #d4d4d4;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* ZONES */
+.aesi-zone {
+    transition: all 0.2s;
+}
+
+.aesi-zone:hover {
+    border-color: #4F46E5 !important;
+}
+
+.aesi-zone.drag-over {
+    background: rgba(79, 70, 229, 0.05) !important;
+    border-color: #4F46E5 !important;
+}
+
+/* MODULE CARDS */
+.module-card {
+    transition: all 0.2s;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.module-card:hover {
+    background: #262626 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.module-card:active {
+    cursor: grabbing;
+    opacity: 0.7;
+}
+
+.module-card button {
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.module-card button:hover {
+    opacity: 0.8;
+}
+
+.module-card button:active {
+    transform: scale(0.95);
+}
+
+/* MODULE BROWSER */
+#aesi-module-browser {
+    position: fixed;
+    left: 0;
+    top: 80px;
+    width: 240px;
+    height: calc(100vh - 80px);
+    background: #0a0a0a;
+    border-right: 1px solid #262626;
+    overflow-y: auto;
+    z-index: 100;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.5);
+}
+
+#aesi-module-browser::-webkit-scrollbar {
+    width: 6px;
+}
+
+#aesi-module-browser::-webkit-scrollbar-track {
+    background: #0a0a0a;
+}
+
+#aesi-module-browser::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 3px;
+}
+
+#aesi-module-browser::-webkit-scrollbar-thumb:hover {
+    background: #444;
+}
+
+/* Anpassa main content när modulbrowser är synlig */
+#aesi-modules-container {
+    margin-left: 240px;
+}
+
+/* RESPONSIV DESIGN */
+@media (max-width: 1200px) {
+    #aesi-module-browser {
+        width: 200px;
+    }
+
+    #aesi-modules-container {
+        margin-left: 200px;
+    }
+
+    .aesi-zone #zone-MIDDLE-modules {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)) !important;
+    }
+}
+
+@media (max-width: 768px) {
+    #aesi-module-browser {
+        position: fixed;
+        left: -240px;
+        width: 240px;
+        transition: left 0.3s;
+    }
+
+    #aesi-module-browser.open {
+        left: 0;
+    }
+
+    #aesi-modules-container {
+        margin-left: 0;
+    }
+
+    .aesi-zone #zone-MIDDLE-modules {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)) !important;
+    }
+}
+
+/* DRAG-OVER STATE */
+.aesi-zone[data-drag-over="true"] {
+    background: rgba(79, 70, 229, 0.1) !important;
+    border-color: #4F46E5 !important;
+}
+
+/* ANIMERINGAR */
+@keyframes moduleSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.module-card {
+    animation: moduleSlideIn 0.3s ease-out;
+}
+
+/* ZONE LABELS */
+.aesi-zone > div:first-child {
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+}
+
+/* CUSTOM SCROLLBARS FÖR ZONER */
+#zone-MIDDLE-modules {
+    overflow-y: auto;
+    max-height: 600px;
+}
+
+#zone-MIDDLE-modules::-webkit-scrollbar {
+    width: 6px;
+}
+
+#zone-MIDDLE-modules::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#zone-MIDDLE-modules::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 3px;
+}
+
+#zone-MIDDLE-modules::-webkit-scrollbar-thumb:hover {
+    background: #444;
+}

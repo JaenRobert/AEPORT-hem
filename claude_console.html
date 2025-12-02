@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Console - ÆSI Portal Monitor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #050505;
+            color: #d4d4d4;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #header {
+            background: #0a0a0a;
+            border-bottom: 1px solid #262626;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px;
+            z-index: 100;
+        }
+
+        #header h1 {
+            font-size: 14px;
+            font-weight: bold;
+            color: #ef4444;
+            letter-spacing: 1px;
+        }
+
+        #header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-header {
+            background: #4F46E5;
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-header:hover {
+            background: #4338ca;
+        }
+
+        #container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            height: calc(100vh - 60px);
+            gap: 1px;
+            background: #262626;
+        }
+
+        /* LEFT: CLAUDE CHAT */
+        #claude-panel {
+            background: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #262626;
+        }
+
+        #claude-header {
+            padding: 12px;
+            background: #1a1a1a;
+            border-bottom: 1px solid #262626;
+            font-weight: bold;
+            color: #ef4444;
+            font-size: 12px;
+        }
+
+        #claude-chat-window {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .claude-msg {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border-left: 3px solid #ef4444;
+            background: #1a1a1a;
+            font-size: 12px;
+            line-height: 1.4;
+            word-break: break-word;
+            animation: fadeInMsg 0.3s ease-out;
+        }
+
+        @keyframes fadeInMsg {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .claude-msg.user {
+            border-left-color: #4F46E5;
+            background: #1a1a3a;
+            margin-left: auto;
+            max-width: 80%;
+        }
+
+        .claude-msg.ai {
+            border-left-color: #ef4444;
+            background: #3a1a1a;
+        }
+
+        #claude-input-area {
+            padding: 12px;
+            border-top: 1px solid #262626;
+            background: #0a0a0a;
+            display: flex;
+            gap: 6px;
+        }
+
+        #claude-input {
+            flex: 1;
+            background: #111;
+            color: #eee;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 8px;
+            font-size: 12px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        #claude-input:focus {
+            border-color: #ef4444;
+        }
+
+        #claude-send {
+            background: #ef4444;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+
+        #claude-send:hover {
+            background: #dc2626;
+        }
+
+        /* RIGHT: PORTAL MONITOR */
+        #monitor-panel {
+            background: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #monitor-header {
+            padding: 12px;
+            background: #1a1a1a;
+            border-bottom: 1px solid #262626;
+            font-weight: bold;
+            color: #10b981;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #monitor-status {
+            font-size: 10px;
+            color: #10b981;
+        }
+
+        #monitor-log {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        .monitor-entry {
+            padding: 6px;
+            margin-bottom: 6px;
+            border-left: 2px solid #333;
+            border-radius: 2px;
+            background: #1a1a1a;
+            animation: slideInMonitor 0.3s ease-out;
+        }
+
+        @keyframes slideInMonitor {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .monitor-entry.change {
+            border-left-color: #10b981;
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .monitor-entry.warning {
+            border-left-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        .monitor-entry.error {
+            border-left-color: #ef4444;
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .monitor-time {
+            color: #666;
+            font-size: 10px;
+        }
+
+        .monitor-type {
+            color: #4F46E5;
+            font-weight: bold;
+        }
+
+        .monitor-text {
+            color: #d4d4d4;
+            margin-top: 2px;
+        }
+
+        /* SCROLLBARS */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            #container {
+                grid-template-columns: 1fr;
+            }
+
+            #monitor-panel {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="header">
+        <h1>❤️ CLAUDE CONSOLE</h1>
+        <div id="header-actions">
+            <button class="btn-header" onclick="location.href='index.html'">← PORTAL</button>
+            <button class="btn-header" onclick="location.href='modules_page.html'">📦 MODULES</button>
+            <button class="btn-header" onclick="location.href='chat.html'">💬 CHAT</button>
+        </div>
+    </div>
+
+    <div id="container">
+        <!-- LEFT: CLAUDE CHAT -->
+        <div id="claude-panel">
+            <div id="claude-header">❤️ CLAUDE (040) - Samvetet</div>
+            <div id="claude-chat-window"></div>
+            <div id="claude-input-area">
+                <input id="claude-input" type="text" placeholder="Tala med Claude...">
+                <button id="claude-send">SÄND</button>
+            </div>
+        </div>
+
+        <!-- RIGHT: PORTAL MONITOR -->
+        <div id="monitor-panel">
+            <div id="monitor-header">
+                <span>📊 PORTAL MONITOR</span>
+                <span id="monitor-status">● LISTENING</span>
+            </div>
+            <div id="monitor-log"></div>
+        </div>
+    </div>
+
+    <script>
+        // ======================================================
+        // CLAUDE CHAT
+        // ======================================================
+        const ClaudeChat = {
+            apiBase: "http://localhost:8000",
+            messages: [],
+            nodeId: "040", // Claude
+
+            async init() {
+                document.getElementById("claude-send").addEventListener("click", () => this.send());
+                document.getElementById("claude-input").addEventListener("keypress", (e) => {
+                    if (e.key === "Enter") this.send();
+                });
+                console.log("✅ Claude Chat initialized");
+            },
+
+            async send() {
+                const input = document.getElementById("claude-input");
+                const text = input.value.trim();
+                if (!text) return;
+
+                // Lägg till användarmeddelande
+                this.addMessage("Du", text, "user");
+                input.value = "";
+
+                try {
+                    const res = await fetch(`${this.apiBase}/pulse`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ text, node: this.nodeId })
+                    });
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        this.addMessage("Claude", data.reply || "Inget svar", "ai");
+                        PortalMonitor.log("claude-send", `Claude svarade: ${data.reply.slice(0, 50)}...`, "change");
+                    }
+                } catch (e) {
+                    this.addMessage("System", `❌ Fel: ${e.message}`, "ai");
+                    PortalMonitor.log("error", e.message, "error");
+                }
+            },
+
+            addMessage(from, text, type) {
+                const window = document.getElementById("claude-chat-window");
+                const div = document.createElement("div");
+                div.className = `claude-msg ${type}`;
+                div.innerHTML = `<strong>${from}</strong>: ${text}`;
+                window.appendChild(div);
+                window.scrollTop = window.scrollHeight;
+            }
+        };
+
+        // ======================================================
+        // PORTAL MONITOR
+        // ======================================================
+        const PortalMonitor = {
+            entries: [],
+            maxEntries: 500,
+
+            init() {
+                this.log("monitor-init", "Portal Monitor started", "change");
+                this.watchFileChanges();
+                console.log("✅ Portal Monitor initialized");
+            },
+
+            log(type, text, severity = "change") {
+                const time = new Date().toLocaleTimeString("sv-SE");
+                const entry = { type, text, time, severity };
+                this.entries.push(entry);
+
+                if (this.entries.length > this.maxEntries) {
+                    this.entries.shift();
+                }
+
+                this.render();
+            },
+
+            render() {
+                const logEl = document.getElementById("monitor-log");
+                logEl.innerHTML = this.entries.map(e => `
+                    <div class="monitor-entry ${e.severity}">
+                        <span class="monitor-time">${e.time}</span>
+                        <span class="monitor-type">[${e.type}]</span>
+                        <div class="monitor-text">${e.text}</div>
+                    </div>
+                `).join("");
+                logEl.scrollTop = logEl.scrollHeight;
+            },
+
+            watchFileChanges() {
+                // Simulera filändringsövervakning genom polling
+                setInterval(() => {
+                    fetch("http://localhost:8000/context/log", { method: "GET" })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.length > this.entries.length) {
+                                this.log("file-change", `Arvskedjan uppdaterad (+${data.length - this.entries.length})`, "change");
+                            }
+                        })
+                        .catch(() => {
+                            // Quiet fail
+                        });
+                }, 5000);
+            }
+        };
+
+        // ======================================================
+        // INIT
+        // ======================================================
+        document.addEventListener("DOMContentLoaded", () => {
+            ClaudeChat.init();
+            PortalMonitor.init();
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!-- ÆSI SYSTEM INTEGRATION - Add this to index.html before </body> -->
+
+<!-- PROJECT SYSTEM & REALTIME ENGINE -->
+<script src="./js/project_system.js"></script>
+<script src="./js/realtime_bridge.js"></script>
+
+<script>
+    // ÆSI PROJECT SYSTEM INIT
+    document.addEventListener('DOMContentLoaded', async () => {
+        console.log('🚀 Initializing ÆSI Systems...');
+
+        // 1. Initiera realtime-motorn
+        AesiRealtime.init();
+        AesiRealtime.renderPulseIndicator('aesi-header');
+
+        // 2. Initiera projektsystemet
+        await AesiProjects.init();
+
+        // 3. Hotkey för project switcher (Ctrl+K / Cmd+K)
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                AesiProjects.showProjectSwitcher();
+            }
+        });
+
+        // 4. Listen på realtime events
+        AesiRealtime.on('file-changed', (data) => {
+            console.log('📝 File changed:', data.path);
+            // Hot-reload UI här om behövs
+        });
+
+        AesiRealtime.on('connection-changed', (data) => {
+            console.log(data.isConnected ? '✅ Connected' : '❌ Disconnected');
+        });
+
+        console.log('✅ ÆSI PORTAL FULLY INITIALIZED');
+    });
+</script>

@@ -1,0 +1,5 @@
+body{font-family:Inter,Arial,Helvetica;background:#07070a;color:#eaeaea}
+#dropZone{cursor:pointer;background:linear-gradient(180deg,#07111a,#0b1220);}
+#list{margin-top:8px}
+.archive-item{padding:8px;border-radius:6px;background:rgba(255,255,255,0.02);margin-bottom:6px;cursor:pointer}
+.archive-item:hover{background:rgba(79,70,229,0.06)}

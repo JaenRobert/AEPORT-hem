@@ -1,0 +1,76 @@
+<div id="aesi-chat">
+    <div id="aesi-chat-header">
+        <span>💬 ÆSI LIVE CHAT</span>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span id="aesi-status" style="color: #10b981; font-size: 10px;">● ONLINE</span>
+            <div id="aesi-chat-actions">
+                <button class="aesi-btn-small" onclick="AesiChat.exportChat()" title="Exportera chat">💾</button>
+                <button class="aesi-btn-small" onclick="AesiChat.clearLog()" title="Rensa chat">🗑️</button>
+            </div>
+        </div>
+    </div>
+
+    <select id="aesi-node-select">
+        <option value="010">✈️ E1TAN (010) - Humanism</option>
+        <option value="020">🧠 REFLEX (020) - Logik</option>
+        <option value="030">⟁ HAFTED (030) - Minne</option>
+        <option value="040">❤️ CLAUDE (040) - Samvete</option>
+        <option value="050">🙂 SMILE (050) - Design</option>
+        <option value="060">🐻 ERNIE (060) - Arkitektur</option>
+        <option value="Ω">🫂 DIRIGENTEN (Ω) - Vilja</option>
+    </select>
+
+    <div id="aesi-chat-log"></div>
+
+    <div id="aesi-chat-input-wrap">
+        <input 
+            id="aesi-chat-input" 
+            type="text"
+            placeholder="Skriv meddelande..."
+            autocomplete="off"
+        >
+        <button id="aesi-chat-send">SÄND</button>
+    </div>
+</div>
+
+<link rel="stylesheet" href="./modules/realtime_chat.css">
+<script src="./modules/realtime_chat.js"></script>
+
+<script>
+    // Initiera chat-systemet
+    AesiChat.init();
+
+    // Node-väljare
+    document.getElementById("aesi-node-select").addEventListener("change", e => {
+        AesiChat.setNode(e.target.value);
+    });
+
+    // Skicka-knapp
+    document.getElementById("aesi-chat-send").addEventListener("click", () => {
+        const input = document.getElementById("aesi-chat-input");
+        const text = input.value.trim();
+        if (text) {
+            AesiChat.sendMessage(text);
+            input.value = "";
+            input.focus();
+        }
+    });
+
+    // Enter-tangenten för att skicka
+    document.getElementById("aesi-chat-input").addEventListener("keypress", e => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            const input = document.getElementById("aesi-chat-input");
+            const text = input.value.trim();
+            if (text) {
+                AesiChat.sendMessage(text);
+                input.value = "";
+            }
+        }
+    });
+
+    // Cleanup vid unload
+    window.addEventListener("beforeunload", () => {
+        AesiChat.destroy();
+    });
+</script>

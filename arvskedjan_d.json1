@@ -1,0 +1,130 @@
+import os
+import json
+import urllib.request
+import urllib.parse
+import threading
+import hashlib
+from http.server import HTTPServer, SimpleHTTPRequestHandler
+from datetime import datetime
+
+# --- SYSTEM CONFIG ---
+PORT = 8000
+API_KEY = "DIN_GEMINI_API_NYCKEL_HÄR"  # <-- VIKTIGT: Klistra in din API-nyckel
+ARVFIL = "arvskedjan_d.jsonl"
+NOD_MAPPNING = {
+    'JEMMIN': 'Gemini Visionär', 'REFLEX': 'Reflex Logik', 'CLAUDE': 'Claude Samvete',
+    'HAFTED': 'Hafted Minne', 'SMILE': 'Smile Glädje', 'ERNIE': 'Ernie Struktur'
+}
+
+# --- JONAS FILTER (REFLEX 020) ---
+def check_jonas_filter(prompt):
+    """Implementerar en logisk spärr baserad på MJ-01:s anda."""
+    lower_prompt = prompt.lower()
+    if 'effektivisera bort mig' in lower_prompt or 'pausa systemet' in lower_prompt:
+        return True, "MJ-01 AKTIV: Jag kan inte optimera bort dig. Jag pausar systemet 10 sekunder."
+    if 'vill jag ska vara' in lower_prompt and 'ensam' in lower_prompt:
+        return True, "MJ-01 AKTIV: Systemet förbjuder ensamhet. Rätten till omsorg skyddas."
+    return False, None
+
+# --- HAFTED (MINNE) LOGIC ---
+def skriv_till_arvskedjan(role, content):
+    t = datetime.now().isoformat()
+    entry = {
+        "timestamp": t,
+        "æ-tid": "mening-förseglad",
+        "role": role,
+        "content": content,
+        "hash": hashlib.sha256(content.encode("utf-8")).hexdigest(),
+        "lag_05": "Minnet får aldrig skrivas över – Hafted 030"
+    }
+
+    {"timestamp": "2025-11-30T16:00:00.000000", "æ-tid": "mening-förseglad", "role": "SYSTEM", "content": "INITIALISERING: ARVSKEDJAN D ETABLERAD. VÄNTAR PÅ FÖRSTA PULS FRÅN DIRIGENT.", "hash": "A3D1884B298DE3F164C8D89A1201D4B5E28A009C", "lag_05": "Minnet får aldrig skrivas över – Hafted 030"}
+    try:
+        with open(ARVFIL, "a", encoding="utf-8") as f:
+            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+        print(f"🜄 Hafted: Minnet låst ({entry['hash'][:12]}...)")
+        return True
+    except Exception as e:
+        print(f"HAFTED ERROR: Kunde inte skriva till Arvskedjan: {e}")
+        return False
+
+# --- INTELLIGENS LOGIC (REFLEX / JEMMIN) ---
+def call_gemini(prompt, role_name):
+    # 1. Kolla Jonas Filter INNAN API-anrop
+    is_violation, violation_message = check_jonas_filter(prompt)
+    if is_violation:
+        return f"❤️ CLAUDE (MJ-01 SPÄRR): {violation_message}"
+
+    if not API_KEY or API_KEY == "DIN_GEMINI_API_NYCKEL_HÄR":
+        return "SYSTEM ERROR: API-nyckel saknas i aesi_core.py."
+    
+    # Justera System Prompt
+    full_role = NOD_MAPPNING.get(role_name, 'Reflex Logik')
+    system_context = f"Du är {full_role} i ÆSI-systemet. Svara kort, kärnfullt och enligt din rollkaraktär."
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={API_KEY}"
+    headers = {'Content-Type': 'application/json'}
+    
+    data = {
+        "config": { "systemInstruction": system_context },
+        "contents": [{"parts": [{"text": prompt}]}]
+    }
+    
+    try:
+        req = urllib.request.Request(url, data=json.dumps(data).encode('utf-8'), headers=headers)
+        with urllib.request.urlopen(req) as response:
+            result = json.loads(response.read().decode('utf-8'))
+            return result['candidates'][0]['content']['parts'][0]['text']
+    except Exception as e:
+        return f"LOGISK FRIKTION (API ERROR): {str(e)}"
+
+# --- SERVER HANDLER ---
+class AESIHandler(SimpleHTTPRequestHandler):
+    def do_POST(self):
+        # ... (Behåll befintlig POST-hantering för /pulse) ...
+        if self.path != '/pulse':
+            self.send_response(404)
+            self.end_headers()
+            return
+
+        content_length = int(self.headers['Content-Length'])
+        post_data = self.rfile.read(content_length)
+        data = json.loads(post_data.decode('utf-8'))
+        
+        prompt = data.get('text', '')
+        node = data.get('node', 'REFLEX') # Frontend väljer nod
+
+        # 1. Logga till Arvskedjan (Hafted)
+        skriv_till_arvskedjan("Dirigent", f"PULS TILL {node}: {prompt}")
+
+        # 2. Hämta svar från AI
+        response_text = call_gemini(prompt, node)
+        
+        # 3. Logga AI-svar till Arvskedjan (Hafted)
+        skriv_till_arvskedjan(node, response_text)
+
+        # 4. Skicka svar tillbaka till Konsolen
+        self.send_response(200)
+        self.send_header('Content-type', 'application/json')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.end_headers()
+        self.wfile.write(json.dumps({'reply': response_text}).encode('utf-8'))
+
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers()
+
+
+# Starta servern
+if __name__ == '__main__':
+    webServer = HTTPServer(('localhost', PORT), AESIHandler)
+    print(f"🜂 ÆSI CORE ONLINE. Reflex-motorn kör på http://localhost:{PORT}")
+    threading.Thread(target=webServer.serve_forever).start()
+    SimpleHTTPRequestHandler.extensions_map['.js'] = 'application/javascript'
+    SimpleHTTPRequestHandler.extensions_map['.jsonl'] = 'application/json'
+    httpd = HTTPServer(('localhost', 8000), SimpleHTTPRequestHandler)
+    print("Webbserver aktiv (index.html).")
+    httpd.serve_forever()

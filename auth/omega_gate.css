@@ -1,0 +1,6 @@
+.omega-center{height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(180deg,#07111a,#0b1220);color:#fff;font-family:Inter,Arial}
+.sigil{font-size:140px;color:#4F46E5;border-radius:30px;width:240px;height:240px;display:flex;align-items:center;justify-content:center;box-shadow:0 30px 80px rgba(79,70,229,0.2);cursor:pointer}
+.prompt{margin-top:16px;color:#9CA3AF}
+.question{margin-top:18px}
+#who{padding:8px;border-radius:6px;border:1px solid #222;background:rgba(255,255,255,0.03);color:#fff}
+#askBtn{margin-left:8px;padding:8px 12px;background:#4F46E5;border:none;color:#fff;border-radius:6px;cursor:pointer}

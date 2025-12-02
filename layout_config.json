@@ -1,0 +1,70 @@
+{
+  "layout_version": "1.0.0",
+  "last_modified": "2025-12-01T00:00:00Z",
+  "widgets": [
+    {
+      "id": "panel-portal-status",
+      "type": "portal-status",
+      "position": "top-center",
+      "visible": true,
+      "config": {}
+    },
+    {
+      "id": "panel-nodes-dashboard",
+      "type": "nodes-grid",
+      "position": "left-top",
+      "visible": true,
+      "width": "280px",
+      "config": {
+        "showStatus": true,
+        "showHeartbeat": true,
+        "columns": 1
+      }
+    },
+    {
+      "id": "panel-modules-editor",
+      "type": "module-editor",
+      "position": "left-middle",
+      "visible": true,
+      "width": "280px",
+      "config": {
+        "allowSearch": true,
+        "allowFilter": true
+      }
+    },
+    {
+      "id": "panel-document",
+      "type": "document-editor",
+      "position": "center",
+      "visible": true,
+      "config": {
+        "contenteditable": true
+      }
+    },
+    {
+      "id": "panel-chat-log",
+      "type": "chat-log",
+      "position": "right-top",
+      "visible": true,
+      "width": "400px",
+      "height": "200px",
+      "config": {}
+    },
+    {
+      "id": "panel-pulse-input",
+      "type": "pulse-input",
+      "position": "right-bottom",
+      "visible": true,
+      "width": "400px",
+      "config": {
+        "nodeSelector": true,
+        "moduleBrowser": false
+      }
+    }
+  ],
+  "grid": {
+    "rows": "auto 1fr auto",
+    "columns": "280px 1fr 400px",
+    "gap": "0px"
+  }
+}
