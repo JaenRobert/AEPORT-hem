@@ -1,4 +1,4 @@
-import hashlib
+vimport hashlib
 import os
 import datetime
 

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ÆSI BUILDER | CONSOLE</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* --- CORE DESIGN --- */
+        :root {
+            --bg: #09090b;
+            --panel: #121214;
+            --border: #27272a;
+            --accent: #6366f1;
+            --text: #e4e4e7;
+            --text-dim: #a1a1aa;
+            --success: #22c55e;
+        }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Segoe UI', monospace; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        
+        /* UTILS */
+        .flex { display: flex; }
+        .col { flex-direction: column; }
+        .grow { flex-grow: 1; }
+        .hidden { display: none !important; }
+        .btn { background: #27272a; color: white; border: 1px solid #3f3f46; padding: 6px 12px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.8rem; }
+        .btn:hover { background: #3f3f46; }
+        .btn-primary { background: var(--accent); border-color: var(--accent); }
+        
+        /* --- LAYOUT --- */
+        header { height: 50px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; }
+        .logo { font-weight: bold; color: var(--accent); letter-spacing: 1px; }
+        
+        .workspace { display: flex; height: calc(100vh - 50px); }
+        
+        /* SIDEBAR (Files & Modules) */
+        .sidebar { width: 250px; background: #0c0c0e; border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar-header { padding: 10px; font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); background: #18181b; }
+        .file-list { overflow-y: auto; flex: 1; }
+        .file-item { padding: 8px 15px; border-bottom: 1px solid #1f1f22; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
+        .file-item:hover { background: #27272a; color: white; }
+        .file-icon { color: var(--accent); }
+
+        /* MAIN AREA (Split View) */
+        .main-split { flex: 1; display: flex; overflow: hidden; }
+        
+        /* LEFT PANE (Chat/Logic) */
+        .pane-left { flex: 1; display: flex; flex-direction: column; border-right: 1px solid var(--border); min-width: 300px; }
+        
+        /* RIGHT PANE (Preview/Build) */
+        .pane-right { flex: 1; background: #000; display: none; flex-direction: column; } /* Hidden by default */
+        .pane-right.active { display: flex; }
+
+        /* CHAT COMPONENTS */
+        .chat-history { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; background: var(--bg); }
+        .msg { padding: 10px 15px; border-radius: 6px; max-width: 85%; font-size: 0.9rem; line-height: 1.5; }
+        .msg.user { align-self: flex-end; background: #27272a; border: 1px solid #3f3f46; }
+        .msg.ai { align-self: flex-start; background: #111; border-left: 3px solid var(--accent); }
+        .msg-header { font-size: 0.7rem; color: var(--text-dim); margin-bottom: 4px; font-weight: bold; }
+
+        .input-area { padding: 15px; background: var(--panel); border-top: 1px solid var(--border); }
+        .input-box { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 4px; outline: none; font-family: inherit; resize: none; }
+        .input-box:focus { border-color: var(--accent); }
+
+        /* BUILDER PREVIEW */
+        .preview-header { padding: 10px; background: #18181b; border-bottom: 1px solid var(--border); color: var(--text-dim); font-size: 0.8rem; display: flex; justify-content: space-between; }
+        .code-view { flex: 1; padding: 20px; color: #a5b3ce; font-family: 'Consolas', monospace; white-space: pre-wrap; overflow: auto; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="flex items-center gap-3">
+            <span class="logo">ÆSI BUILDER</span>
+            <span style="font-size: 0.7rem; background: #27272a; padding: 2px 6px; rounded;">v1.0</span>
+        </div>
+        <div class="flex gap-2">
+            <select id="nodeSelect" style="background: #18181b; color: white; border: 1px solid #333; padding: 5px; border-radius: 4px;">
+                <option value="REFLEX">REFLEX (Logik)</option>
+                <option value="E1TAN">E1TAN (Byggare)</option>
+                <option value="CLAUDE">CLAUDE (Etik)</option>
+                <option value="HAFTED">HAFTED (Arkiv)</option>
+            </select>
+            <button class="btn" onclick="toggleSplit()">
+                <i data-lucide="columns"></i> DUBBEL SKÄRM
+            </button>
+        </div>
+    </header>
+
+    <div class="workspace">
+        
+        <div class="sidebar">
+            <div class="sidebar-header flex justify-between items-center">
+                <span>FILHANTERARE</span>
+                <i data-lucide="folder-open" size="14"></i>
+            </div>
+            <div class="file-list" id="file-tree">
+                <div class="file-item"><i data-lucide="file-code" size="14" class="file-icon"></i> index.html</div>
+                <div class="file-item"><i data-lucide="file-code" size="14" class="file-icon"></i> portal.css</div>
+                <div class="file-item"><i data-lucide="file-text" size="14" class="file-icon"></i> ASI_MANIFEST.md</div>
+                <div class="file-item"><i data-lucide="settings" size="14" class="file-icon"></i> aesi_core.py</div>
+            </div>
+
+            <div class="sidebar-header mt-auto">MODULER</div>
+            <div class="p-3 text-xs text-gray-400 bg-[#09090b]">
+                <label class="flex gap-2 mb-2 cursor-pointer"><input type="checkbox" checked> Chat Engine</label>
+                <label class="flex gap-2 mb-2 cursor-pointer"><input type="checkbox" checked> File Sync</label>
+                <label class="flex gap-2 mb-2 cursor-pointer"><input type="checkbox"> Voice Core</label>
+                <label class="flex gap-2 cursor-pointer"><input type="checkbox"> Auto-Commit</label>
+            </div>
+        </div>
+
+        <div class="main-split">
+            
+            <div class="pane-left">
+                <div class="chat-history" id="chat-box">
+                    <div class="msg ai" style="border-left-color: #3b82f6;">
+                        <div class="msg-header">REFLEX</div>
+                        Builder mode aktivt. Motorn lyssnar. Dubbla skärmar redo.
+                    </div>
+                </div>
+                <div class="input-area">
+                    <textarea id="user-input" class="input-box" rows="2" placeholder="Ge en order (t.ex. 'Skapa ny modul')..."></textarea>
+                    <div class="flex justify-between mt-2">
+                        <span class="text-xs text-gray-600">Connected: localhost:8000</span>
+                        <button class="btn btn-primary" onclick="send()">SÄND</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pane-right" id="right-pane">
+                <div class="preview-header">
+                    <span>ARBETSYTA / PREVIEW</span>
+                    <div class="flex gap-2">
+                        <button class="btn" style="padding: 2px 8px;">HTML</button>
+                        <button class="btn" style="padding: 2px 8px;">LOGG</button>
+                    </div>
+                </div>
+                <div class="code-view" id="preview-content">
+Väntar på input...
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // 1. SPLIT VIEW TOGGLE
+        const rightPane = document.getElementById('right-pane');
+        function toggleSplit() {
+            rightPane.classList.toggle('active');
+        }
+
+        // 2. CHAT LOGIC
+        const chatBox = document.getElementById('chat-box');
+        const userInput = document.getElementById('user-input');
+        const nodeSelect = document.getElementById('nodeSelect');
+        const previewContent = document.getElementById('preview-content');
+
+        async function send() {
+            const text = userInput.value.trim();
+            if(!text) return;
+
+            // Add User Msg
+            addMsg("DU", text, "user");
+            userInput.value = "";
+
+            const node = nodeSelect.value;
+
+            try {
+                // Call Local Python Engine
+                const res = await fetch('http://localhost:8000/pulse', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ text: text, node: node })
+                });
+                const data = await res.json();
+                
+                // Show Reply
+                let color = "#666";
+                if(node === "REFLEX") color = "#3b82f6";
+                if(node === "E1TAN") color = "#10a37f";
+                if(node === "CLAUDE") color = "#ef4444";
+
+                addMsg(node, data.reply, "ai", color);
+
+                // Simulator: If reply contains code, show in right pane
+                if(data.reply.includes("```")) {
+                    if(!rightPane.classList.contains('active')) toggleSplit();
+                    previewContent.innerText = data.reply; // Simplified display
+                }
+
+            } catch(e) {
+                addMsg("SYSTEM", "Kunde inte nå motorn. Kör 'python aesi_core.py'.", "ai", "red");
+            }
+        }
+
+        function addMsg(sender, text, type, color) {
+            const div = document.createElement('div');
+            div.className = `msg ${type}`;
+            if(color) div.style.borderLeftColor = color;
+            
+            const header = document.createElement('div');
+            header.className = 'msg-header';
+            header.innerText = sender;
+            if(color) header.style.color = color;
+
+            div.appendChild(header);
+            div.innerHTML += text.replace(/\n/g, '<br>');
+            
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        userInput.addEventListener('keypress', (e) => {
+            if(e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                send();
+            }
+        });
+
+        // 3. FILE MANAGER (Simulerad för UI, kan kopplas till API)
+        // Här skulle vi anropa /api/documents/list
+        async function loadFiles() {
+            try {
+                // Försök hämta från backend om den finns
+                // const res = await fetch('http://localhost:8000/api/documents/list');
+                // const data = await res.json();
+                // renderFiles(data.items);
+            } catch(e) {
+                console.log("Offline files mode");
+            }
+        }
+        loadFiles();
+
+    </script>
+</body>
+</html>

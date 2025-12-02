@@ -34,3 +34,15 @@
 {"timestamp": "2025-12-02T11:09:36.867434", "æ-tid": "mening-förseglad", "role": "020", "content": "LOGISK FRIKTION (API ERROR): HTTP Error 400: Bad Request", "hash": "f651b3c44187aea4e7b433ebd77e5863fe6ba5ad0afc01c9e625563c256276e5"}
 {"timestamp": "2025-12-02T11:19:36.922916", "æ-tid": "mening-förseglad", "role": "Dirigent", "content": "PULS TILL 040: hej", "hash": "c9a93c9f3b7d1416d9a8c58c7164a7f17bdf0e32fcaca0caa07db9780bae86d7"}
 {"timestamp": "2025-12-02T11:19:37.181384", "æ-tid": "mening-förseglad", "role": "040", "content": "LOGISK FRIKTION (API ERROR): HTTP Error 400: Bad Request", "hash": "62a520060a2da0625ccd67551bab18005975108f9148380b0d355f832b005f1c"}
+{"timestamp": "2025-12-02T15:59:59.734544", "æ-tid": "mening-förseglad", "role": "Dirigent", "content": "PULS TILL REFLEX: Hej, testar pulse", "hash": "e62730dfcd0a0a1c02af887b3482804798f1eba9730c89f8f9baaddb690495b1"}
+{"timestamp": "2025-12-02T15:59:59.953051", "æ-tid": "mening-förseglad", "role": "REFLEX", "content": "LOGISK FRIKTION (API ERROR): HTTP Error 400: Bad Request", "hash": "67a1cd3c2464a856e3e98b7e134659e8cb83e54804777515186052a4f5de5898"}
+{"timestamp": "2025-12-02T15:03:25.307991", "role": "Dirigent", "content": "PULS TILL REFLEX: Hej, server test efter restart"}
+{"timestamp": "2025-12-02T15:03:25.308961", "role": "REFLEX", "content": "[OKÄND NOD]"}
+{"timestamp": "2025-12-02T16:05:38.653836", "role": "Dirigent", "content": "PULS TILL REFLEX: hej"}
+{"timestamp": "2025-12-02T16:05:38.656485", "role": "REFLEX", "content": "[OKÄND NOD]"}
+{"timestamp": "2025-12-02T16:05:48.820845", "role": "Dirigent", "content": "PULS TILL E1TAN: hej"}
+{"timestamp": "2025-12-02T16:05:48.823803", "role": "E1TAN", "content": "[OKÄND NOD]"}
+{"timestamp": "2025-12-02T16:06:15.333585", "role": "Dirigent", "content": "PULS TILL 040: hej"}
+{"timestamp": "2025-12-02T16:06:15.336576", "role": "040", "content": "[CLAUDE/SIM] Hjälper till: hej... (simulerad respons)"}
+{"timestamp": "2025-12-02T16:10:21.073165", "role": "Dirigent", "content": "PULS TILL REFLEX: asfd"}
+{"timestamp": "2025-12-02T16:10:21.074010", "role": "REFLEX", "content": "[OKÄND NOD]"}
