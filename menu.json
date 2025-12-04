@@ -1,0 +1,134 @@
+﻿[
+    {
+        "name":  "archivarius",
+        "url":  "/archivarius.html"
+    },
+    {
+        "name":  "archivarius_viewer",
+        "url":  "/archivarius_viewer.html"
+    },
+    {
+        "name":  "backup_index_20251204_171114",
+        "url":  "/backup_index_20251204_171114.html"
+    },
+    {
+        "name":  "backup_index_20251204_171139",
+        "url":  "/backup_index_20251204_171139.html"
+    },
+    {
+        "name":  "backup_index_20251204_171411",
+        "url":  "/backup_index_20251204_171411.html"
+    },
+    {
+        "name":  "backup_index_20251204_172817",
+        "url":  "/backup_index_20251204_172817.html"
+    },
+    {
+        "name":  "backup_index_20251204_174014",
+        "url":  "/backup_index_20251204_174014.html"
+    },
+    {
+        "name":  "backup_index_20251204_174435",
+        "url":  "/backup_index_20251204_174435.html"
+    },
+    {
+        "name":  "backup_index_20251204_180011",
+        "url":  "/backup_index_20251204_180011.html"
+    },
+    {
+        "name":  "builder",
+        "url":  "/builder.html"
+    },
+    {
+        "name":  "builderReflex",
+        "url":  "/builderReflex.html"
+    },
+    {
+        "name":  "chat",
+        "url":  "/chat.html"
+    },
+    {
+        "name":  "claude_console",
+        "url":  "/claude_console.html"
+    },
+    {
+        "name":  "claude_workspace",
+        "url":  "/claude_workspace.html"
+    },
+    {
+        "name":  "console",
+        "url":  "/console.html"
+    },
+    {
+        "name":  "deploy-console",
+        "url":  "/deploy-console.html"
+    },
+    {
+        "name":  "DIMENSIONS_COMPLETE",
+        "url":  "/DIMENSIONS_COMPLETE.html"
+    },
+    {
+        "name":  "GLOBAL_NAV_DEMO",
+        "url":  "/GLOBAL_NAV_DEMO.html"
+    },
+    {
+        "name":  "index (1)",
+        "url":  "/index (1).html"
+    },
+    {
+        "name":  "index",
+        "url":  "/index.html"
+    },
+    {
+        "name":  "integration_init",
+        "url":  "/integration_init.html"
+    },
+    {
+        "name":  "ko",
+        "url":  "/ko.html"
+    },
+    {
+        "name":  "modules_page",
+        "url":  "/modules_page.html"
+    },
+    {
+        "name":  "nexus",
+        "url":  "/nexus.html"
+    },
+    {
+        "name":  "nexus_Version2",
+        "url":  "/nexus_Version2.html"
+    },
+    {
+        "name":  "nexus_Version4",
+        "url":  "/nexus_Version4.html"
+    },
+    {
+        "name":  "panel",
+        "url":  "/panel.html"
+    },
+    {
+        "name":  "Port",
+        "url":  "/Port.html"
+    },
+    {
+        "name":  "portal",
+        "url":  "/portal.html"
+    },
+    {
+        "name":  "portal_black",
+        "url":  "/portal_black.html"
+    },
+    {
+        "name":  "pulse_panel",
+        "url":  "/pulse_panel.html"
+    },
+    {
+        "name":  "start",
+        "url":  "/start.html"
+    },
+    {
+        "name":  "vision-builder",
+        "url":  "/vision-builder.html"
+    }
+]

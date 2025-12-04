@@ -1,1 +1,14 @@
-<!DOCTYPE html><html><head><title>Vision Builder</title></head><body><h1>Vision Builder</h1><p>Prata här...</p></body></html>
+async function sendToVSCode(promptText) {
+  const key = localStorage.getItem("gemini_key");
+  const file = prompt("Vilken fil vill du uppdatera?");
+  if (!file) return;
+
+  const res = await fetch("/api/vision-update", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ prompt: promptText, apiKey: key, targetFile: file })
+  });
+
+  const text = await res.text();
+  log("🧩 " + text);
+}

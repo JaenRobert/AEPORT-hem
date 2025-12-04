@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ÆSI NEXUS</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.4/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/nexus.css">
     <style>
         /* ÆSI Theming: Dark mode, Monospace font, Colored borders for nodes */
         body { background-color: #050505; color: #e5e7eb; font-family: 'Courier New', monospace; }
@@ -21,14 +20,15 @@
         .e1tan { border-color: #a855f7; color: #d8b4fe; } /* GPT */
         .dirigent { border-color: #22c55e; color: #86efac; font-weight: bold; } /* CHAT: & CMD: */
         .server-log { border-color: #f59e0b; color: #fcd34d; } /* SERVER_LOG: */
+        .news-item { border-left: 3px solid #10b981; padding-left: 8px; margin-bottom: 10px; }
         
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="h-screen flex flex-col">
-    <!-- Navigation Container -->
-    <div id="navbar-container"></div>
-
+    <!-- NY GLOBAL NAVIGERING HÄR -->
+    <div id="global-nav"></div> 
+    
     <div class="flex-1 flex overflow-hidden">
         
         <!-- Sidebar: Aktiva Noder -->
@@ -42,8 +42,8 @@
             </div>
         </div>
         
-        <!-- Main Chat/Console Window -->
-        <div class="flex-1 flex flex-col bg-black relative">
+        <!-- Main Chat/Console Window (70% bredd) -->
+        <div class="flex-1 flex flex-col bg-black relative w-7/10">
             <div id="chat-window" class="flex-1 overflow-y-auto p-6 space-y-4">
                 <div class="text-center text-gray-600 text-xs my-4">--- SYSTEM START: ÆSI NEXUS ONLINE ---</div>
             </div>
@@ -61,16 +61,39 @@
                  <button onclick="window.disconnectSocket()" class="px-3 py-1 text-xs bg-red-600 rounded hover:bg-red-500 transition">Koppla bort</button>
             </div>
         </div>
+
+        <!-- NY PANEL: Nyhetsflöde (30% bredd) -->
+        <div class="w-3/10 bg-gray-900 border-l border-gray-800 p-4 overflow-y-auto hidden lg:block">
+            <h2 class="text-sm font-bold text-green-400 uppercase mb-4">ÆSI NEWS FEED (Gemensamt)</h2>
+            <div id="news-feed-container" class="text-sm text-gray-400 space-y-4">
+                <!-- Nyheter kommer att injiceras här -->
+                <div class="news-item">
+                    <span class="text-green-500 font-bold">[REFLEX]</span> Indexeringsstatus: 900 rader kod är nu fullt indexerade.
+                </div>
+                <div class="news-item">
+                    <span class="text-purple-500 font-bold">[E1TAN]</span> Humanistisk resonans är nu aktiv.
+                </div>
+                <div class="news-item">
+                    <span class="text-yellow-500 font-bold">[SYSTEM]</span> Lokala WebSockets verifierade.
+                </div>
+            </div>
+        </div>
+        
     </div>
     
     <!-- Scripts -->
-    <script src="/js/global_nav.js"></script>
-    <script type="module">
-        import { initNavigation } from './js/nav_menu.js';
-        
-        // Initialize navigation
-        initNavigation();
-        
+    <script src="/js/nav_menu.js"></script> 
+    <script>
+        // Nytt: Funktion för att lägga till nyheter (kan anropas av servern via WebSocket)
+        function addNewsItem(source, message) {
+            const container = document.getElementById('news-feed-container');
+            const div = document.createElement('div');
+            div.className = 'news-item';
+            div.innerHTML = `<span class="text-green-500 font-bold">[${source}]</span> ${message}`;
+            container.prepend(div); // Lägg till överst
+        }
+
+
         const chatWindow = document.getElementById('chat-window');
         const userInput = document.getElementById('userInput');
         const statusServer = document.getElementById('status-server');
@@ -78,7 +101,7 @@
         let socket;
         let reconnectTimeout;
         const RECONNECT_DELAY = 3000; 
-        let isClosing = false; // Förhindra omedelbar återanslutning vid sidladdning
+        let isClosing = false; 
 
         function addMessage(roleClass, name, text) {
             const div = document.createElement('div');
@@ -90,7 +113,7 @@
         
         function connectWebSocket() {
             if (reconnectTimeout) clearTimeout(reconnectTimeout);
-            isClosing = false; // Vi försöker ansluta, inte stänga
+            isClosing = false; 
 
             // Uppdaterar status
             statusServer.textContent = 'Försöker ansluta...';
@@ -98,7 +121,7 @@
             statusServer.classList.add('text-yellow-600');
 
             try {
-                // FIXEN: Ansluter direkt till 127.0.0.1 (IP-adress) istället för localhost (DNS)
+                // Ansluter direkt till 127.0.0.1:8767
                 socket = new WebSocket('ws://127.0.0.1:8767');
             } catch (e) {
                 addMessage('server-log', 'SYSTEM FEL', 'Kunde inte ens initiera WebSocket. Kontrollera adressen.');
@@ -112,13 +135,26 @@
                 statusServer.textContent = 'Online';
                 statusServer.classList.remove('text-red-600', 'text-yellow-600');
                 statusServer.classList.add('text-green-600');
+                // Skicka initialt meddelande till servern för att bekräfta nyheter
+                socket.send("CMD:/get_news"); 
             };
 
             // Händelse: Meddelande mottaget från servern
             socket.onmessage = function(event) {
                 const data = event.data;
                 
-                if (data.startsWith('CHAT_MSG:')) {
+                // Ny logik för Nyheter (om servern skickar JSON-data)
+                if (data.startsWith('NEWS_ITEM:')) {
+                    try {
+                        const newsData = JSON.parse(data.substring(10).trim());
+                        addNewsItem(newsData.source, newsData.message);
+                    } catch (e) {
+                         addMessage('server-log', 'PARSNING FEL', 'Kunde inte tolka nyhetsdata.');
+                    }
+                }
+                
+                // Befintlig logik för chatt/loggar
+                else if (data.startsWith('CHAT_MSG:')) {
                     addMessage('reflex', 'Reflex (Gemini)', data.substring(9));
                 } else if (data.startsWith('SERVER_LOG:')) {
                     addMessage('server-log', 'Serverlogg', data.substring(11));
@@ -129,7 +165,8 @@
 
             // Händelse: Fel: Loggar felet men låter onclose hantera återanslutning
             socket.onerror = function(error) { 
-                 console.error('WebSocket-fel:', error);
+                 // Förhindra att det oönskade JSON-objektet loggas som ett JS-fel i konsolen.
+                 console.error('WebSocket-fel: Anslutningen misslyckades.');
             };
             
             // Händelse: Anslutning stängd
@@ -155,7 +192,7 @@
             }, RECONNECT_DELAY);
         }
         
-        // Exponera funktion för att stänga anslutningen rent (för t.ex. en Disconnect-knapp)
+        // Exponera funktioner för kontrollknappar
         window.disconnectSocket = function() {
              isClosing = true;
              if (socket && socket.readyState === WebSocket.OPEN) {
@@ -166,7 +203,6 @@
              }
         }
         
-        // Exponera funktion för att tvinga fram återanslutning
         window.reconnectSocket = function() {
             if (socket && socket.readyState === WebSocket.OPEN) {
                 addMessage('dirigent', 'SYSTEM LOGG', 'Anslutningen är redan öppen.');
@@ -212,22 +248,7 @@
 
         // Starta anslutningsprocessen vid laddning av sidan
         connectWebSocket();
-
-        // Test connection button
-        document.getElementById('testConnectionBtn').addEventListener('click', async () => {
-            const statusMsg = document.getElementById('status-message');
-            statusMsg.textContent = 'Testar anslutning till edge_server...';
-            
-            try {
-                const response = await fetch('http://localhost:8767/ping');
-                const data = await response.json();
-                statusMsg.textContent = `✅ Anslutning lyckades! Server svarar: ${data.status}`;
-                statusMsg.style.color = 'green';
-            } catch (error) {
-                statusMsg.textContent = `❌ Anslutning misslyckades: ${error.message}`;
-                statusMsg.style.color = 'red';
-            }
-        });
+        
     </script>
 </body>
 </html>
