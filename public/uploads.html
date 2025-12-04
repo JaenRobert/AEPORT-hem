@@ -1,0 +1,39 @@
+﻿<!DOCTYPE html>
+<html lang='sv'>
+<head>
+  <meta charset='UTF-8'>
+  <title>ÆSI Upload</title>
+  <link href='https://cdn.jsdelivr.net/npm/tailwindcss@3.4.4/dist/tailwind.min.css' rel='stylesheet'>
+  <style>
+    body { background:#050505; color:#00ffcc; font-family:monospace; text-align:center; padding:30px; }
+    #drop-zone { border:3px dashed #00ffcc; border-radius:12px; padding:40px; cursor:pointer; transition:0.3s; }
+    #drop-zone.dragover { background:#0f0f0f; border-color:#00ffaa; }
+  </style>
+</head>
+<body>
+  <h1 class='text-2xl mb-4'>📤 ÆSI Upload Center</h1>
+  <div id='drop-zone'>Släpp fil här eller klicka för att välja</div>
+  <input type='file' id='fileInput' hidden>
+  <div id='status' class='mt-4 text-green-400'></div>
+  <script>
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('fileInput');
+    const statusEl = document.getElementById('status');
+    dropZone.onclick = () => fileInput.click();
+
+    dropZone.ondragover = e => { e.preventDefault(); dropZone.classList.add('dragover'); };
+    dropZone.ondragleave = () => dropZone.classList.remove('dragover');
+    dropZone.ondrop = e => { e.preventDefault(); dropZone.classList.remove('dragover'); uploadFile(e.dataTransfer.files[0]); };
+    fileInput.onchange = () => uploadFile(fileInput.files[0]);
+
+    async function uploadFile(file) {
+      if (!file) return;
+      statusEl.textContent = "⏳ Laddar upp " + file.name + "...";
+      const formData = new FormData(); formData.append("file", file);
+      const res = await fetch("/api/upload", { method:"POST", body: formData });
+      const text = await res.text();
+      statusEl.textContent = text;
+    }
+  </script>
+</body>
+</html>
