@@ -1,185 +1,33 @@
-<!DOCTYPE html>
-<html lang="sv">
+﻿<!DOCTYPE html>
+<html lang='sv'>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ÆSI NEXUS - AI-PATRULL</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body {
-      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-      min-height: 100vh;
-    }
-    
-    .shield-glow {
-      animation: shieldPulse 3s infinite;
-    }
-    
-    @keyframes shieldPulse {
-      0%, 100% { text-shadow: 0 0 20px rgba(34, 211, 238, 0.8); }
-      50% { text-shadow: 0 0 40px rgba(34, 211, 238, 1); }
-    }
-    
-    .login-box {
-      backdrop-filter: blur(10px);
-      background: rgba(15, 23, 42, 0.8);
-    }
-  </style>
+<meta charset='UTF-8'>
+<title>🔐 ÆSI Login</title>
+<link href='https://cdn.jsdelivr.net/npm/tailwindcss@3.4.4/dist/tailwind.min.css' rel='stylesheet'>
+<style>
+body { background:#050505; color:#00ffcc; font-family:monospace; text-align:center; padding:50px; }
+input { background:#111; color:#00ffcc; border:1px solid #0f0; padding:10px; width:250px; border-radius:6px; }
+button { background:#00ffcc; color:#000; padding:10px 20px; border-radius:6px; margin-top:10px; }
+</style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4">
-
-  <div class="login-box max-w-md w-full p-8 rounded-2xl border-2 border-cyan-500 shadow-2xl">
-    <!-- Header -->
-    <div class="text-center mb-8">
-      <div class="text-6xl mb-4">
-        <span class="shield-glow text-cyan-400">🛡️</span>
-      </div>
-      <h1 class="text-3xl font-bold mb-2">
-        <span class="text-cyan-400">ÆSI</span> <span class="text-pink-500">NEXUS</span>
-      </h1>
-      <p class="text-gray-400">AI-PATRULL</p>
-    </div>
-
-    <!-- Login Form -->
-    <form id="loginForm" class="space-y-6">
-      <!-- Private Key -->
-      <div>
-        <label class="block text-sm font-medium text-gray-300 mb-2">
-          🔑 Privat Nyckel
-        </label>
-        <input
-          type="password"
-          id="privateKey"
-          class="w-full px-4 py-3 bg-slate-800 border border-cyan-500/30 rounded-lg
-                 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500
-                 transition-colors"
-          placeholder="Ange din privata nyckel"
-          required
-        />
-      </div>
-
-      <!-- Username (Optional) -->
-      <div>
-        <label class="block text-sm font-medium text-gray-300 mb-2">
-          👤 Användarnamn (valfritt)
-        </label>
-        <input
-          type="text"
-          id="username"
-          class="w-full px-4 py-3 bg-slate-800 border border-cyan-500/30 rounded-lg
-                 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500
-                 transition-colors"
-          placeholder="Ditt namn"
-        />
-      </div>
-
-      <!-- Login Button -->
-      <button
-        type="submit"
-        class="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white
-               font-semibold rounded-lg hover:from-cyan-600 hover:to-blue-700
-               transition-all transform hover:scale-105 active:scale-95"
-      >
-        🔐 Logga in
-      </button>
-    </form>
-
-    <!-- Divider -->
-    <div class="relative my-8">
-      <div class="absolute inset-0 flex items-center">
-        <div class="w-full border-t border-gray-600"></div>
-      </div>
-      <div class="relative flex justify-center text-sm">
-        <span class="px-4 bg-slate-900 text-gray-400">Eller</span>
-      </div>
-    </div>
-
-    <!-- WebAuthn Login -->
-    <button
-      id="webauthnBtn"
-      class="w-full py-3 bg-slate-800 border-2 border-cyan-500/50 text-cyan-400
-             font-semibold rounded-lg hover:bg-slate-700 hover:border-cyan-500
-             transition-all"
-    >
-      🖐️ WebAuthn / Fingeravtryck
-    </button>
-
-    <!-- Status Message -->
-    <div id="statusMsg" class="mt-6 p-4 rounded-lg hidden"></div>
-
-    <!-- Info -->
-    <div class="mt-8 text-center text-sm text-gray-500">
-      <p>Endast auktoriserade användare har skrivbehörighet.</p>
-      <p class="mt-1">Läsning är öppen för alla.</p>
-    </div>
-  </div>
+<body>
+  <h1 class='text-3xl mb-4'>🔐 ÆSI Login</h1>
+  <input id='key' type='password' placeholder='Ange din privata nyckel'><br>
+  <button onclick='login()'>Logga in</button>
+  <p id='status' class='mt-4 text-yellow-400'></p>
 
   <script>
-    const API_BASE = window.location.origin;
-    
-    // Login with private key
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const privateKey = document.getElementById('privateKey').value;
-      const username = document.getElementById('username').value;
-      
-      showStatus('Autentiserar...', 'info');
-      
-      try {
-        const res = await fetch(`${API_BASE}/api/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ privateKey, username })
-        });
-        
-        const data = await res.json();
-        
-        if (data.success) {
-          // Store token
-          localStorage.setItem('aesi_token', data.token);
-          localStorage.setItem('aesi_user', JSON.stringify(data.user));
-          
-          showStatus('✅ Inloggning lyckades! Omdirigerar...', 'success');
-          
-          setTimeout(() => {
-            window.location.href = '/index.html';
-          }, 1000);
-          
-        } else {
-          showStatus('❌ ' + data.error, 'error');
-        }
-        
-      } catch (err) {
-        showStatus('❌ Nätverksfel: ' + err.message, 'error');
-      }
-    });
-    
-    // WebAuthn login
-    document.getElementById('webauthnBtn').addEventListener('click', async () => {
-      showStatus('WebAuthn stöd kommer snart...', 'info');
-      // TODO: Implement WebAuthn flow
-    });
-    
-    function showStatus(message, type) {
-      const statusMsg = document.getElementById('statusMsg');
-      statusMsg.textContent = message;
-      statusMsg.className = `mt-6 p-4 rounded-lg ${
-        type === 'success' ? 'bg-green-500/20 text-green-300' :
-        type === 'error' ? 'bg-red-500/20 text-red-300' :
-        'bg-blue-500/20 text-blue-300'
-      }`;
-      statusMsg.classList.remove('hidden');
-    }
-    
-    // Check if already logged in
-    if (localStorage.getItem('aesi_token')) {
-      showStatus('Redan inloggad, omdirigerar...', 'info');
-      setTimeout(() => {
-        window.location.href = '/index.html';
-      }, 1000);
-    }
+  async function login() {
+    const key = document.getElementById('key').value;
+    if(!key) return alert('Ange nyckel!');
+    const token = btoa(key + ':' + new Date().toISOString());
+    localStorage.setItem('aesi_token', token);
+    document.getElementById('status').textContent = '✅ Inloggad!';
+    setTimeout(()=> window.location.href='index.html', 800);
+  }
   </script>
 
+<script src='/js/nav_menu.js'></script>
 </body>
 </html>
+
