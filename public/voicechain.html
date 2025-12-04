@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang='sv'>
+<head>
+<meta charset='UTF-8'>
+<title>ÆSI VoiceChain</title>
+<link href='https://cdn.jsdelivr.net/npm/tailwindcss@3.4.4/dist/tailwind.min.css' rel='stylesheet'>
+<script src='/js/nav_menu.js'></script>
+<script src='/js/voicechain.js'></script>
+<style>
+body { background:#050505; color:#00ffcc; font-family:monospace; text-align:center; padding:30px; }
+#output { background:#0a0a0a; border:1px solid #0f0; border-radius:10px; padding:15px; height:40vh; overflow-y:auto; }
+button { background:#00ffcc; color:#000; padding:10px 18px; border-radius:8px; margin:10px; }
+select, input { background:#111; border:1px solid #0f0; color:#00ffcc; padding:8px; border-radius:6px; }
+</style>
+</head>
+<body>
+<h1 class='text-3xl text-green-400 mb-4'>🗣️ ÆSI VoiceChain</h1>
+<p class='text-gray-400 mb-6'>Tala, och nätverket svarar med sin röst.</p>
+
+<div class='flex justify-center gap-3 mb-4'>
+<select id='node'>
+<option>Gemini</option>
+<option>GPT</option>
+<option>Claude</option>
+</select>
+<input id='apiKey' type='password' placeholder='API Key'>
+</div>
+
+<button id='micBtn' onclick='toggleVoice()' class='bg-red-700 hover:bg-red-600'>🎙️ Starta Lyssning</button>
+<button onclick='stopVoice()' class='bg-gray-700 hover:bg-gray-600'>⏹️ Stoppa</button>
+<div id='output' class='mt-4 text-left'></div>
+
+<script>
+function speakText(text){
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = 'sv-SE';
+  speechSynthesis.speak(utter);
+}
+</script>
+</body>
+</html>

@@ -1,6 +1,6 @@
-﻿const pages = [
+const pages = [
   { name:'🏠 Start', link:'index.html' },
-  { name:'📊 Dashboard', link:'dashboard.html' },{ name:'🛰️ LiveLink', link:'livelink.html' },
+  { name:'📊 Dashboard', link:'dashboard.html' },{ name:'🛰️ LiveLink', link:'livelink.html' },{ name:'🗣️ VoiceChain', link:'voicechain.html' },
   { name:'💬 Nexus', link:'nexus.html' },
   { name:'👁️ Vision', link:'vision-builder.html' },
   { name:'📤 Upload', link:'uploads.html' },
@@ -28,4 +28,5 @@ function buildNav(){
  document.body.prepend(nav);
 }
 document.addEventListener('DOMContentLoaded',buildNav);
+
 
