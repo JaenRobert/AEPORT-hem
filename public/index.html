@@ -1,22 +1,123 @@
 ﻿<!DOCTYPE html>
-<html lang='sv'>
+<html lang="sv">
 <head>
-<meta charset='UTF-8'>
-<title>ÆSI PORTAL</title>
-<link href='https://cdn.jsdelivr.net/npm/tailwindcss@3.4.4/dist/tailwind.min.css' rel='stylesheet'>
-<script src='/js/nav_menu.js'></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ÆSI NEXUS v3.0</title>
+  <link rel="stylesheet" href="/css/aesi-ui.css">
+  <script src="/js/menu.js"></script>
+  <style>
+    .hero {
+      text-align: center;
+      padding: 4rem 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .hero h1 {
+      font-size: 3.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .hero .logo {
+      font-size: 5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .feature-card {
+      background: rgba(15, 52, 96, 0.3);
+      border: 2px solid rgba(0, 212, 255, 0.3);
+      border-radius: 16px;
+      padding: 2rem;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .feature-card:hover {
+      border-color: #00d4ff;
+      transform: translateY(-8px);
+      box-shadow: 0 8px 24px rgba(0, 212, 255, 0.4);
+    }
+    
+    .feature-card .icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+    
+    .feature-card h3 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      color: #00d4ff;
+    }
+    
+    .feature-card p {
+      color: #cbd5e1;
+    }
+  </style>
 </head>
-<body class='bg-black text-green-400 text-center p-12 font-mono'>
-<h1 class='text-5xl mb-6'>ÆSI PORTAL v2.0</h1>
-<p class='text-gray-400 mb-10'>The Nexus is awake. Choose your path.</p>
-<div class='space-x-3'>
-  <a href='dashboard.html' class='bg-green-600 px-4 py-2 rounded hover:bg-green-500'>📊 Dashboard</a>
-  <a href='nexus.html' class='bg-blue-600 px-4 py-2 rounded hover:bg-blue-500'>💬 Nexus</a>
-  <a href='vision-builder.html' class='bg-purple-600 px-4 py-2 rounded hover:bg-purple-500'>👁️ Vision</a>
-</div>
-<div class='mt-10 text-sm text-gray-500'>© ÆSI Systems 2025 | Core Integration Online</div>
+<body>
 
-<script src='/js/nav_menu.js'></script>
+  <div class="hero">
+    <div class="logo">⚡</div>
+    <h1>
+      <span style="color: #00d4ff;">ÆSI</span>
+      <span style="color: #e94560;">NEXUS</span>
+    </h1>
+    <p style="font-size: 1.2rem; color: #cbd5e1;">
+      AI-driven utvecklingsplattform med säker autentisering och persistent minne
+    </p>
+  </div>
+
+  <div class="feature-grid">
+    <div class="feature-card" onclick="location.href='/builder.html'">
+      <div class="icon">🔧</div>
+      <h3>Builder</h3>
+      <p>Drag & drop module creator</p>
+    </div>
+
+    <div class="feature-card" onclick="location.href='/ai_console.html'">
+      <div class="icon">💻</div>
+      <h3>AI Console</h3>
+      <p>Chat + live code editor</p>
+    </div>
+
+    <div class="feature-card" onclick="location.href='/book.html'">
+      <div class="icon">📖</div>
+      <h3>Boken</h3>
+      <p>Chapter management</p>
+    </div>
+
+    <div class="feature-card" onclick="location.href='/memory.html'">
+      <div class="icon">💾</div>
+      <h3>Tunnan</h3>
+      <p>Conversation history</p>
+    </div>
+
+    <div class="feature-card" onclick="location.href='/uploads.html'">
+      <div class="icon">📤</div>
+      <h3>Upload</h3>
+      <p>File management</p>
+    </div>
+
+    <div class="feature-card" onclick="location.href='/portal.html'">
+      <div class="icon">🎛️</div>
+      <h3>Portal</h3>
+      <p>Command center</p>
+    </div>
+  </div>
+
 </body>
 </html>
+
+
 

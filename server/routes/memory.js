@@ -1,54 +1,140 @@
 ﻿import express from "express";
-import fs from "fs";
+import fs from "fs/promises";
 import path from "path";
+import crypto from "crypto";
 
 const router = express.Router();
-const memoryDir = path.join(process.cwd(), "data", "memory");
-if (!fs.existsSync(memoryDir)) fs.mkdirSync(memoryDir, { recursive: true });
+const MEMORY_DIR = path.join(process.cwd(), "data", "memory");
 
-// Hjälpfunktion för att läsa JSON-fil
-function readMemory(date) {
-  const filePath = path.join(memoryDir, date + ".json");
-  if (!fs.existsSync(filePath)) return [];
-  return JSON.parse(fs.readFileSync(filePath, "utf8"));
+// Ensure memory directory exists
+fs.mkdir(MEMORY_DIR, { recursive: true }).catch(console.error);
+
+async function listConversations(req, res) {
+  try {
+    const files = await fs.readdir(MEMORY_DIR);
+    const jsonFiles = files.filter(f => f.endsWith('.json'));
+    
+    const conversations = await Promise.all(
+      jsonFiles.map(async (f) => {
+        const content = await fs.readFile(path.join(MEMORY_DIR, f), 'utf8');
+        const data = JSON.parse(content);
+        return {
+          id: path.basename(f, '.json'),
+          ...data,
+          preview: data.entries?.[0]?.text?.substring(0, 100) + '...'
+        };
+      })
+    );
+    
+    // Sort by date, newest first
+    conversations.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    res.json({ conversations });
+    
+  } catch (err) {
+    console.error('List conversations error:', err);
+    res.status(500).json({ error: 'Failed to list conversations' });
+  }
 }
 
-// GET /api/memory - lista alla konversationer
-router.get("/api/memory", (req, res) => {
-  const files = fs.readdirSync(memoryDir).filter(f => f.endsWith(".json"));
-  let all = [];
-  for (const f of files) {
-    const data = JSON.parse(fs.readFileSync(path.join(memoryDir, f), "utf8"));
-    all = all.concat(data);
-  }
-  res.json(all);
-});
-
-// POST /api/memory - spara ny konversation
-router.post("/api/memory", (req, res) => {
+async function getConversation(req, res) {
   try {
-    const entry = req.body;
-    if (!entry || !entry.text) return res.status(400).send("Saknar innehåll.");
-
-    const date = new Date().toISOString().split("T")[0];
-    const filePath = path.join(memoryDir, date + ".json");
-    const existing = readMemory(date);
-    existing.push({ id: Date.now(), ...entry });
-    fs.writeFileSync(filePath, JSON.stringify(existing, null, 2));
-    res.send("✅ Sparat i Tunnan (" + date + ")");
-  } catch (e) {
-    res.status(500).send("Fel vid lagring: " + e.message);
+    const { id } = req.params;
+    const filepath = path.join(MEMORY_DIR, `${id}.json`);
+    const content = await fs.readFile(filepath, 'utf8');
+    const conversation = JSON.parse(content);
+    
+    res.json({ conversation });
+    
+  } catch (err) {
+    console.error('Get conversation error:', err);
+    res.status(404).json({ error: 'Conversation not found' });
   }
-});
+}
 
-// DELETE /api/memory/:id - ta bort specifik post
-router.delete("/api/memory/:id", (req, res) => {
-  const id = parseInt(req.params.id);
-  const date = new Date().toISOString().split("T")[0];
-  const existing = readMemory(date);
-  const updated = existing.filter(e => e.id !== id);
-  fs.writeFileSync(path.join(memoryDir, date + ".json"), JSON.stringify(updated, null, 2));
-  res.send("🗑️ Inlägg raderat: " + id);
-});
+async function saveConversation(req, res) {
+  try {
+    const { text, node, response, metadata = {} } = req.body;
+    
+    if (!text || !node) {
+      return res.status(400).json({ error: 'Text and node required' });
+    }
+    
+    const today = new Date().toISOString().split('T')[0];
+    const filepath = path.join(MEMORY_DIR, `${today}.json`);
+    
+    // Load existing or create new
+    let conversation;
+    try {
+      const existing = await fs.readFile(filepath, 'utf8');
+      conversation = JSON.parse(existing);
+    } catch {
+      conversation = {
+        date: today,
+        entries: []
+      };
+    }
+    
+    // Add new entry
+    conversation.entries.push({
+      timestamp: new Date().toISOString(),
+      node,
+      text,
+      response,
+      metadata,
+      userId: req.user?.userId
+    });
+    
+    // Save
+    await fs.writeFile(filepath, JSON.stringify(conversation, null, 2));
+    
+    // Log to ledger
+    await logToLedger({
+      type: 'memory_saved',
+      date: today,
+      node,
+      userId: req.user?.userId
+    });
+    
+    res.json({ success: true, id: today });
+    
+  } catch (err) {
+    console.error('Save conversation error:', err);
+    res.status(500).json({ error: 'Failed to save conversation' });
+  }
+}
+
+async function deleteConversation(req, res) {
+  try {
+    const { id } = req.params;
+    const filepath = path.join(MEMORY_DIR, `${id}.json`);
+    
+    await fs.unlink(filepath);
+    
+    await logToLedger({
+      type: 'memory_deleted',
+      conversationId: id,
+      userId: req.user?.userId
+    });
+    
+    res.json({ success: true });
+    
+  } catch (err) {
+    console.error('Delete conversation error:', err);
+    res.status(500).json({ error: 'Failed to delete conversation' });
+  }
+}
+
+async function logToLedger(entry) {
+  const ledgerPath = path.join(process.cwd(), 'data', 'ledger', 'arvskedjan_d.jsonl');
+  entry.timestamp = new Date().toISOString();
+  entry.hash = crypto.createHash('sha256').update(JSON.stringify(entry)).digest('hex').substring(0, 16);
+  await fs.appendFile(ledgerPath, JSON.stringify(entry) + '\n', 'utf-8');
+}
+
+router.get("/api/memory", listConversations);
+router.get("/api/memory/:id", getConversation);
+router.post("/api/memory", saveConversation);
+router.delete("/api/memory/:id", deleteConversation);
 
 export default router;

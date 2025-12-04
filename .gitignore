@@ -1,8 +1,64 @@
+# Node
 node_modules/
-node_modules - kopia/
-config/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# Environment
 .env
 .env.local
+.env.production
+
+# Build outputs
+dist/
+build/
+.cache/
+
+# Vite
+.vite/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
 .DS_Store
-autentisering/
-konfiguration/
+Thumbs.db
+desktop.ini
+*.lnk
+
+# Logs
+*.log
+logs/
+
+# Sensitive data
+server/config/.env
+*.key
+*.pem
+
+# Temporary
+tmp/
+temp/
+*.tmp
+
+# Backup
+*.bak
+*.backup
+
+# Data directories (keep structure, ignore content)
+data/uploads/*
+data/memory/*
+data/book/*
+data/ledger/*
+!data/uploads/.gitkeep
+!data/memory/.gitkeep
+!data/book/.gitkeep
+!data/ledger/.gitkeep
+
+# Live sync data
+data/live/*
+!data/live/.gitkeep

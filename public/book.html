@@ -1,78 +1,373 @@
-﻿<!DOCTYPE html>
-<html lang='sv'>
+﻿<!--
+  ÆSI NEXUS - Boken (The Book)
+  Version: 1.0
+  Date: 2024-12-28
+  Purpose: Visualize and manage collected AI-generated chapters
+-->
+<!DOCTYPE html>
+<html lang="sv">
 <head>
-  <meta charset='UTF-8'>
-  <title>📖 ÆSI Boken</title>
-  <link href='https://cdn.jsdelivr.net/npm/tailwindcss@3.4.4/dist/tailwind.min.css' rel='stylesheet'>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ÆSI NEXUS - Boken</title>
+  <script src="/js/menu.js"></script>
   <style>
-    body { background:#050505; color:#00ffcc; font-family:monospace; padding:20px; }
-    .chapter { border:1px solid #0f0; border-radius:8px; margin-bottom:16px; padding:10px; }
+    .container {
+      max-width: 1400px;
+      margin: 2rem auto;
+      padding: 0 2rem;
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    
+    .actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #00d4ff, #0088cc);
+      color: #fff;
+    }
+    
+    .btn-secondary {
+      background: rgba(15, 52, 96, 0.6);
+      color: #fff;
+      border: 1px solid rgba(0, 212, 255, 0.3);
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 212, 255, 0.4);
+    }
+    
+    .search-box {
+      margin-bottom: 2rem;
+    }
+    
+    .search-box input {
+      width: 100%;
+      padding: 1rem;
+      background: rgba(15, 52, 96, 0.3);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 1rem;
+    }
+    
+    .chapters {
+      display: grid;
+      gap: 2rem;
+    }
+    
+    .chapter {
+      background: rgba(15, 52, 96, 0.3);
+      border: 2px solid rgba(0, 212, 255, 0.3);
+      border-radius: 16px;
+      padding: 2rem;
+      transition: all 0.3s ease;
+    }
+    
+    .chapter:hover {
+      border-color: #00d4ff;
+      box-shadow: 0 8px 24px rgba(0, 212, 255, 0.3);
+    }
+    
+    .chapter-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 1rem;
+    }
+    
+    .chapter-title {
+      font-size: 1.5rem;
+      color: #00d4ff;
+      margin-bottom: 0.5rem;
+    }
+    
+    .chapter-meta {
+      color: #888;
+      font-size: 0.9rem;
+    }
+    
+    .chapter-content {
+      color: #cbd5e1;
+      line-height: 1.6;
+      margin: 1rem 0;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .chapter-tags {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+    
+    .tag {
+      padding: 0.25rem 0.75rem;
+      background: rgba(0, 212, 255, 0.2);
+      border: 1px solid rgba(0, 212, 255, 0.5);
+      border-radius: 16px;
+      font-size: 0.8rem;
+      color: #00d4ff;
+    }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    
+    .modal.active {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      border: 2px solid #00d4ff;
+      border-radius: 16px;
+      padding: 2rem;
+      max-width: 800px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #00d4ff;
+    }
+    
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.75rem;
+      background: rgba(15, 52, 96, 0.3);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      border-radius: 8px;
+      color: #fff;
+      font-family: inherit;
+    }
+    
+    .form-group textarea {
+      min-height: 200px;
+      resize: vertical;
+    }
   </style>
 </head>
 <body>
-  <h1 class='text-3xl mb-4'>📖 ÆSI Boken - Samlad Historik</h1>
-  <div class='flex space-x-4 mb-4'>
-    <button onclick='loadBook()' class='bg-green-600 px-3 py-2 rounded'>🔄 Ladda Boken</button>
-    <button onclick='createChapter()' class='bg-blue-600 px-3 py-2 rounded'>➕ Skapa Kapitel</button>
-    <button onclick='exportBook()' class='bg-yellow-600 px-3 py-2 rounded'>📤 Exportera</button>
+
+  <div class="container">
+    <div class="header">
+      <h1>📖 Boken - Samlade Berättelser</h1>
+      <div class="actions">
+        <button class="btn btn-primary" onclick="openCreateModal()">➕ Nytt kapitel</button>
+        <button class="btn btn-secondary" onclick="exportBook()">📤 Exportera</button>
+      </div>
+    </div>
+
+    <div class="search-box">
+      <input 
+        type="text" 
+        id="searchInput" 
+        placeholder="🔍 Sök i kapitel..."
+        oninput="filterChapters()"
+      >
+    </div>
+
+    <div class="chapters" id="chapters"></div>
   </div>
-  <div id='status' class='text-yellow-400 mb-3'>Väntar...</div>
-  <div id='book'></div>
+
+  <!-- Create Chapter Modal -->
+  <div class="modal" id="createModal">
+    <div class="modal-content">
+      <h2>➕ Skapa nytt kapitel</h2>
+      <form id="createForm" onsubmit="createChapter(event)">
+        <div class="form-group">
+          <label>Titel</label>
+          <input type="text" id="chapterTitle" required>
+        </div>
+        <div class="form-group">
+          <label>Innehåll</label>
+          <textarea id="chapterContent" required></textarea>
+        </div>
+        <div class="form-group">
+          <label>Taggar (kommaseparerade)</label>
+          <input type="text" id="chapterTags" placeholder="ai, development, reflex">
+        </div>
+        <div style="display: flex; gap: 1rem;">
+          <button type="submit" class="btn btn-primary">💾 Spara</button>
+          <button type="button" class="btn btn-secondary" onclick="closeCreateModal()">❌ Avbryt</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <script>
+    const API_BASE = window.location.origin;
+    let allChapters = [];
+    
+    // Load book
     async function loadBook() {
-      const res = await fetch('/api/book');
-      const data = await res.json();
-      const container = document.getElementById('book');
-      container.innerHTML = '';
-      data.forEach(chapter => {
-        const div = document.createElement('div');
-        div.className = 'chapter';
-        div.innerHTML = \
-          <h2 class='text-xl text-green-400'>\</h2>
-          <p class='text-sm text-gray-500'>Datum: \ | \ poster</p>
-          <pre class='text-xs overflow-x-auto bg-gray-900 p-2 mt-2'>\</pre>
-          <button onclick="deleteChapter('\')" class='text-red-400 text-sm mt-2'>🗑️ Radera</button>
-        \;
-        container.appendChild(div);
-      });
-      document.getElementById('status').textContent = "✅ " + data.length + " kapitel laddade.";
+      try {
+        const res = await fetch(`${API_BASE}/api/book`);
+        const data = await res.json();
+        allChapters = data.book?.chapters || [];
+        renderChapters(allChapters);
+      } catch (err) {
+        console.error('Load book error:', err);
+      }
     }
-
-    async function createChapter() {
-      const title = prompt("Titel för kapitlet?");
-      if (!title) return;
-      const res = await fetch('/api/book/chapter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title })
-      });
-      const text = await res.text();
-      alert(text);
-      loadBook();
+    
+    // Render chapters
+    function renderChapters(chapters) {
+      const container = document.getElementById('chapters');
+      
+      if (chapters.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#888;">Inga kapitel än. Skapa det första!</p>';
+        return;
+      }
+      
+      container.innerHTML = chapters.map(ch => `
+        <div class="chapter">
+          <div class="chapter-header">
+            <div>
+              <h3 class="chapter-title">${ch.title}</h3>
+              <div class="chapter-meta">
+                Skapad: ${new Date(ch.createdAt).toLocaleDateString('sv-SE')} | 
+                Författare: ${ch.createdBy || 'AI'}
+              </div>
+            </div>
+            <button class="btn btn-secondary" onclick="deleteChapter('${ch.id}')">🗑️</button>
+          </div>
+          <div class="chapter-content">${ch.content}</div>
+          ${ch.tags?.length ? `
+            <div class="chapter-tags">
+              ${ch.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+            </div>
+          ` : ''}
+        </div>
+      `).join('');
     }
-
-    async function deleteChapter(date) {
-      await fetch('/api/book/' + date, { method: 'DELETE' });
-      loadBook();
+    
+    // Filter chapters
+    function filterChapters() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = allChapters.filter(ch => 
+        ch.title.toLowerCase().includes(query) ||
+        ch.content.toLowerCase().includes(query) ||
+        ch.tags?.some(tag => tag.toLowerCase().includes(query))
+      );
+      renderChapters(filtered);
     }
-
+    
+    // Open create modal
+    function openCreateModal() {
+      if (!window.aesiIsAuthenticated()) {
+        alert('Du måste vara inloggad');
+        window.location.href = '/login.html';
+        return;
+      }
+      document.getElementById('createModal').classList.add('active');
+    }
+    
+    // Close create modal
+    function closeCreateModal() {
+      document.getElementById('createModal').classList.remove('active');
+      document.getElementById('createForm').reset();
+    }
+    
+    // Create chapter
+    async function createChapter(e) {
+      e.preventDefault();
+      
+      const token = localStorage.getItem('aesi_token');
+      const title = document.getElementById('chapterTitle').value;
+      const content = document.getElementById('chapterContent').value;
+      const tagsStr = document.getElementById('chapterTags').value;
+      const tags = tagsStr ? tagsStr.split(',').map(t => t.trim()) : [];
+      
+      try {
+        const res = await fetch(`${API_BASE}/api/book/chapter`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ title, content, tags })
+        });
+        
+        if (res.ok) {
+          closeCreateModal();
+          loadBook();
+        } else {
+          alert('Kunde inte skapa kapitel');
+        }
+      } catch (err) {
+        console.error('Create chapter error:', err);
+      }
+    }
+    
+    // Delete chapter
+    async function deleteChapter(id) {
+      if (!confirm('Är du säker på att du vill radera detta kapitel?')) return;
+      
+      const token = localStorage.getItem('aesi_token');
+      
+      try {
+        await fetch(`${API_BASE}/api/book/chapter/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        loadBook();
+      } catch (err) {
+        console.error('Delete chapter error:', err);
+      }
+    }
+    
+    // Export book
     async function exportBook() {
-      const res = await fetch('/api/book');
-      const data = await res.json();
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = 'AESI_Boken_' + new Date().toISOString().split('T')[0] + '.json';
-      link.click();
+      window.open(`${API_BASE}/api/book/export`, '_blank');
     }
-
+    
+    // Initialize
     loadBook();
   </script>
 
-<script src='/js/nav_menu.js'></script>
-
-<script src='/js/nav_menu.js'></script>
 </body>
 </html>
 

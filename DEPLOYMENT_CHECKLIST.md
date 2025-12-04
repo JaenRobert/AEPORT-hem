@@ -337,3 +337,150 @@ All items complete. System is fully functional and tested. Safe to deploy to pro
 *Last Updated: December 2, 2025*  
 *Version: 1.0.0*  
 *Status: Production Ready*
+
+---
+
+# 🚀 ÆSI NEXUS Deployment Checklist
+
+## ✅ Pre-Deployment
+
+### Local Environment
+- [ ] Node.js installed (v18+)
+- [ ] Git configured
+- [ ] All dependencies installed: `npm install`
+- [ ] Local server runs: `npm start`
+- [ ] All pages accessible at localhost:3000
+
+### Netlify Setup
+- [ ] Netlify CLI installed: `npm install -g netlify-cli`
+- [ ] Netlify account created
+- [ ] Logged in: `netlify login`
+
+### Code Quality
+- [ ] No console errors in browser
+- [ ] All API endpoints respond
+- [ ] Navigation menu works on all pages
+- [ ] Authentication flow tested
+- [ ] File upload tested
+- [ ] Book system tested
+- [ ] Memory system tested
+
+---
+
+## 🚀 Deployment
+
+### One-Command Deploy
+```powershell
+powershell -ExecutionPolicy Bypass -File DEPLOY_NOW.ps1
+```
+
+### Or Step-by-Step
+```powershell
+# 1. Setup
+npm install
+npm run setup
+
+# 2. Cleanup
+npm run git-cleanup
+
+# 3. Deploy
+npm run deploy
+```
+
+---
+
+## 🔐 Post-Deployment
+
+### Environment Variables (Netlify UI)
+Set in: Site Settings > Environment variables
+
+Required:
+- [ ] `GEMINI_API_KEY` - Your Google Gemini API key
+- [ ] `JWT_SECRET` - Generate: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
+- [ ] `MASTER_KEY_HASH` - SHA256 of your private key
+- [ ] `PORT` - Set to `8888`
+
+### Verify Deployment
+- [ ] Site loads: https://your-site.netlify.app
+- [ ] All pages accessible
+- [ ] Navigation works
+- [ ] Login page appears
+- [ ] No 404 errors in console
+- [ ] API health check: /api/health
+
+### Test All Features
+- [ ] Login with credentials
+- [ ] Upload a file
+- [ ] Create book chapter
+- [ ] View memory/conversations
+- [ ] AI Portal interaction
+- [ ] Mobile responsive works
+
+---
+
+## 🐛 Troubleshooting
+
+### Build Fails
+```powershell
+rm -rf node_modules package-lock.json
+npm install
+npm run build
+```
+
+### Deploy Fails
+```powershell
+netlify login
+netlify init
+npm run deploy-now
+```
+
+### Pages Show 404
+1. Check `netlify.toml` exists
+2. Verify publish directory: `public`
+3. Check build command: `npm run build`
+
+### API Endpoints Fail
+1. Verify environment variables set in Netlify
+2. Check function logs: `netlify logs`
+3. Test locally first: `npm start`
+
+---
+
+## 📊 Success Metrics
+
+Deployment successful when:
+- ✅ Build completes without errors
+- ✅ Site loads on public URL
+- ✅ All 6 pages accessible
+- ✅ Navigation menu present
+- ✅ Login system works
+- ✅ API health returns 200
+- ✅ No console errors
+- ✅ Mobile view works
+
+---
+
+## 🎉 Deployment Complete!
+
+After successful deployment:
+
+1. **Test Everything**
+   - Visit all pages
+   - Test user flows
+   - Check mobile view
+
+2. **Share URL**
+   - Get URL: `netlify open:site`
+   - Add to documentation
+   - Share with team
+
+3. **Monitor**
+   - Check logs: `netlify logs`
+   - Monitor analytics
+   - Watch for errors
+
+---
+
+**Status:** Ready for Production ✅  
+**Version:** 2.0.0  
+**Last Updated:** 2024-12-28

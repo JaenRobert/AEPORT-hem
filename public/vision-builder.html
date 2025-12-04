@@ -1,0 +1,14 @@
+async function sendToVSCode(promptText) {
+  const key = localStorage.getItem("gemini_key");
+  const file = prompt("Vilken fil vill du uppdatera?");
+  if (!file) return;
+
+  const res = await fetch("/api/vision-update", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ prompt: promptText, apiKey: key, targetFile: file })
+  });
+
+  const text = await res.text();
+  log("🧩 " + text);
+}

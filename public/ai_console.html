@@ -1,0 +1,102 @@
+<!--
+  ÆSI AI Console v3.0
+  Integrated AI chat with live code editor
+-->
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ÆSI NEXUS V3.1 - The Living IDE</title>
+  <link rel="stylesheet" href="/css/aesi-ui.css">
+  <script src="/js/menu.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
+  <style>
+    body { margin: 0; padding: 0; overflow: hidden; }
+  </style>
+</head>
+<body>
+
+  <!-- Project Tabs -->
+  <div class="tabs" id="projectTabs">
+    <button class="tab active" data-project="0">
+      📄 Projekt 1
+      <span class="tab-close" onclick="closeTab(event, 0)">×</span>
+    </button>
+    <button class="tab" onclick="newProject()">
+      ➕ Ny
+    </button>
+  </div>
+
+  <!-- Main Grid -->
+  <div class="aesi-grid">
+    <!-- Chat Panel -->
+    <div id="chat-panel" class="aesi-panel">
+      <div class="editor-toolbar">
+        <h3 style="margin: 0; color: var(--aesi-primary);">💬 AI Chat</h3>
+        <div class="toolbar-group">
+          <select id="nodeSelector" class="aesi-select" style="width: auto;">
+            <option value="REFLEX">REFLEX</option>
+            <option value="CLAUDE">CLAUDE</option>
+            <option value="JEMMIN">JEMMIN</option>
+            <option value="E1TAN">E1TAN</option>
+            <option value="HAFTED">HAFTED</option>
+            <option value="SMILE">SMILE</option>
+            <option value="ERNIE">ERNIE</option>
+          </select>
+          <button class="btn-icon" id="clearChat" title="Clear chat">🗑️</button>
+        </div>
+      </div>
+      
+      <div id="chat-messages"></div>
+      
+      <div class="chat-input-area">
+        <input 
+          type="text" 
+          id="userInput" 
+          class="aesi-input" 
+          placeholder="Skriv till AI... (Markdown stöds)"
+          autocomplete="off"
+        >
+        <button class="aesi-btn" id="sendBtn">Skicka</button>
+        <button class="btn-icon" id="saveChat" title="Save to Tunnan">💾</button>
+      </div>
+    </div>
+
+    <!-- Editor + Preview Panel -->
+    <div class="aesi-panel">
+      <div class="editor-toolbar">
+        <h3 style="margin: 0; color: var(--aesi-primary);">💻 Live Editor</h3>
+        <div class="toolbar-group">
+          <span class="status-badge" id="editorStatus">Ready</span>
+          <select id="languageSelector" class="aesi-select" style="width: auto;">
+            <option value="html">HTML</option>
+            <option value="javascript">JavaScript</option>
+            <option value="css">CSS</option>
+            <option value="markdown">Markdown</option>
+            <option value="json">JSON</option>
+          </select>
+          <button class="aesi-btn" id="saveCode">💾 Save</button>
+          <button class="aesi-btn" id="deployCode">🚀 Deploy</button>
+        </div>
+      </div>
+      
+      <div id="editor"></div>
+      
+      <div class="editor-toolbar">
+        <h3 style="margin: 0; color: var(--aesi-primary);">👁️ Live Preview</h3>
+        <div class="toolbar-group">
+          <button class="btn-icon" id="refreshPreview" title="Refresh">🔄</button>
+          <button class="btn-icon" id="fullscreenPreview" title="Fullscreen">⛶</button>
+        </div>
+      </div>
+      
+      <iframe id="preview"></iframe>
+    </div>
+  </div>
+
+  <script src="/js/ai_console_v3.1.js"></script>
+
+</body>
+</html>

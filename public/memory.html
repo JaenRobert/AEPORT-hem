@@ -1,54 +1,309 @@
-﻿<!DOCTYPE html>
-<html lang='sv'>
+﻿<!--
+  ÆSI NEXUS - Tunnan (Memory System)
+  Version: 1.0
+  Date: 2024-12-28
+  Purpose: View and manage conversation history
+-->
+<!DOCTYPE html>
+<html lang="sv">
 <head>
-  <meta charset='UTF-8'>
-  <title>💾 ÆSI Tunnan</title>
-  <link href='https://cdn.jsdelivr.net/npm/tailwindcss@3.4.4/dist/tailwind.min.css' rel='stylesheet'>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ÆSI NEXUS - Tunnan</title>
+  <script src="/js/menu.js"></script>
   <style>
-    body { background:#050505; color:#00ffcc; font-family:monospace; padding:20px; }
-    table { width:100%; border-collapse: collapse; }
-    th, td { border-bottom:1px solid #111; padding:8px; text-align:left; }
-    tr:hover { background:#0a0a0a; }
+    .container {
+      max-width: 1400px;
+      margin: 2rem auto;
+      padding: 0 2rem;
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    
+    .filters {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    
+    .filter-input {
+      padding: 0.75rem 1rem;
+      background: rgba(15, 52, 96, 0.3);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      border-radius: 8px;
+      color: #fff;
+    }
+    
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: rgba(15, 52, 96, 0.6);
+      color: #fff;
+      border: 1px solid rgba(0, 212, 255, 0.3);
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 212, 255, 0.4);
+    }
+    
+    .conversations {
+      display: grid;
+      gap: 1.5rem;
+    }
+    
+    .conversation {
+      background: rgba(15, 52, 96, 0.3);
+      border: 2px solid rgba(0, 212, 255, 0.3);
+      border-radius: 12px;
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .conversation:hover {
+      border-color: #00d4ff;
+      transform: translateX(8px);
+    }
+    
+    .conversation-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    
+    .conversation-date {
+      font-size: 1.2rem;
+      color: #00d4ff;
+      font-weight: bold;
+    }
+    
+    .conversation-stats {
+      display: flex;
+      gap: 1rem;
+      color: #888;
+      font-size: 0.9rem;
+    }
+    
+    .conversation-preview {
+      color: #cbd5e1;
+      margin: 0.5rem 0;
+    }
+    
+    .entries {
+      display: grid;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .entry {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 1rem;
+      border-left: 3px solid #00d4ff;
+      border-radius: 8px;
+    }
+    
+    .entry-node {
+      color: #00d4ff;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+    
+    .entry-text {
+      color: #cbd5e1;
+    }
+    
+    .entry-time {
+      color: #888;
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+    }
   </style>
 </head>
 <body>
-  <h1 class='text-2xl mb-4'>💾 ÆSI Tunnan - Konversationsminne</h1>
-  <div id='status' class='text-yellow-400 mb-3'>Läser in...</div>
-  <table id='memoryTable'>
-    <thead><tr><th>ID</th><th>Datum</th><th>Text</th><th>AI-nod</th><th>Åtgärd</th></tr></thead>
-    <tbody></tbody>
-  </table>
+
+  <div class="container">
+    <div class="header">
+      <h1>💾 Tunnan - Konversationshistorik</h1>
+      <button class="btn" onclick="exportAll()">📤 Exportera alla</button>
+    </div>
+
+    <div class="filters">
+      <input 
+        type="date" 
+        id="dateFilter" 
+        class="filter-input"
+        onchange="loadConversations()"
+      >
+      <select id="nodeFilter" class="filter-input" onchange="loadConversations()">
+        <option value="">Alla AI-noder</option>
+        <option value="REFLEX">REFLEX</option>
+        <option value="CLAUDE">CLAUDE</option>
+        <option value="E1TAN">E1TAN</option>
+        <option value="HAFTED">HAFTED</option>
+        <option value="JEMMIN">JEMMIN</option>
+      </select>
+      <button class="btn" onclick="clearFilters()">🔄 Rensa filter</button>
+    </div>
+
+    <div class="conversations" id="conversations"></div>
+  </div>
+
   <script>
-    async function loadMemory() {
-      const res = await fetch('/api/memory');
-      const data = await res.json();
-      const tbody = document.querySelector('#memoryTable tbody');
-      tbody.innerHTML = '';
-      data.forEach(e => {
-        const row = document.createElement('tr');
-        row.innerHTML = \
-          <td>\</td>
-          <td>\</td>
-          <td>\</td>
-          <td>\</td>
-          <td><button onclick="deleteEntry(\)" class='text-red-500'>🗑️</button></td>
-        \;
-        tbody.appendChild(row);
-      });
-      document.getElementById('status').textContent = "✅ Tunnan laddad (" + data.length + " poster)";
+    const API_BASE = window.location.origin;
+    let allConversations = [];
+    
+    // Load conversations
+    async function loadConversations() {
+      try {
+        const res = await fetch(`${API_BASE}/api/memory`);
+        const data = await res.json();
+        allConversations = data.conversations || [];
+        
+        // Apply filters
+        const dateFilter = document.getElementById('dateFilter').value;
+        const nodeFilter = document.getElementById('nodeFilter').value;
+        
+        let filtered = allConversations;
+        
+        if (dateFilter) {
+          filtered = filtered.filter(c => c.date === dateFilter);
+        }
+        
+        if (nodeFilter) {
+          filtered = filtered.filter(c => 
+            c.entries?.some(e => e.node === nodeFilter)
+          );
+        }
+        
+        renderConversations(filtered);
+        
+      } catch (err) {
+        console.error('Load conversations error:', err);
+      }
     }
-
-    async function deleteEntry(id) {
-      await fetch('/api/memory/' + id, { method: 'DELETE' });
-      loadMemory();
+    
+    // Render conversations
+    function renderConversations(conversations) {
+      const container = document.getElementById('conversations');
+      
+      if (conversations.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#888;">Inga konversationer hittades.</p>';
+        return;
+      }
+      
+      container.innerHTML = conversations.map(conv => `
+        <div class="conversation" onclick="viewConversation('${conv.id}')">
+          <div class="conversation-header">
+            <span class="conversation-date">${new Date(conv.date).toLocaleDateString('sv-SE')}</span>
+            <div class="conversation-stats">
+              <span>📝 ${conv.entries?.length || 0} inlägg</span>
+              <button class="btn" onclick="event.stopPropagation(); deleteConversation('${conv.id}')" style="padding: 0.5rem 1rem;">
+                🗑️ Ta bort
+              </button>
+            </div>
+          </div>
+          <div class="conversation-preview">${conv.preview || 'Ingen förhandsvisning'}</div>
+        </div>
+      `).join('');
     }
-
-    loadMemory();
+    
+    // View conversation details
+    async function viewConversation(id) {
+      try {
+        const res = await fetch(`${API_BASE}/api/memory/${id}`);
+        const data = await res.json();
+        const conv = data.conversation;
+        
+        // Create detailed view
+        const detailView = `
+          <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 2000; overflow-y: auto; padding: 2rem;">
+            <div style="max-width: 1000px; margin: 0 auto; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border: 2px solid #00d4ff; border-radius: 16px; padding: 2rem;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 2rem;">
+                <h2>${new Date(conv.date).toLocaleDateString('sv-SE')}</h2>
+                <button onclick="this.parentElement.parentElement.parentElement.remove()" style="padding: 0.5rem 1rem; background: rgba(239, 68, 68, 0.6); color: #fff; border: none; border-radius: 8px; cursor: pointer;">
+                  ❌ Stäng
+                </button>
+              </div>
+              <div class="entries">
+                ${conv.entries?.map(entry => `
+                  <div class="entry">
+                    <div class="entry-node">${entry.node}</div>
+                    <div class="entry-text"><strong>Q:</strong> ${entry.text}</div>
+                    ${entry.response ? `<div class="entry-text"><strong>A:</strong> ${entry.response}</div>` : ''}
+                    <div class="entry-time">${new Date(entry.timestamp).toLocaleString('sv-SE')}</div>
+                  </div>
+                `).join('') || '<p>Inga inlägg</p>'}
+              </div>
+            </div>
+          </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', detailView);
+        
+      } catch (err) {
+        console.error('View conversation error:', err);
+      }
+    }
+    
+    // Delete conversation
+    async function deleteConversation(id) {
+      if (!confirm('Är du säker?')) return;
+      
+      const token = localStorage.getItem('aesi_token');
+      
+      if (!token) {
+        alert('Du måste vara inloggad');
+        return;
+      }
+      
+      try {
+        await fetch(`${API_BASE}/api/memory/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        loadConversations();
+      } catch (err) {
+        console.error('Delete conversation error:', err);
+      }
+    }
+    
+    // Clear filters
+    function clearFilters() {
+      document.getElementById('dateFilter').value = '';
+      document.getElementById('nodeFilter').value = '';
+      loadConversations();
+    }
+    
+    // Export all
+    function exportAll() {
+      const json = JSON.stringify(allConversations, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `aesi-memory-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+    }
+    
+    // Initialize
+    loadConversations();
   </script>
 
-<script src='/js/nav_menu.js'></script>
-
-<script src='/js/nav_menu.js'></script>
 </body>
 </html>
 

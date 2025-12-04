@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<title>Æ INSTRUMENTPANEL</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+    body {
+        margin: 0;
+        padding: 20px;
+        background: #000;
+        color: white;
+        font-family: Arial, sans-serif;
+    }
+
+    h1 {
+        text-align: center;
+        color: silver;
+        margin-bottom: 30px;
+        text-shadow: 0 0 12px #66ccff;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .card {
+        background: rgba(255,255,255,0.06);
+        border: 2px solid silver;
+        border-radius: 14px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 0 20px rgba(0,150,255,0.15);
+    }
+
+    .btn {
+        display: block;
+        width: 90%;
+        margin: 10px auto;
+        padding: 18px;
+        border-radius: 12px;
+        border: 2px solid silver;
+        background: rgba(255,255,255,0.06);
+        color: white;
+        font-size: 20px;
+        text-decoration: none;
+    }
+
+    .btn:hover {
+        background: rgba(255,255,255,0.12);
+    }
+</style>
+  <script src="/js/menu.js"></script>
+</head>
+
+<body>
+
+<h1>Æ INSTRUMENTPANEL</h1>
+
+<div class="grid">
+
+    <div class="card">
+        <h2>⚡ Puls</h2>
+        <a class="btn" href="pulse.html">Öppna Pulskonsolen</a>
+    </div>
+
+    <div class="card">
+        <h2>Ω Självtest</h2>
+        <button class="btn" onclick="runSelftest()">Kör Ω-SELFTEST-001</button>
+        <pre id="selftestResult" style="white-space:pre-wrap; margin-top:15px;"></pre>
+    </div>
+
+    <div class="card">
+        <h2>🤫 Tyst Zon</h2>
+        <button class="btn" onclick="toggleSilent()">Toggla Silent Zone</button>
+        <div id="silentState"></div>
+    </div>
+
+    <div class="card">
+        <h2>🧠 Alla noder</h2>
+        <button class="btn" onclick="broadcast()">Skicka broadcast (alla noder)</button>
+    </div>
+
+    <div class="card">
+        <h2>📜 Arvskedjan</h2>
+        <a class="btn" href="/arvskedjan_d.jsonl" download>Hämta Arvskedjan</a>
+    </div>
+
+    <div class="card">
+        <h2>📁 Arkivarius</h2>
+        <a class="btn" href="/api/archive/list">Lista alla arkivposter</a>
+    </div>
+
+    <div class="card">
+        <h2>🌊 Holo / Meta / Timeline</h2>
+        <a class="btn" href="holo.html">Æ-HOLO (3D)</a>
+        <a class="btn" href="timeline.html">Æ-Timeline</a>
+        <a class="btn" href="meta.html">Meta-Pulse Grid</a>
+    </div>
+
+</div>
+
+<script>
+async function runSelftest() {
+    const out = document.getElementById("selftestResult");
+    out.innerHTML = "Kör självtest...";
+    let r = await fetch("/api/selftest/run", { method: "POST" });
+    let t = await r.text();
+    out.innerHTML = t;
+}
+
+async function toggleSilent() {
+    let r = await fetch("/api/silent-zone/toggle", { method: "POST" });
+    let j = await r.json();
+    document.getElementById("silentState").innerHTML =
+        "Silent Zone: " + (j.state.quiet ? "AKTIV" : "INAKTIV");
+}
+
+async function broadcast() {
+    const msg = prompt("Meddelande till alla noder:");
+    if (!msg) return;
+
+    await fetch("/pulse", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            collective_verify: false,
+            message: msg
+        })
+    });
+
+    alert("Broadcast skickad.");
+}
+</script>
+
+<script src="/js/global_nav.js"></script>
+</body>
+</html>
+

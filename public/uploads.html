@@ -1,44 +1,205 @@
 ﻿<!DOCTYPE html>
-<html lang='sv'>
+<html lang="sv">
 <head>
-  <meta charset='UTF-8'>
-  <title>ÆSI Upload</title>
-  <link href='https://cdn.jsdelivr.net/npm/tailwindcss@3.4.4/dist/tailwind.min.css' rel='stylesheet'>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ÆSI NEXUS - Upload</title>
+  <script src="/js/menu.js"></script>
   <style>
-    body { background:#050505; color:#00ffcc; font-family:monospace; text-align:center; padding:30px; }
-    #drop-zone { border:3px dashed #00ffcc; border-radius:12px; padding:40px; cursor:pointer; transition:0.3s; }
-    #drop-zone.dragover { background:#0f0f0f; border-color:#00ffaa; }
+    .container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 2rem;
+    }
+    
+    .upload-zone {
+      border: 3px dashed rgba(0, 212, 255, 0.5);
+      border-radius: 16px;
+      padding: 4rem 2rem;
+      text-align: center;
+      background: rgba(15, 52, 96, 0.3);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 2rem;
+    }
+    
+    .upload-zone:hover {
+      border-color: #00d4ff;
+      background: rgba(15, 52, 96, 0.5);
+    }
+    
+    .upload-zone.dragover {
+      border-color: #00d4ff;
+      background: rgba(0, 212, 255, 0.2);
+    }
+    
+    .upload-btn {
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, #00d4ff, #0088cc);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+    
+    .file-list {
+      display: grid;
+      gap: 1rem;
+    }
+    
+    .file-item {
+      background: rgba(15, 52, 96, 0.3);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      border-radius: 12px;
+      padding: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .delete-btn {
+      padding: 0.5rem 1rem;
+      background: rgba(239, 68, 68, 0.6);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
-  <h1 class='text-2xl mb-4'>📤 ÆSI Upload Center</h1>
-  <div id='drop-zone'>Släpp fil här eller klicka för att välja</div>
-  <input type='file' id='fileInput' hidden>
-  <div id='status' class='mt-4 text-green-400'></div>
+
+  <div class="container">
+    <h1>📤 Filuppladdning</h1>
+    
+    <div class="upload-zone" id="uploadZone">
+      <div style="font-size: 4rem; margin-bottom: 1rem;">📁</div>
+      <h2>Släpp filer här</h2>
+      <p>eller klicka för att bläddra</p>
+      <p style="color: #888; font-size: 0.9rem; margin-top: 1rem;">
+        Tillåtna format: TXT, MD, JSON, PDF (max 10MB)
+      </p>
+      <input type="file" id="fileInput" style="display: none;" multiple>
+      <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+        Välj filer
+      </button>
+    </div>
+
+    <h2>Uppladdade filer</h2>
+    <div class="file-list" id="fileList"></div>
+  </div>
+
   <script>
-    const dropZone = document.getElementById('drop-zone');
+    const API_BASE = window.location.origin;
+    const uploadZone = document.getElementById('uploadZone');
     const fileInput = document.getElementById('fileInput');
-    const statusEl = document.getElementById('status');
-    dropZone.onclick = () => fileInput.click();
-
-    dropZone.ondragover = e => { e.preventDefault(); dropZone.classList.add('dragover'); };
-    dropZone.ondragleave = () => dropZone.classList.remove('dragover');
-    dropZone.ondrop = e => { e.preventDefault(); dropZone.classList.remove('dragover'); uploadFile(e.dataTransfer.files[0]); };
-    fileInput.onchange = () => uploadFile(fileInput.files[0]);
-
-    async function uploadFile(file) {
-      if (!file) return;
-      statusEl.textContent = "⏳ Laddar upp " + file.name + "...";
-      const formData = new FormData(); formData.append("file", file);
-      const res = await fetch("/api/upload", { method:"POST", body: formData });
-      const text = await res.text();
-      statusEl.textContent = text;
+    const fileList = document.getElementById('fileList');
+    
+    // Drag & drop
+    uploadZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadZone.classList.add('dragover');
+    });
+    
+    uploadZone.addEventListener('dragleave', () => {
+      uploadZone.classList.remove('dragover');
+    });
+    
+    uploadZone.addEventListener('drop', async (e) => {
+      e.preventDefault();
+      uploadZone.classList.remove('dragover');
+      await handleFiles(e.dataTransfer.files);
+    });
+    
+    // File input
+    fileInput.addEventListener('change', async (e) => {
+      await handleFiles(e.target.files);
+    });
+    
+    // Handle file upload
+    async function handleFiles(files) {
+      const token = localStorage.getItem('aesi_token');
+      
+      if (!token) {
+        alert('Du måste vara inloggad för att ladda upp filer');
+        window.location.href = '/login.html';
+        return;
+      }
+      
+      for (const file of files) {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          try {
+            const res = await fetch(`${API_BASE}/api/upload`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                filename: file.name,
+                content: e.target.result
+              })
+            });
+            
+            if (res.ok) {
+              loadFiles();
+            } else {
+              alert('Upload misslyckades');
+            }
+          } catch (err) {
+            console.error('Upload error:', err);
+          }
+        };
+        reader.readAsText(file);
+      }
     }
+    
+    // Load files
+    async function loadFiles() {
+      try {
+        const res = await fetch(`${API_BASE}/api/upload/list`);
+        const data = await res.json();
+        
+        fileList.innerHTML = data.files.map(f => `
+          <div class="file-item">
+            <div>
+              <strong>${f.originalName}</strong><br>
+              <small style="color: #888;">${new Date(f.uploadedAt).toLocaleString('sv-SE')}</small>
+            </div>
+            <button class="delete-btn" onclick="deleteFile('${f.id}')">🗑️ Ta bort</button>
+          </div>
+        `).join('');
+        
+      } catch (err) {
+        console.error('Load files error:', err);
+      }
+    }
+    
+    // Delete file
+    async function deleteFile(id) {
+      const token = localStorage.getItem('aesi_token');
+      
+      if (!confirm('Är du säker?')) return;
+      
+      try {
+        await fetch(`${API_BASE}/api/upload/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        loadFiles();
+      } catch (err) {
+        console.error('Delete error:', err);
+      }
+    }
+    
+    // Initialize
+    loadFiles();
   </script>
 
-<script src='/js/nav_menu.js'></script>
-
-<script src='/js/nav_menu.js'></script>
 </body>
 </html>
 
