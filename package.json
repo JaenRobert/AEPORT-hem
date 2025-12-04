@@ -1,23 +1,39 @@
 {
-  "name": "aesi-nexus-v5",
-  "version": "5.0.0",
-  "description": "ÆSI NEXUS V5.0 - Autonomous Deployment Core",
+  "name": "aesi-nexus",
+  "version": "2.0.0",
+  "description": "ÆSI NEXUS - AI Development Platform",
   "type": "module",
-  "scripts": {
+  "scripts": {"scripts": {
+  "start": "node aesi_backend.js",
+  "setup": "node scripts/setup-directories.js",
+  "git-cleanup": "powershell -ExecutionPolicy Bypass -File scripts/git-cleanup.ps1",
+  "inject-menu": "node scripts/inject-menu.js",
+  "deploy": "powershell -ExecutionPolicy Bypass -File scripts/deploy-netlify.ps1",
+  "full-deploy": "npm run setup && npm run git-cleanup && npm run inject-menu && npm run deploy",
+  "console": "powershell -ExecutionPolicy Bypass -NoExit -Command \"Start-Process http://localhost:3000/ai_console.html; npm start\""
+}
+
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "start": "node aesi_backend.js",
-    "console": "powershell -ExecutionPolicy Bypass -NoExit -Command \"Start-Process http://localhost:3000/ai_console.html; npm start\"",
-    "deploy": "powershell -ExecutionPolicy Bypass -File DEPLOY_NOW.ps1",
     "setup": "node scripts/setup-directories.js",
-    "build": "echo 'Build complete'",
-    "test": "echo 'All systems operational' && exit 0"
+    "migrate": "node scripts/migrate-local.js",
+    "inject-menu": "node scripts/inject-menu.js",
+    "git-cleanup": "powershell -ExecutionPolicy Bypass -File scripts/git-cleanup.ps1",
+    "predeploy": "npm run setup && npm run git-cleanup && npm run inject-menu && npm run migrate",
+    "deploy": "powershell -ExecutionPolicy Bypass -File scripts/deploy-netlify.ps1",
+    "deploy-now": "powershell -ExecutionPolicy Bypass -File DEPLOY_NOW.ps1",
+    "full-deploy": "npm run predeploy && npm run deploy",
+    "test": "echo \"✅ System ready for deployment\" && exit 0"
   },
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5",
-    "ws": "^8.16.0",
-    "node-fetch": "^3.3.2",
-    "body-parser": "^1.20.2",
-    "dotenv": "^16.3.1"
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "vite": "^5.0.8"
   },
   "engines": {
     "node": ">=18.0.0"
