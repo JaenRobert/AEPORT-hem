@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -1020,6 +1019,7 @@
                 .then(data => {
                     const nodes = Array.isArray(data) ? data : (data.nodes || []);
                     const onlineCount = nodes.filter(n => n.online).length;
+                    document.getElementById('active-nodes-count').textContent = onlineCount;
                     document.getElementById('active-nodes-count').textContent = onlineCount;
                 })
                 .catch(() => {});

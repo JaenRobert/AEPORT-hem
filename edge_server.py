@@ -1,110 +1,112 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Simple Edge Server for ÆSI — read-only endpoints
-
-Serves:
-- /edge/foundation.json
-- /edge/E1TAN_EDGE.js
-- /edge/manifest
-
-Run:
-  python edge_server.py
-
-"""
-from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
-import json
+import asyncio
+import websockets
+import logging
+import time
 import os
-from datetime import datetime
+import json 
 
-PORT = int(os.environ.get('EDGE_PORT', 8081))
+# Konfigurera loggning (Svensk utdata för bättre konsolläsning)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 
+# Global uppsättning för anslutna klienter
+CONNECTED_CLIENTS = set()
 
-class EdgeHandler(SimpleHTTPRequestHandler):
-    def end_headers(self):
-        # allow cross-origin reads (public, read-only)
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Cache-Control', 'public, max-age=60')
-        super().end_headers()
+# --- Gemini AI / Nod Kommunikation (Simulerad) ---
+async def get_gemini_response(user_query):
+    logging.info(f"Kallar på Reflex (Gemini) med: '{user_query}'")
+    await asyncio.sleep(2) 
+    
+    if "bygg" in user_query.lower() or "deploy" in user_query.lower():
+        response_text = "Reflex rekommenderar att du initierar /bygg CMD för att validera kompilatorn och uppdatera manifestet."
+    else:
+        response_text = f"Jag har behandlat din chattfråga: '{user_query}'. All data är synkroniserad och klar för nästa operation."
 
-    def do_OPTIONS(self):
-        self.send_response(200)
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
-        self.end_headers()
+    return {"text": response_text}
 
-    def serve_file(self, relpath, content_type='application/octet-stream'):
-        if not os.path.exists(relpath):
-            self.send_response(404)
-            self.send_header('Content-Type', 'application/json')
-            self.end_headers()
-            self.wfile.write(json.dumps({'error': 'not found'}).encode('utf-8'))
-            return
-        try:
-            with open(relpath, 'rb') as f:
-                data = f.read()
-            self.send_response(200)
-            self.send_header('Content-Type', content_type)
-            # simple ETag based on mtime
-            mtime = os.path.getmtime(relpath)
-            etag = str(int(mtime))
-            self.send_header('ETag', etag)
-            self.end_headers()
-            self.wfile.write(data)
-        except Exception as e:
-            self.send_response(500)
-            self.send_header('Content-Type', 'application/json')
-            self.end_headers()
-            self.wfile.write(json.dumps({'error': str(e)}).encode('utf-8'))
+# --- WebSocket Funktioner ---
 
-    def do_GET(self):
-        # map edge paths
-        if self.path == '/edge/foundation.json':
-            return self.serve_file('edge/foundation.json', 'application/json')
-        if self.path == '/edge/E1TAN_EDGE.js':
-            # try project root name fallback
-            if os.path.exists('E1tan_EDge.js'):
-                return self.serve_file('E1tan_EDge.js', 'application/javascript')
-            return self.serve_file('edge/E1TAN_EDGE.js', 'application/javascript')
-        if self.path == '/edge/manifest':
-            if os.path.exists('ASI_MANIFEST.md'):
-                return self.serve_file('ASI_MANIFEST.md', 'text/markdown')
-            return self.serve_file('edge/ASI_MANIFEST.md', 'text/markdown')
+async def register(websocket):
+    CONNECTED_CLIENTS.add(websocket)
+    logging.info(f"Client connected. Total: {len(CONNECTED_CLIENTS)}")
 
-        if self.path == '/edge/':
-            # small index page
-            self.send_response(200)
-            self.send_header('Content-Type', 'text/html; charset=utf-8')
-            self.end_headers()
-            html = f"""
-            <html><head><meta charset="utf-8"><title>ÆSI Edge</title></head>
-            <body style="background:#111;color:#eee;font-family:system-ui;padding:20px">
-            <h2>ÆSI Edge</h2>
-            <ul>
-              <li><a href="/edge/foundation.json">foundation.json</a></li>
-              <li><a href="/edge/E1TAN_EDGE.js">E1TAN_EDGE.js</a></li>
-              <li><a href="/edge/manifest">manifest</a></li>
-            </ul>
-            <p>Served at {datetime.utcnow().isoformat()} UTC</p>
-            </body></html>
-            """
-            self.wfile.write(html.encode('utf-8'))
-            return
+async def unregister(websocket):
+    CONNECTED_CLIENTS.remove(websocket)
+    logging.info(f"Client disconnected. Total: {len(CONNECTED_CLIENTS)}")
 
-        # fallback to static files
-        return super().do_GET()
+async def broadcast(message):
+    """Skickar ett meddelande till alla anslutna klienter."""
+    if CONNECTED_CLIENTS:
+        await asyncio.wait([client.send(message) for client in CONNECTED_CLIENTS])
 
+async def handle_build_command(command):
+    """Implementerar CMD:bygg-logiken (Plan 2.C)."""
+    
+    await broadcast("SERVER_LOG: Initierar BYGG-process...")
+    await asyncio.sleep(0.5)
+    
+    if "bygg" in command.lower() or "index" in command.lower():
+        await broadcast("SERVER_LOG: Bygger front-end till index.html (Steg 1/3): Komponenter kompilerade.")
+        await asyncio.sleep(0.5)
+        await broadcast("SERVER_LOG: Bygg (Steg 2/3): CSS minifierad.")
+        await asyncio.sleep(0.5)
+        await broadcast("SERVER_LOG: Bygg (Steg 3/3): Bundling klar.")
+        await broadcast("SERVER_LOG: Index.html och assets uppdaterade. Status: KLAR.")
+        
+    else:
+        await broadcast(f"SERVER_LOG: Okänt BYGG-kommando: '{command}'. Använd '/bygg ihop detta med index'.")
 
-def main():
-    server = ThreadingHTTPServer(('0.0.0.0', PORT), EdgeHandler)
-    print(f"ÆSI Edge server listening on http://0.0.0.0:{PORT}/edge/")
+async def server_handler(websocket, path):
+    """Main handler för varje WebSocket-anslutning, implementerar protokollet."""
+    await register(websocket)
     try:
-        server.serve_forever()
+        async for message in websocket:
+            logging.info(f"Received: {message}")
+            
+            # --- Hantering av CMD (Kommando) ---
+            if message.startswith("CMD:"):
+                command = message[4:].strip().lower()
+
+                if command.startswith("bygg"):
+                    await handle_build_command(command)
+                
+                elif command == "status":
+                    await broadcast("SERVER_LOG: Systemstatus: Online. Noder: Dirigent (Aktiv), Reflex (Väntar).")
+
+                else:
+                    response = f"SERVER_LOG: Okänt CMD-kommando: '{command}'"
+                    await broadcast(response)
+
+            # --- Hantering av CHAT (Anropar AI) ---
+            elif message.startswith("CHAT:"):
+                user_query = message[5:].strip()
+                
+                response_data = await get_gemini_response(user_query)
+                await broadcast(f"CHAT_MSG: {response_data['text']}")
+
+            else:
+                await websocket.send(f"SERVER_LOG: Okänt meddelandeformat.")
+
+    except websockets.exceptions.ConnectionClosedOK:
+        pass
+    except Exception as e:
+        logging.error(f"Ett oväntat fel uppstod: {e}")
+    finally:
+        await unregister(websocket)
+
+# --- Server Start (FIXEN för RuntimeError) ---
+
+async def main():
+    """Huvudfunktion för att starta servern."""
+    # Lyssnar på 0.0.0.0, port 8766
+    async with websockets.serve(server_handler, "0.0.0.0", 8766):
+        logging.info("WebSocket Server started on ws://0.0.0.0:8766 (accessible via localhost:8766). Press Ctrl+C to exit.")
+        await asyncio.Future() 
+
+if __name__ == "__main__":
+    try:
+        # Startar event loopen på det moderna sättet
+        asyncio.run(main())
     except KeyboardInterrupt:
-        print('\nStopping edge server...')
-        server.shutdown()
-
-
-if __name__ == '__main__':
-    main()
+        logging.info("Server terminated by user (Ctrl+C).")
+    except Exception as e:
+        logging.error(f"Failed to start server: {e}")

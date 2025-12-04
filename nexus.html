@@ -5,63 +5,229 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ÆSI NEXUS</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.4/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/nexus.css">
     <style>
+        /* ÆSI Theming: Dark mode, Monospace font, Colored borders for nodes */
         body { background-color: #050505; color: #e5e7eb; font-family: 'Courier New', monospace; }
-        .node-msg { border-left: 4px solid; padding-left: 10px; margin-bottom: 10px; animation: fadeIn 0.3s; }
-        .reflex { border-color: #3b82f6; color: #93c5fd; }
-        .e1tan { border-color: #a855f7; color: #d8b4fe; }
-        .dirigent { border-color: #22c55e; color: #86efac; font-weight: bold; }
+        .node-msg { 
+            border-left: 4px solid; 
+            padding-left: 12px; 
+            margin-bottom: 10px; 
+            animation: fadeIn 0.3s; 
+            transition: all 0.2s;
+        }
+        /* Styling för de olika noderna */
+        .reflex { border-color: #3b82f6; color: #93c5fd; } /* CHAT_MSG: */
+        .e1tan { border-color: #a855f7; color: #d8b4fe; } /* GPT */
+        .dirigent { border-color: #22c55e; color: #86efac; font-weight: bold; } /* CHAT: & CMD: */
+        .server-log { border-color: #f59e0b; color: #fcd34d; } /* SERVER_LOG: */
+        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="h-screen flex flex-col">
-    <div id="nav-container"></div>
+    <!-- Navigation Container -->
+    <div id="navbar-container"></div>
+
     <div class="flex-1 flex overflow-hidden">
+        
+        <!-- Sidebar: Aktiva Noder -->
         <div class="w-64 bg-gray-900 border-r border-gray-800 p-4 hidden md:block">
             <h2 class="text-xs font-bold text-gray-500 uppercase mb-4">Aktiva Noder</h2>
-            <div class="space-y-2">
-                <div class="flex items-center text-green-400">Dirigent (Jæen)</div>
-                <div class="flex items-center text-blue-400">Reflex (Gemini)</div>
-                <div class="flex items-center text-purple-400">E1tan (GPT)</div>
+            <div class="space-y-2 text-sm">
+                <div class="flex items-center text-green-400 dirigent">Dirigent (Jæen) - <span id="status-user" class="ml-1 text-xs text-green-600">Online</span></div>
+                <div class="flex items-center text-blue-400 reflex">Reflex (Gemini) - <span id="status-server" class="ml-1 text-xs text-red-600">Avslagen</span></div>
+                <div class="flex items-center text-purple-400 e1tan">E1tan (GPT)</div>
                 <div class="flex items-center text-red-400">Claude (Anthropic)</div>
             </div>
         </div>
+        
+        <!-- Main Chat/Console Window -->
         <div class="flex-1 flex flex-col bg-black relative">
             <div id="chat-window" class="flex-1 overflow-y-auto p-6 space-y-4">
                 <div class="text-center text-gray-600 text-xs my-4">--- SYSTEM START: ÆSI NEXUS ONLINE ---</div>
             </div>
+            
+            <!-- Input Bar -->
             <div class="p-4 bg-gray-900 border-t border-gray-800 flex items-center gap-2">
                 <div class="text-green-500 font-bold">></div>
-                <input type="text" id="userInput" placeholder="Ge order till noderna..." class="flex-1 bg-transparent border-none text-white focus:ring-0" autocomplete="off">
-                <button onclick="sendMessage()" class="px-4 py-2 bg-green-700 text-white rounded hover:bg-green-600">SÄND</button>
+                <input type="text" id="userInput" placeholder="Ge order till noderna (använd '/' för terminalkommando)..." class="flex-1 bg-transparent border-none text-white focus:ring-0" autocomplete="off">
+                <button onclick="sendMessage()" class="px-4 py-2 bg-green-700 text-white rounded hover:bg-green-600 transition">SÄND</button>
+            </div>
+
+            <!-- Manuell kontroll för felsökning -->
+            <div class="p-2 bg-gray-800 border-t border-gray-700 flex justify-center space-x-4">
+                 <button onclick="window.reconnectSocket()" class="px-3 py-1 text-xs bg-yellow-600 rounded hover:bg-yellow-500 transition">Återanslut</button>
+                 <button onclick="window.disconnectSocket()" class="px-3 py-1 text-xs bg-red-600 rounded hover:bg-red-500 transition">Koppla bort</button>
             </div>
         </div>
     </div>
+    
+    <!-- Scripts -->
     <script src="/js/global_nav.js"></script>
-    <script>
+    <script type="module">
+        import { initNavigation } from './js/nav_menu.js';
+        
+        // Initialize navigation
+        initNavigation();
+        
         const chatWindow = document.getElementById('chat-window');
         const userInput = document.getElementById('userInput');
+        const statusServer = document.getElementById('status-server');
+        
+        let socket;
+        let reconnectTimeout;
+        const RECONNECT_DELAY = 3000; 
+        let isClosing = false; // Förhindra omedelbar återanslutning vid sidladdning
 
-        function addMessage(role, name, text) {
+        function addMessage(roleClass, name, text) {
             const div = document.createElement('div');
-            div.className = `node-msg ${role}`;
+            div.className = `node-msg ${roleClass}`;
             div.innerHTML = `<div class="text-xs opacity-50 mb-1">${name}</div><div>${text}</div>`;
             chatWindow.appendChild(div);
             chatWindow.scrollTop = chatWindow.scrollHeight;
         }
+        
+        function connectWebSocket() {
+            if (reconnectTimeout) clearTimeout(reconnectTimeout);
+            isClosing = false; // Vi försöker ansluta, inte stänga
+
+            // Uppdaterar status
+            statusServer.textContent = 'Försöker ansluta...';
+            statusServer.classList.remove('text-green-600', 'text-red-600');
+            statusServer.classList.add('text-yellow-600');
+
+            try {
+                // FIXEN: Ansluter direkt till 127.0.0.1 (IP-adress) istället för localhost (DNS)
+                socket = new WebSocket('ws://127.0.0.1:8767');
+            } catch (e) {
+                addMessage('server-log', 'SYSTEM FEL', 'Kunde inte ens initiera WebSocket. Kontrollera adressen.');
+                scheduleReconnect();
+                return;
+            }
+
+            // Händelse: Anslutning öppnad
+            socket.onopen = function(e) {
+                addMessage('dirigent', 'Systemmeddelande', 'Anslutning till Core-Server (Reflex) upprättad.');
+                statusServer.textContent = 'Online';
+                statusServer.classList.remove('text-red-600', 'text-yellow-600');
+                statusServer.classList.add('text-green-600');
+            };
+
+            // Händelse: Meddelande mottaget från servern
+            socket.onmessage = function(event) {
+                const data = event.data;
+                
+                if (data.startsWith('CHAT_MSG:')) {
+                    addMessage('reflex', 'Reflex (Gemini)', data.substring(9));
+                } else if (data.startsWith('SERVER_LOG:')) {
+                    addMessage('server-log', 'Serverlogg', data.substring(11));
+                } else {
+                    addMessage('server-log', 'RÅ DATA', data);
+                }
+            };
+
+            // Händelse: Fel: Loggar felet men låter onclose hantera återanslutning
+            socket.onerror = function(error) { 
+                 console.error('WebSocket-fel:', error);
+            };
+            
+            // Händelse: Anslutning stängd
+            socket.onclose = function(event) { 
+                statusServer.textContent = 'Avslagen';
+                statusServer.classList.remove('text-green-600', 'text-yellow-600');
+                statusServer.classList.add('text-red-600');
+                
+                // Endast återanslut om anslutningen inte stängdes rent (t.ex. server kraschade)
+                if (event.code !== 1000 && !isClosing) {
+                    addMessage('dirigent', 'SYSTEM VARNING', `Anslutningen stängd (Kod: ${event.code}). Försöker återansluta...`); 
+                    scheduleReconnect();
+                } else if (isClosing) {
+                    addMessage('dirigent', 'SYSTEM LOGG', 'Anslutning stängd manuellt/rent.');
+                }
+            };
+        }
+
+        function scheduleReconnect() {
+            if (reconnectTimeout) clearTimeout(reconnectTimeout);
+            reconnectTimeout = setTimeout(() => {
+                connectWebSocket();
+            }, RECONNECT_DELAY);
+        }
+        
+        // Exponera funktion för att stänga anslutningen rent (för t.ex. en Disconnect-knapp)
+        window.disconnectSocket = function() {
+             isClosing = true;
+             if (socket && socket.readyState === WebSocket.OPEN) {
+                 socket.close(1000, "Manuell stängning");
+             } else {
+                 addMessage('dirigent', 'SYSTEM LOGG', 'Anslutningen är redan stängd.');
+                 isClosing = false;
+             }
+        }
+        
+        // Exponera funktion för att tvinga fram återanslutning
+        window.reconnectSocket = function() {
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                addMessage('dirigent', 'SYSTEM LOGG', 'Anslutningen är redan öppen.');
+            } else {
+                addMessage('dirigent', 'SYSTEM LOGG', 'Försöker ansluta manuellt...');
+                connectWebSocket();
+            }
+        }
+
 
         function sendMessage() {
             const text = userInput.value.trim();
             if (!text) return;
-            addMessage('dirigent', 'Jæen (Dirigent)', text);
-            userInput.value = '';
+
+            if (!socket || socket.readyState !== WebSocket.OPEN) {
+                addMessage('dirigent', 'SYSTEM VARNING', 'Kan inte skicka. Anslutningen är inte öppen. Försöker ansluta...');
+                connectWebSocket(); 
+                return;
+            }
+
+            let messageToSend;
             
-            setTimeout(() => {
-                addMessage('reflex', 'Reflex', 'Mottaget. Systemet lyssnar.');
-            }, 500);
+            // Hantering av input
+            if (text.startsWith('/')) {
+                messageToSend = `CMD:${text.substring(1)}`;
+                addMessage('dirigent', 'Dirigent (Kör CMD)', text);
+            } else {
+                messageToSend = `CHAT:${text}`;
+                addMessage('dirigent', 'Dirigent (Chatt)', text);
+            }
+
+            socket.send(messageToSend);
+            userInput.value = ''; 
         }
         
-        userInput.addEventListener('keydown', (e) => { if(e.key === 'Enter') sendMessage(); });
+        // Aktivera sändning via Enter-tangenten
+        userInput.addEventListener('keydown', (e) => { 
+            if(e.key === 'Enter') {
+                e.preventDefault(); 
+                sendMessage(); 
+            }
+        });
+
+        // Starta anslutningsprocessen vid laddning av sidan
+        connectWebSocket();
+
+        // Test connection button
+        document.getElementById('testConnectionBtn').addEventListener('click', async () => {
+            const statusMsg = document.getElementById('status-message');
+            statusMsg.textContent = 'Testar anslutning till edge_server...';
+            
+            try {
+                const response = await fetch('http://localhost:8767/ping');
+                const data = await response.json();
+                statusMsg.textContent = `✅ Anslutning lyckades! Server svarar: ${data.status}`;
+                statusMsg.style.color = 'green';
+            } catch (error) {
+                statusMsg.textContent = `❌ Anslutning misslyckades: ${error.message}`;
+                statusMsg.style.color = 'red';
+            }
+        });
     </script>
 </body>
 </html>

@@ -1,0 +1,2 @@
+# Python dependencies for edge_server.py
+websockets>=10.4

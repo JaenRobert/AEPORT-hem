@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ÆSI NEXUS — Live Console</title>
+  <style>
+    /* (styles omitted here for brevity — use your existing styles) */
+    html,body { height:100%; margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial; background:#0b0b0d; color:#e6eef8; }
+    .app { display:flex; flex-direction:column; max-width:900px; margin:24px auto; height: calc(100vh - 48px); gap:12px; padding:12px; }
+    .pane { padding:12px; border-radius:8px; overflow:auto; background:rgba(255,255,255,0.01); }
+    .messages { flex:1; overflow:auto; }
+    .log { font-family: monospace; font-size:0.85rem; color:#e6f0ff; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header><h1>ÆSI NEXUS — Live Chat & Console</h1><div id="status">Status: <span id="conn">Disconnected</span></div></header>
+    <main class="pane">
+      <div id="messages" class="messages"></div>
+      <input id="input" type="text" placeholder="Meddelande eller /kommando" />
+      <button id="sendBtn">Skicka</button>
+      <div id="logs" class="log" style="margin-top:12px;"></div>
+    </main>
+  </div>
+
+  <script>
+    // WebSocket client with auto-fallback and RECONNECT_DELAY
+    (function () {
+      const RECONNECT_DELAY = 3000; // ms
+      const WS_PORT = 8765;
+
+      // === CONFIG: optionally set your public host here ===
+      // Replace with: const RENDER_URL = 'wss://din-aesi-core-server.onrender.com';
+      const RENDER_URL = ''; // <-- set this to your Render/Fly host (wss://...), or leave empty to use ?ws= param / fallback
+      // ===================================================
+
+      const connEl = document.getElementById('conn');
+      const messagesEl = document.getElementById('messages');
+      const logsEl = document.getElementById('logs');
+      const inputEl = document.getElementById('input');
+      const sendBtn = document.getElementById('sendBtn');
+
+      let ws = null, manualClose = false, reconnectTimeout = null;
+
+      function setStatus(text, color) { connEl.textContent = text; connEl.style.color = color || ''; }
+      function appendMessage(text, ai=false) {
+        const el = document.createElement('div');
+        el.textContent = text;
+        el.style.margin = '6px 0';
+        el.style.padding = '8px';
+        el.style.borderRadius = '6px';
+        el.style.display = 'inline-block';
+        el.style.background = ai ? 'linear-gradient(90deg,#a78bfa,#7c3aed)' : 'rgba(255,255,255,0.02)';
+        el.style.color = ai ? '#0b1120' : '#cbd5e1';
+        messagesEl.appendChild(el);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }
+      function appendLog(text) {
+        const el = document.createElement('div');
+        el.textContent = text;
+        el.style.margin = '4px 0';
+        logsEl.appendChild(el);
+        logsEl.scrollTop = logsEl.scrollHeight;
+      }
+
+      function computeWsUrl() {
+        if (RENDER_URL && RENDER_URL.trim() !== '') return RENDER_URL;
+        const params = new URLSearchParams(location.search);
+        const wsParam = params.get('ws');
+        if (wsParam) return wsParam;
+        const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const host = location.hostname || 'localhost';
+        return `${proto}//${host}:${WS_PORT}`;
+      }
+
+      function connect() {
+        if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
+        manualClose = false;
+        setStatus('Connecting...', 'orange');
+        const WS_URL = computeWsUrl();
+        appendLog('Connecting to ' + WS_URL);
+        ws = new WebSocket(WS_URL);
+
+        ws.addEventListener('open', () => { setStatus('Connected', '#34d399'); appendLog('Connected'); });
+        ws.addEventListener('message', (ev) => {
+          const data = ev.data || '';
+          if (data.startsWith('dirigentCHAT_MSG:') || data.startsWith('CHAT_MSG:')) {
+            const payload = data.substring(data.indexOf(':')+1).trim();
+            appendMessage(payload, true);
+          } else if (data.startsWith('reflexSERVER_LOG:') || data.startsWith('SERVER_LOG:')) {
+            const payload = data.substring(data.indexOf(':')+1).trim();
+            appendLog(payload);
+          } else {
+            appendLog('[UNKNOWN] ' + data);
+          }
+        });
+        ws.addEventListener('close', () => {
+          setStatus('Disconnected', 'red'); appendLog('Disconnected');
+          if (!manualClose) scheduleReconnect();
+        });
+        ws.addEventListener('error', (e) => { appendLog('WebSocket error (console)'); console.error(e); });
+      }
+
+      function scheduleReconnect() {
+        if (reconnectTimeout) return;
+        appendLog(`Reconnecting in ${RECONNECT_DELAY}ms...`);
+        reconnectTimeout = setTimeout(() => { reconnectTimeout = null; appendLog('Reconnecting...'); connect(); }, RECONNECT_DELAY);
+      }
+
+      function disconnect() { manualClose = true; if (reconnectTimeout) { clearTimeout(reconnectTimeout); reconnectTimeout = null; } if (ws) try { ws.close(); } catch(e){} }
+
+      function sendInput() {
+        const txt = inputEl.value.trim();
+        if (!txt) return;
+        if (!ws || ws.readyState !== WebSocket.OPEN) { appendLog('Not connected.'); return; }
+        if (txt.startsWith('/')) {
+          ws.send('dirigentCMD:' + txt);
+          appendMessage(txt, false);
+        } else {
+          ws.send('CHAT:' + txt);
+          appendMessage(txt, false);
+        }
+        inputEl.value = '';
+      }
+
+      sendBtn.addEventListener('click', sendInput);
+      inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendInput(); });
+
+      // Auto-connect
+      connect();
+
+      // Expose for debug
+      window.__aesi = { connect, disconnect, computeWsUrl };
+    })();
+  </script>
+</body>
+</html>
