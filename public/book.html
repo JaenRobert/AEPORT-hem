@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<html lang='sv'>
+<head>
+  <meta charset='UTF-8'>
+  <title>📖 ÆSI Boken</title>
+  <link href='https://cdn.jsdelivr.net/npm/tailwindcss@3.4.4/dist/tailwind.min.css' rel='stylesheet'>
+  <style>
+    body { background:#050505; color:#00ffcc; font-family:monospace; padding:20px; }
+    .chapter { border:1px solid #0f0; border-radius:8px; margin-bottom:16px; padding:10px; }
+  </style>
+</head>
+<body>
+  <h1 class='text-3xl mb-4'>📖 ÆSI Boken - Samlad Historik</h1>
+  <div class='flex space-x-4 mb-4'>
+    <button onclick='loadBook()' class='bg-green-600 px-3 py-2 rounded'>🔄 Ladda Boken</button>
+    <button onclick='createChapter()' class='bg-blue-600 px-3 py-2 rounded'>➕ Skapa Kapitel</button>
+    <button onclick='exportBook()' class='bg-yellow-600 px-3 py-2 rounded'>📤 Exportera</button>
+  </div>
+  <div id='status' class='text-yellow-400 mb-3'>Väntar...</div>
+  <div id='book'></div>
+
+  <script>
+    async function loadBook() {
+      const res = await fetch('/api/book');
+      const data = await res.json();
+      const container = document.getElementById('book');
+      container.innerHTML = '';
+      data.forEach(chapter => {
+        const div = document.createElement('div');
+        div.className = 'chapter';
+        div.innerHTML = \
+          <h2 class='text-xl text-green-400'>\</h2>
+          <p class='text-sm text-gray-500'>Datum: \ | \ poster</p>
+          <pre class='text-xs overflow-x-auto bg-gray-900 p-2 mt-2'>\</pre>
+          <button onclick="deleteChapter('\')" class='text-red-400 text-sm mt-2'>🗑️ Radera</button>
+        \;
+        container.appendChild(div);
+      });
+      document.getElementById('status').textContent = "✅ " + data.length + " kapitel laddade.";
+    }
+
+    async function createChapter() {
+      const title = prompt("Titel för kapitlet?");
+      if (!title) return;
+      const res = await fetch('/api/book/chapter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title })
+      });
+      const text = await res.text();
+      alert(text);
+      loadBook();
+    }
+
+    async function deleteChapter(date) {
+      await fetch('/api/book/' + date, { method: 'DELETE' });
+      loadBook();
+    }
+
+    async function exportBook() {
+      const res = await fetch('/api/book');
+      const data = await res.json();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'AESI_Boken_' + new Date().toISOString().split('T')[0] + '.json';
+      link.click();
+    }
+
+    loadBook();
+  </script>
+</body>
+</html>
