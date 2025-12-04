@@ -1,0 +1,317 @@
+{
+  "metadata": {
+    "realtime_chat": {
+      "name": "Realtime Chat",
+      "description": "Live messaging with all AI nodes",
+      "icon": "💬",
+      "color": "#10a37f",
+      "category": "UI_MODULES",
+      "version": "2.0",
+      "tags": ["chat", "messaging", "realtime"],
+      "author": "ÆSI Team",
+      "loadable": true
+    },
+    "claude": {
+      "name": "Claude Node",
+      "description": "Anthropic Claude AI integration",
+      "icon": "❤️",
+      "color": "#ef4444",
+      "category": "AI_NODES",
+      "version": "1.0",
+      "tags": ["ai", "claude", "anthropic"],
+      "author": "ÆSI Team",
+      "loadable": true
+    },
+    "reflex": {
+      "name": "Reflex Node",
+      "description": "Google Gemini AI integration",
+      "icon": "🧠",
+      "color": "#3b82f6",
+      "category": "AI_NODES",
+      "version": "1.0",
+      "tags": ["ai", "gemini", "google"],
+      "author": "ÆSI Team",
+      "loadable": true
+    },
+    "hafted": {
+      "name": "Hafted Node",
+      "description": "xAI Grok integration",
+      "icon": "📚",
+      "color": "#78716c",
+      "category": "AI_NODES",
+      "version": "1.0",
+      "tags": ["ai", "grok", "xai"],
+      "author": "ÆSI Team",
+      "loadable": true
+    },
+    "smile": {
+      "name": "Smile Node",
+      "description": "Meta LLaMA integration",
+      "icon": "😊",
+      "color": "#eab308",
+      "category": "AI_NODES",
+      "version": "1.0",
+      "tags": ["ai", "llama", "meta"],
+      "author": "ÆSI Team",
+      "loadable": true
+    },
+    "ernie": {
+      "name": "Ernie Node",
+      "description": "Baidu ERNIE integration",
+      "icon": "🏗️",
+      "color": "#10b981",
+      "category": "AI_NODES",
+      "version": "1.0",
+      "tags": ["ai", "ernie", "baidu"],
+      "author": "ÆSI Team",
+      "loadable": true
+    },
+    "chatgpt": {
+      "name": "ChatGPT Node",
+      "description": "OpenAI ChatGPT integration",
+      "icon": "🔵",
+      "color": "#00a67e",
+      "category": "AI_NODES",
+      "version": "1.0",
+      "tags": ["ai", "chatgpt", "openai"],
+      "author": "ÆSI Team",
+      "loadable": true
+    },
+    "portal-status": {
+      "name": "Portal Status",
+      "description": "Real-time portal health monitoring dashboard",
+      "icon": "📊",
+      "color": "#8b5cf6",
+      "category": "SYSTEM",
+      "version": "1.0",
+      "tags": ["monitoring", "status", "health"],
+      "author": "ÆSI Team",
+      "loadable": true
+    },
+    "node-monitor": {
+      "name": "Node Monitor",
+      "description": "Monitor all 7 AI nodes in real-time with activity tracking",
+      "icon": "🔍",
+      "color": "#06b6d4",
+      "category": "SYSTEM",
+      "version": "1.0",
+      "tags": ["monitoring", "nodes", "activity"],
+      "author": "ÆSI Team",
+      "loadable": true
+    },
+    "activity-log": {
+      "name": "Activity Log",
+      "description": "System event and activity tracking with history",
+      "icon": "📝",
+      "color": "#10b981",
+      "category": "SYSTEM",
+      "version": "1.0",
+      "tags": ["logging", "events", "history"],
+      "author": "ÆSI Team",
+      "loadable": true
+    },
+    "file-watcher": {
+      "name": "File Watcher",
+      "description": "Monitor file changes in real-time with change detection",
+      "icon": "👁️",
+      "color": "#f59e0b",
+      "category": "SYSTEM",
+      "version": "1.0",
+      "tags": ["monitoring", "files", "changes"],
+      "author": "ÆSI Team",
+      "loadable": true
+    },
+    "connection-status": {
+      "name": "Connection Status",
+      "description": "Backend connection health and status indicator",
+      "icon": "🌐",
+      "color": "#3b82f6",
+      "category": "SYSTEM",
+      "version": "1.0",
+      "tags": ["connection", "status", "backend"],
+      "author": "ÆSI Team",
+      "loadable": true
+    },
+    "module-catalog": {
+      "name": "Module Catalog",
+      "description": "Browse and manage all 115+ system modules",
+      "icon": "📦",
+      "color": "#ec4899",
+      "category": "SYSTEM",
+      "version": "2.0",
+      "tags": ["modules", "catalog", "browser"],
+      "author": "ÆSI Team",
+      "loadable": true
+    },
+    "reasoning": {
+      "name": "Reasoning Engine",
+      "description": "Logical inference and verification subsystem",
+      "icon": "⚙️",
+      "color": "#8b5cf6",
+      "category": "SYSTEM",
+      "version": "1.0",
+      "tags": ["logic", "verification", "inference"],
+      "author": "ÆSI Team",
+      "loadable": false
+    },
+    "memory": {
+      "name": "Memory Module",
+      "description": "Append-only ledger and archival system",
+      "icon": "💾",
+      "color": "#06b6d4",
+      "category": "SYSTEM",
+      "version": "1.0",
+      "tags": ["archive", "ledger", "persistence"],
+      "author": "ÆSI Team",
+      "loadable": false
+    },
+    "ethics": {
+      "name": "Ethics Framework",
+      "description": "Ethical judgment and Jonas-Doctrine implementation",
+      "icon": "⚖️",
+      "color": "#f59e0b",
+      "category": "SYSTEM",
+      "version": "1.0",
+      "tags": ["ethics", "governance", "policies"],
+      "author": "ÆSI Team",
+      "loadable": false
+    },
+    "creativity": {
+      "name": "Creativity Engine",
+      "description": "Creative text and idea generation subsystem",
+      "icon": "✨",
+      "color": "#10b981",
+      "category": "SYSTEM",
+      "version": "1.0",
+      "tags": ["writing", "ideation", "synthesis"],
+      "author": "ÆSI Team",
+      "loadable": false
+    },
+    "analysis": {
+      "name": "Analysis Module",
+      "description": "Data and text analysis with extraction",
+      "icon": "🔬",
+      "color": "#3b82f6",
+      "category": "SYSTEM",
+      "version": "1.0",
+      "tags": ["analysis", "parsing", "extraction"],
+      "author": "ÆSI Team",
+      "loadable": false
+    },
+    "synthesis": {
+      "name": "Synthesis Module",
+      "description": "Summary generation and information integration",
+      "icon": "🧩",
+      "color": "#ec4899",
+      "category": "SYSTEM",
+      "version": "1.0",
+      "tags": ["summary", "integration", "compilation"],
+      "author": "ÆSI Team",
+      "loadable": false
+    },
+    "communication": {
+      "name": "Communication Bus",
+      "description": "Inter-node messaging and protocol management",
+      "icon": "🔌",
+      "color": "#06b6d4",
+      "category": "SYSTEM",
+      "version": "1.0",
+      "tags": ["messaging", "protocol", "sync"],
+      "author": "ÆSI Team",
+      "loadable": false
+    },
+    "heartbeat": {
+      "name": "Heartbeat Monitor",
+      "description": "Node liveness signaling and health checks",
+      "icon": "💓",
+      "color": "#ef4444",
+      "category": "SYSTEM",
+      "version": "1.0",
+      "tags": ["monitoring", "health", "status"],
+      "author": "ÆSI Team",
+      "loadable": true
+    },
+    "caching": {
+      "name": "Cache Layer",
+      "description": "Result caching and performance optimization",
+      "icon": "⚡",
+      "color": "#fbbf24",
+      "category": "TOOL",
+      "version": "1.0",
+      "tags": ["performance", "cache", "memoization"],
+      "author": "ÆSI Team",
+      "loadable": false
+    },
+    "llm-bridge": {
+      "name": "LLM Bridge",
+      "description": "External LLM API integration and routing",
+      "icon": "🌐",
+      "color": "#6366f1",
+      "category": "TOOL",
+      "version": "1.0",
+      "tags": ["integration", "api", "external"],
+      "author": "ÆSI Team",
+      "loadable": false
+    },
+    "book-writer": {
+      "name": "Book Writer",
+      "description": "Book composition and chapter management tool",
+      "icon": "📖",
+      "color": "#78716c",
+      "category": "TOOL",
+      "version": "1.0",
+      "tags": ["writing", "composition", "structure"],
+      "author": "ÆSI Team",
+      "loadable": true
+    },
+    "time-tracking": {
+      "name": "Time Tracker",
+      "description": "Temporal logging and timeline tracking",
+      "icon": "⏱️",
+      "color": "#10b981",
+      "category": "TOOL",
+      "version": "1.0",
+      "tags": ["time", "logging", "timeline"],
+      "author": "ÆSI Team",
+      "loadable": true
+    }
+  },
+  "categories": {
+    "AI_NODES": {
+      "icon": "🤖",
+      "label": "AI Nodes",
+      "description": "LLM Integration & AI Nodes",
+      "color": "#6366f1"
+    },
+    "UI_MODULES": {
+      "icon": "🎨",
+      "label": "UI Modules",
+      "description": "Visual Components & Interfaces",
+      "color": "#ec4899"
+    },
+    "SYSTEM": {
+      "icon": "⚙️",
+      "label": "System",
+      "description": "Core System & Monitoring",
+      "color": "#8b5cf6"
+    },
+    "PROJECT": {
+      "icon": "📁",
+      "label": "Projects",
+      "description": "Project Modules",
+      "color": "#06b6d4"
+    },
+    "TOOL": {
+      "icon": "🔧",
+      "label": "Tools",
+      "description": "Utilities & Tools",
+      "color": "#f59e0b"
+    },
+    "EXPERIMENTAL": {
+      "icon": "🧪",
+      "label": "Experimental",
+      "description": "Beta Features",
+      "color": "#ef4444"
+    }
+  }
+}

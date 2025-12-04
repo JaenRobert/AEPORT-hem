@@ -1,0 +1,69 @@
+/* ARCHIVARIUS STYLES v1.0 */
+
+#archivarius-viewer {
+    position: fixed;
+    left: 20px;
+    bottom: 20px;
+    width: 720px;
+    height: 520px;
+    background: linear-gradient(180deg, #0a0a0a 0%, #121212 100%);
+    border: 2px solid #4F46E5;
+    border-radius: 12px;
+    color: #eaeaea;
+    z-index: 600;
+    box-shadow: 0 30px 80px rgba(79,70,229,0.2);
+    font-family: 'JetBrains Mono', monospace;
+    overflow: hidden;
+}
+
+#archivarius-viewer .viewer-header {
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+
+#archivarius-viewer .viewer-body {
+    display: flex;
+    gap: 12px;
+    height: calc(100% - 56px);
+}
+
+#archivarius-viewer .left-pane {
+    width: 300px;
+    border-right: 1px solid rgba(255,255,255,0.03);
+    overflow-y: auto;
+    padding: 12px;
+}
+
+#archivarius-viewer .right-pane {
+    flex: 1;
+    padding: 12px;
+    overflow-y: auto;
+}
+
+.archivarius-item {
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.02);
+    margin-bottom: 8px;
+    cursor: pointer;
+}
+
+.archivarius-item:hover { background: rgba(79,70,229,0.06); }
+
+.archivarius-meta { font-size: 11px; color: #9CA3AF; }
+.archivarius-title { font-weight: 700; color: #eaeaea; }
+
+.archivarius-facts { margin-top: 8px; display:flex; flex-direction: column; gap:6px; }
+.archivarius-fact { padding: 8px; background: rgba(255,255,255,0.02); border-left: 3px solid rgba(79,70,229,0.3); }
+
+.archivarius-actions { display:flex; gap:8px; }
+.archivarius-btn { padding:6px 8px; background:#4F46E5; color:#fff; border-radius:6px; border:none; cursor:pointer; font-size:11px; }
+.archivarius-btn.secondary { background:#111; border:1px solid rgba(255,255,255,0.04); }
+
+/* Compact responsive */
+@media (max-width: 900px) {
+    #archivarius-viewer { width: 90%; height: 60vh; left: 5%; }
+}

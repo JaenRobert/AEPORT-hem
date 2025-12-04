@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ÆSI NEXUS</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.4/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #050505; color: #e5e7eb; font-family: 'Courier New', monospace; }
+        .node-msg { border-left: 4px solid; padding-left: 10px; margin-bottom: 10px; animation: fadeIn 0.3s; }
+        .reflex { border-color: #3b82f6; color: #93c5fd; }
+        .e1tan { border-color: #a855f7; color: #d8b4fe; }
+        .dirigent { border-color: #22c55e; color: #86efac; font-weight: bold; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="h-screen flex flex-col">
+    <div id="nav-container"></div>
+    <div class="flex-1 flex overflow-hidden">
+        <div class="w-64 bg-gray-900 border-r border-gray-800 p-4 hidden md:block">
+            <h2 class="text-xs font-bold text-gray-500 uppercase mb-4">Aktiva Noder</h2>
+            <div class="space-y-2">
+                <div class="flex items-center text-green-400">Dirigent (Jæen)</div>
+                <div class="flex items-center text-blue-400">Reflex (Gemini)</div>
+                <div class="flex items-center text-purple-400">E1tan (GPT)</div>
+                <div class="flex items-center text-red-400">Claude (Anthropic)</div>
+            </div>
+        </div>
+        <div class="flex-1 flex flex-col bg-black relative">
+            <div id="chat-window" class="flex-1 overflow-y-auto p-6 space-y-4">
+                <div class="text-center text-gray-600 text-xs my-4">--- SYSTEM START: ÆSI NEXUS ONLINE ---</div>
+            </div>
+            <div class="p-4 bg-gray-900 border-t border-gray-800 flex items-center gap-2">
+                <div class="text-green-500 font-bold">></div>
+                <input type="text" id="userInput" placeholder="Ge order till noderna..." class="flex-1 bg-transparent border-none text-white focus:ring-0" autocomplete="off">
+                <button onclick="sendMessage()" class="px-4 py-2 bg-green-700 text-white rounded hover:bg-green-600">SÄND</button>
+            </div>
+        </div>
+    </div>
+    <script src="/js/global_nav.js"></script>
+    <script>
+        const chatWindow = document.getElementById('chat-window');
+        const userInput = document.getElementById('userInput');
+
+        function addMessage(role, name, text) {
+            const div = document.createElement('div');
+            div.className = `node-msg ${role}`;
+            div.innerHTML = `<div class="text-xs opacity-50 mb-1">${name}</div><div>${text}</div>`;
+            chatWindow.appendChild(div);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function sendMessage() {
+            const text = userInput.value.trim();
+            if (!text) return;
+            addMessage('dirigent', 'Jæen (Dirigent)', text);
+            userInput.value = '';
+            
+            setTimeout(() => {
+                addMessage('reflex', 'Reflex', 'Mottaget. Systemet lyssnar.');
+            }, 500);
+        }
+        
+        userInput.addEventListener('keydown', (e) => { if(e.key === 'Enter') sendMessage(); });
+    </script>
+</body>
+</html>

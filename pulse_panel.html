@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Æ PULS</title>
+<style>
+body{margin:0;background:#000;color:#0f0;font-family:monospace;padding:20px;}
+#out{white-space:pre-wrap;font-size:14px;}
+</style>
+</head>
+<body>
+<h2>Æ-PULS MONITOR</h2>
+<div id="out">Hämtar puls...</div>
+<script>
+async function loadPulse(){
+    const res = await fetch("/api/selftest/run");
+    const txt = await res.text();
+    document.getElementById("out").innerText = txt;
+}
+setInterval(loadPulse, 4000);
+loadPulse();
+</script>
+<script src="/js/global_nav.js"></script>
+</body>
+</html>
+

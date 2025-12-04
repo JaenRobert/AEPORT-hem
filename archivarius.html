@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Archivarius</title>
+<link rel="stylesheet" href="css/archivarius.css">
+</head>
+<body>
+    <nav style="padding:12px;background:#111;color:#fff;display:flex;gap:12px;align-items:center;">
+        <a href="/index.html" style="color:#fff">◀ Back</a>
+        <strong>Archivarius</strong>
+        <button id="btnRefresh" style="margin-left:auto">Refresh</button>
+    </nav>
+
+    <div style="display:flex;gap:12px;padding:12px;">
+        <div style="flex:1;">
+            <div id="dropZone" style="border:2px dashed #4F46E5;padding:24px;border-radius:8px;text-align:center;">Drag & drop files here or click to upload</div>
+            <div style="margin-top:12px;">
+                <h3>Archive List</h3>
+                <div id="list"></div>
+            </div>
+        </div>
+        <div style="width:420px;">
+            <h3>Metadata</h3>
+            <div id="meta">Select an item to view metadata</div>
+        </div>
+    </div>
+
+<script src="js/archivarius_ui.js"></script>
+
+    <!-- GLOBAL NAVIGATION SYSTEM -->
+    <script src="js/global_nav_menu.js" defer></script>
+
+    <!-- COMPLETE NAVIGATION SYSTEM -->
+    <link rel="stylesheet" href="css/navigation.css">
+    <script src="js/navigation_hub.js" defer></script>
+<script src="/js/global_nav.js"></script>
+</body>
+</html>

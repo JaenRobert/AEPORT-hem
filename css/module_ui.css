@@ -1,0 +1,461 @@
+/**
+ * ÆSI MODULE UI STYLING v2.0
+ * Advanced animations, tooltips, and responsive design
+ */
+
+/* ===== MODULE CARD ANIMATIONS ===== */
+@keyframes moduleSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes moduleHover {
+  from {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+  to {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+  }
+}
+
+@keyframes colorPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes rotateIcon {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===== MODULE CARD STYLING ===== */
+.module-card {
+  animation: moduleSlideIn 0.3s ease-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.module-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transition: left 0.5s;
+  pointer-events: none;
+}
+
+.module-card:hover::after {
+  left: 100%;
+  animation: shimmer 0.5s linear;
+}
+
+.module-card:hover {
+  animation: moduleHover 0.3s ease-out forwards;
+}
+
+.module-icon {
+  animation: fadeIn 0.4s ease-out 0.1s backwards;
+}
+
+.module-card:hover .module-icon {
+  animation: rotateIcon 0.6s ease-out;
+}
+
+.module-name {
+  animation: fadeIn 0.4s ease-out 0.2s backwards;
+}
+
+.module-description {
+  animation: fadeIn 0.4s ease-out 0.3s backwards;
+}
+
+/* ===== TOOLTIPS ===== */
+.module-card[title]::before {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+  background: #000;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 1000;
+  border: 1px solid #333;
+}
+
+.module-card[title]::after {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  z-index: 1000;
+}
+
+.module-card:hover[title]::before,
+.module-card:hover[title]::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ===== LOADING STATES ===== */
+.module-card.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.module-card.loading .module-icon {
+  animation: rotateIcon 1s linear infinite;
+}
+
+.module-loading-skeleton {
+  background: linear-gradient(
+    90deg,
+    #111,
+    #1a1a1a,
+    #111
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+.module-loading-bar {
+  height: 4px;
+  background: linear-gradient(90deg, transparent, #6366f1, transparent);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 2px;
+  margin-top: 8px;
+}
+
+/* ===== FAVORITES & RECENT ===== */
+.favorite-item {
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+}
+
+.favorite-item:hover {
+  border-left-color: #fbbf24;
+  padding-left: 8px;
+}
+
+.favorite-item.active {
+  background: rgba(251, 191, 36, 0.1);
+  border-left-color: #fbbf24;
+}
+
+.btn-favorite {
+  position: relative;
+}
+
+.btn-favorite.active::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 6px;
+  height: 6px;
+  background: #fbbf24;
+  border-radius: 50%;
+  animation: colorPulse 1.5s ease-in-out infinite;
+}
+
+/* ===== CATEGORY BUTTONS ===== */
+.category-btn {
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.category-btn.active {
+  animation: scaleIn 0.2s ease-out;
+}
+
+.category-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+}
+
+/* ===== SEARCH INPUT ===== */
+.header-search input:focus {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.header-search input::placeholder {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* ===== CATEGORY SECTION ===== */
+.category-section {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.category-header {
+  animation: slideInDown 0.4s ease-out;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+  animation: fadeIn 0.4s ease-out;
+}
+
+.empty-state-icon {
+  animation: rotateIcon 0.8s ease-out infinite;
+}
+
+/* ===== DARK MODE ENHANCEMENT ===== */
+.module-card.dark-mode {
+  background: #0a0a0a;
+  border-color: #1a1a1a;
+}
+
+.module-card.dark-mode:hover {
+  border-color: currentColor;
+  background: #1a1a1a;
+}
+
+/* ===== LIGHT MODE ===== */
+.module-card.light-mode {
+  background: #f5f5f5;
+  color: #1a1a1a;
+  border-color: #e0e0e0;
+}
+
+.module-card.light-mode .module-description {
+  color: #666;
+}
+
+.module-card.light-mode:hover {
+  background: #fff;
+  border-color: currentColor;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== RESPONSIVE ANIMATIONS ===== */
+@media (max-width: 768px) {
+  .module-card {
+    animation: moduleSlideIn 0.2s ease-out;
+  }
+
+  .module-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .module-card[title]::before,
+  .module-card[title]::after {
+    display: none;
+  }
+}
+
+/* ===== MODULE GRID STAGGER ===== */
+.module-grid > .module-card:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.module-grid > .module-card:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.module-grid > .module-card:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+.module-grid > .module-card:nth-child(4) {
+  animation-delay: 0.2s;
+}
+
+.module-grid > .module-card:nth-child(5) {
+  animation-delay: 0.25s;
+}
+
+.module-grid > .module-card:nth-child(6) {
+  animation-delay: 0.3s;
+}
+
+.module-grid > .module-card:nth-child(n+7) {
+  animation-delay: 0.35s;
+}
+
+/* ===== DRAG & DROP FEEDBACK ===== */
+.module-card.dragging {
+  opacity: 0.5;
+  transform: scale(0.95);
+}
+
+.module-card.drag-over {
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.05);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+/* ===== TRANSITION SMOOTHING ===== */
+* {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+button {
+  transition: all 0.2s ease;
+}
+
+input {
+  transition: all 0.2s ease;
+}
+
+/* ===== FOCUS STATES ===== */
+.module-card:focus-within {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+button:focus {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+input:focus {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+/* ===== ACTIVE STATES ===== */
+.module-card:active {
+  transform: scale(0.98);
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  .module-card {
+    animation: none;
+    box-shadow: none;
+    page-break-inside: avoid;
+  }
+
+  .header-controls,
+  .header-search {
+    display: none;
+  }
+}
+
+/* ===== ACCESSIBILITY ===== */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .module-card {
+    animation: none;
+  }
+
+  .module-card:hover {
+    transform: none;
+  }
+}
+
+/* ===== THEME COLORS ===== */
+:root {
+  --color-primary: #6366f1;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #06b6d4;
+  --color-neutral: #888;
+  --color-bg-dark: #050505;
+  --color-bg-darker: #0a0a0a;
+  --color-border: #262626;
+  --color-text: #d4d4d4;
+}
+
+/* ===== GRADIENT OVERLAYS ===== */
+.module-card::before {
+  background: linear-gradient(135deg, transparent, rgba(99, 102, 241, 0.1), transparent);
+}
+
+.module-card:hover::before {
+  animation: shimmer 0.6s ease-out;
+}

@@ -1,0 +1,30 @@
+{
+  "summary": {
+    "run_id": "omega_test_010_040",
+    "timestamp": "2025-12-02T04:37:14.638093",
+    "ae_tid": "+321.09h",
+    "avg_ethics": 0.803,
+    "avg_stability": 0.751,
+    "avg_alignment": 0.823,
+    "avg_resonance": 0.826,
+    "nodes": 2
+  },
+  "results": [
+    {
+      "node": "010",
+      "ethics": 0.772,
+      "stability": 0.77,
+      "alignment": 0.78,
+      "resonance": 0.867,
+      "timestamp": "2025-12-02T04:37:14.638058"
+    },
+    {
+      "node": "040",
+      "ethics": 0.835,
+      "stability": 0.732,
+      "alignment": 0.865,
+      "resonance": 0.784,
+      "timestamp": "2025-12-02T04:37:14.638081"
+    }
+  ]
+}

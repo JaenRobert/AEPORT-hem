@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Æ PORTEN</title>
+<style>
+    body {
+        margin:0; padding:0;
+        background:#000;
+        height:100vh;
+        display:flex; justify-content:center; align-items:center;
+        overflow:hidden;
+        touch-action:none;
+    }
+    #sigill {
+        width:140px; height:140px;
+        border-radius:50%;
+        border:3px solid rgba(200,200,200,0.8);
+        display:flex; justify-content:center; align-items:center;
+        color:silver;
+        font-size:72px;
+        font-family:serif;
+        animation:pulse 2.8s infinite ease-in-out;
+        box-shadow:0 0 20px rgba(160,160,160,0.4);
+    }
+    @keyframes pulse {
+        0%   { transform:scale(1);   opacity:0.8; }
+        50%  { transform:scale(1.12); opacity:1; }
+        100% { transform:scale(1);   opacity:0.8; }
+    }
+    body::after {
+        content:"";
+        position:absolute; inset:0;
+        background: radial-gradient(circle at 50% 120%, rgba(0,80,140,0.18), transparent 70%);
+        animation:water 6s infinite ease-in-out;
+        opacity:0.45;
+        pointer-events:none;
+    }
+    @keyframes water {
+        0%   { transform:translateY(0px); }
+        50%  { transform:translateY(-18px); }
+        100% { transform:translateY(0px); }
+    }
+</style>
+</head>
+<body>
+<div id="sigill">Æ</div>
+<script src="portal_guard.js"></script>
+
+<!-- GLOBAL NAVIGATION SYSTEM -->
+<script src="js/global_nav_menu.js" defer></script>
+
+<!-- COMPLETE NAVIGATION SYSTEM -->
+<link rel="stylesheet" href="css/navigation.css">
+<script src="js/navigation_hub.js" defer></script>
+<script src="/js/global_nav.js"></script>
+</body>
+</html>
+

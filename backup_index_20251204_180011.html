@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ÆSI PORTAL v2.0</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.4/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #0a0a0a; color: #e5e7eb; font-family: sans-serif; }
+    </style>
+</head>
+<body>
+    <div class="max-w-7xl mx-auto px-4 py-12 text-center">
+        <h1 class="text-5xl font-bold text-green-500 mb-4">ÆSI SYSTEM ONLINE</h1>
+        <p class="text-xl text-gray-400 mb-12">Portalens kärna är nu statisk och röststyrd.</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <a href="/vision-builder.html" class="block p-8 bg-gray-900 rounded-xl border border-gray-800 hover:border-green-500 transition hover:shadow-lg group">
+                <div class="text-4xl mb-4">🎙️</div>
+                <h2 class="text-2xl font-bold text-white group-hover:text-green-400">Vision Builder</h2>
+                <p class="text-gray-500 mt-2">Bygg nya sidor med din röst.</p>
+            </a>
+
+            <a href="/deploy-console.html" class="block p-8 bg-gray-900 rounded-xl border border-gray-800 hover:border-blue-500 transition hover:shadow-lg group">
+                <div class="text-4xl mb-4">💻</div>
+                <h2 class="text-2xl font-bold text-white group-hover:text-blue-400">Live Konsol</h2>
+                <p class="text-gray-500 mt-2">Kör kommandon direkt mot systemet.</p>
+            </a>
+        </div>
+
+        <div class="mt-16 text-sm text-gray-600">
+            Status: <span class="text-green-500">ACTIVE</span> | Uppdaterad: <span id="status-time">NU</span>
+        </div>
+    </div>
+
+    <script src="/js/global_nav.js"></script>
+</body>
+</html>

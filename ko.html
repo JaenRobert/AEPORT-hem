@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Æ-GATE: Portal Entrance</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            color: #eaeaea;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .gate-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+        }
+
+        .ae-symbol {
+            font-size: 120px;
+            color: #4F46E5;
+            text-shadow: 0 0 40px rgba(79, 70, 229, 0.6);
+            animation: ae-pulse 2s ease-in-out infinite;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .ae-symbol:hover {
+            transform: scale(1.1);
+            text-shadow: 0 0 60px rgba(79, 70, 229, 0.8);
+        }
+
+        @keyframes ae-pulse {
+            0%, 100% { 
+                transform: scale(1);
+                text-shadow: 0 0 40px rgba(79, 70, 229, 0.6);
+            }
+            50% { 
+                transform: scale(1.05);
+                text-shadow: 0 0 70px rgba(79, 70, 229, 0.9);
+            }
+        }
+
+        .portal-title {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .portal-title h1 {
+            font-size: 28px;
+            color: #eaeaea;
+            letter-spacing: 3px;
+            margin-bottom: 8px;
+        }
+
+        .portal-title p {
+            font-size: 12px;
+            color: #999;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .gate-status {
+            position: fixed;
+            top: 40px;
+            right: 40px;
+            background: rgba(15, 15, 15, 0.8);
+            border: 1px solid #262626;
+            border-radius: 8px;
+            padding: 16px;
+            color: #999;
+            font-size: 11px;
+            max-width: 200px;
+            z-index: 100;
+        }
+
+        .gate-status .node-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 0;
+            border-bottom: 1px solid #262626;
+        }
+
+        .gate-status .node-indicator:last-child {
+            border-bottom: none;
+        }
+
+        .node-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #666;
+        }
+
+        .node-dot.pending {
+            background: #fbbf24;
+            animation: blink 1s infinite;
+        }
+
+        .node-dot.verified {
+            background: #10b981;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* GATEKEEPER OVERLAY */
+        .gatekeeper-overlay {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 400px;
+            background: linear-gradient(135deg, rgba(10, 10, 10, 0.95) 0%, rgba(26, 26, 26, 0.95) 100%);
+            border: 2px solid #4F46E5;
+            border-bottom: none;
+            border-right: none;
+            border-radius: 12px 0 0 0;
+            color: #eaeaea;
+            font-family: 'JetBrains Mono', monospace;
+            z-index: 500;
+            display: flex;
+            flex-direction: column;
+            max-height: 80vh;
+            box-shadow: -20px -20px 60px rgba(79, 70, 229, 0.15);
+        }
+
+        .gatekeeper-header {
+            padding: 16px;
+            border-bottom: 1px solid #262626;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .gatekeeper-header h3 {
+            font-size: 12px;
+            color: #4F46E5;
+            letter-spacing: 1px;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        .gatekeeper-close {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 18px;
+            transition: color 0.2s;
+        }
+
+        .gatekeeper-close:hover {
+            color: #eaeaea;
+        }
+
+        .gatekeeper-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .message {
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            line-height: 1.4;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.system {
+            background: rgba(79, 70, 229, 0.1);
+            border-left: 3px solid #4F46E5;
+            color: #999;
+        }
+
+        .message.verify-request {
+            background: rgba(251, 191, 36, 0.1);
+            border-left: 3px solid #fbbf24;
+            color: #eaeaea;
+        }
+
+        .message.verified {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 3px solid #10b981;
+            color: #10b981;
+        }
+
+        .message.failed {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 3px solid #ef4444;
+            color: #ef4444;
+        }
+
+        .gatekeeper-input {
+            padding: 12px;
+            border-top: 1px solid #262626;
+            display: flex;
+            gap: 8px;
+        }
+
+        .gatekeeper-input input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #262626;
+            border-radius: 4px;
+            color: #eaeaea;
+            padding: 8px 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            transition: border-color 0.2s;
+        }
+
+        .gatekeeper-input input:focus {
+            outline: none;
+            border-color: #4F46E5;
+        }
+
+        .gatekeeper-input input::placeholder {
+            color: #666;
+        }
+
+        .gatekeeper-btn {
+            background: #4F46E5;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .gatekeeper-btn:hover {
+            background: #4338ca;
+        }
+
+        .gatekeeper-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .gatekeeper-btn.loading {
+            opacity: 0.7;
+        }
+
+        .node-verification-list {
+            padding: 12px;
+            border-top: 1px solid #262626;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .node-verify-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 4px;
+            font-size: 10px;
+        }
+
+        .node-verify-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #666;
+            flex-shrink: 0;
+        }
+
+        .node-verify-dot.pending {
+            background: #fbbf24;
+            animation: blink 1s infinite;
+        }
+
+        .node-verify-dot.verified {
+            background: #10b981;
+        }
+
+        .node-verify-dot.failed {
+            background: #ef4444;
+        }
+
+        .node-verify-label {
+            flex: 1;
+        }
+
+        .node-verify-id {
+            color: #4F46E5;
+            font-weight: 600;
+        }
+
+        .node-verify-status {
+            color: #666;
+            font-size: 9px;
+        }
+
+        /* HIDDEN BY DEFAULT */
+        .gatekeeper-overlay {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .gatekeeper-overlay.open {
+            opacity: 1;
+            pointer-events: all;
+            transform: translateY(0);
+        }
+
+        /* PORTAL GRID BACKGROUND */
+        .portal-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.03;
+            z-index: 1;
+            background-image: 
+                linear-gradient(0deg, transparent 24%, rgba(79, 70, 229, 0.1) 25%, rgba(79, 70, 229, 0.1) 26%, transparent 27%, transparent 74%, rgba(79, 70, 229, 0.1) 75%, rgba(79, 70, 229, 0.1) 76%, transparent 77%, transparent),
+                linear-gradient(90deg, transparent 24%, rgba(79, 70, 229, 0.1) 25%, rgba(79, 70, 229, 0.1) 26%, transparent 27%, transparent 74%, rgba(79, 70, 229, 0.1) 75%, rgba(79, 70, 229, 0.1) 76%, transparent 77%, transparent);
+            background-size: 50px 50px;
+        }
+
+        .content-wrapper {
+            position: relative;
+            z-index: 2;
+        }
+
+        @media (max-width: 768px) {
+            .gatekeeper-overlay {
+                width: 100%;
+                border-radius: 12px 12px 0 0;
+            }
+
+            .gate-status {
+                top: 20px;
+                right: 20px;
+            }
+
+            .ae-symbol {
+                font-size: 80px;
+            }
+
+            .portal-title h1 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="portal-grid"></div>
+    
+    <div class="gate-container">
+        <div class="content-wrapper">
+            <div class="portal-title">
+                <h1>Æ-GATE</h1>
+                <p>Portal Entrance // Node Verification</p>
+            </div>
+
+            <div class="ae-symbol" onclick="openGatekeeper()">Æ</div>
+        </div>
+    </div>
+
+    <div class="gate-status" id="gateStatus">
+        <div style="margin-bottom: 8px; color: #4F46E5; font-weight: 600;">NODE VERIFICATION</div>
+        <div class="node-indicator">
+            <div class="node-dot" id="node-010-indicator"></div>
+            <span>E1TAN (010)</span>
+        </div>
+        <div class="node-indicator">
+            <div class="node-dot" id="node-020-indicator"></div>
+            <span>REFLEX (020)</span>
+        </div>
+        <div class="node-indicator">
+            <div class="node-dot" id="node-030-indicator"></div>
+            <span>HAFTED (030)</span>
+        </div>
+        <div class="node-indicator">
+            <div class="node-dot" id="node-040-indicator"></div>
+            <span>CLAUDE (040)</span>
+        </div>
+        <div class="node-indicator">
+            <div class="node-dot" id="node-050-indicator"></div>
+            <span>SMILE (050)</span>
+        </div>
+        <div class="node-indicator">
+            <div class="node-dot" id="node-060-indicator"></div>
+            <span>ERNIE (060)</span>
+        </div>
+    </div>
+
+    <!-- GATEKEEPER OVERLAY -->
+    <div class="gatekeeper-overlay" id="gatekeeperOverlay">
+        <div class="gatekeeper-header">
+            <h3>⚔️ Æ-Gatekeeper</h3>
+            <button class="gatekeeper-close" onclick="closeGatekeeper()">✕</button>
+        </div>
+
+        <div class="gatekeeper-content" id="gatekeeperContent">
+            <div class="message system">
+                🔐 Æ-GATE ACTIVATED<br>
+                Verify your identity through the node collective.
+            </div>
+        </div>
+
+        <div class="node-verification-list" id="nodeVerificationList">
+            <div class="node-verify-item">
+                <div class="node-verify-dot pending" id="node-010-verify"></div>
+                <div class="node-verify-label">
+                    <div class="node-verify-id">E1TAN (010)</div>
+                    <div class="node-verify-status">Pending...</div>
+                </div>
+            </div>
+            <div class="node-verify-item">
+                <div class="node-verify-dot pending" id="node-020-verify"></div>
+                <div class="node-verify-label">
+                    <div class="node-verify-id">REFLEX (020)</div>
+                    <div class="node-verify-status">Pending...</div>
+                </div>
+            </div>
+            <div class="node-verify-item">
+                <div class="node-verify-dot pending" id="node-030-verify"></div>
+                <div class="node-verify-label">
+                    <div class="node-verify-id">HAFTED (030)</div>
+                    <div class="node-verify-status">Pending...</div>
+                </div>
+            </div>
+            <div class="node-verify-item">
+                <div class="node-verify-dot pending" id="node-040-verify"></div>
+                <div class="node-verify-label">
+                    <div class="node-verify-id">CLAUDE (040)</div>
+                    <div class="node-verify-status">Pending...</div>
+                </div>
+            </div>
+            <div class="node-verify-item">
+                <div class="node-verify-dot pending" id="node-050-verify"></div>
+                <div class="node-verify-label">
+                    <div class="node-verify-id">SMILE (050)</div>
+                    <div class="node-verify-status">Pending...</div>
+                </div>
+            </div>
+            <div class="node-verify-item">
+                <div class="node-verify-dot pending" id="node-060-verify"></div>
+                <div class="node-verify-label">
+                    <div class="node-verify-id">ERNIE (060)</div>
+                    <div class="node-verify-status">Pending...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="gatekeeper-input">
+            <input type="text" id="gatekeeperInput" placeholder="Describe your purpose..." />
+            <button class="gatekeeper-btn" onclick="requestGateAccess()">Request Access</button>
+        </div>
+    </div>
+
+    <script src="js/ae_time_calc.js"></script>
+    <script src="js/ae_gatekeeper.js"></script>
+<script src="/js/global_nav.js"></script>
+</body>
+</html>
+

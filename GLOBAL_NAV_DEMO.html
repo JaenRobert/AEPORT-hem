@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Navigation System - Demo</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        header {
+            background: linear-gradient(135deg, #6366f1 0%, #a78bfa 100%);
+            color: white;
+            padding: 60px 40px;
+            text-align: center;
+        }
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 40px;
+        }
+        .section {
+            margin-bottom: 40px;
+        }
+        .section h2 {
+            color: #6366f1;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #e0e7ff;
+            padding-bottom: 10px;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .feature-card {
+            background: #f8f9fa;
+            border-left: 4px solid #6366f1;
+            padding: 20px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover {
+            background: #f0f4ff;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(99,102,241,0.2);
+        }
+        .feature-card h3 {
+            color: #6366f1;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        .feature-card p {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+        .button-demo {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .demo-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            font-size: 0.9em;
+        }
+        .demo-btn-primary { background: #6366f1; }
+        .demo-btn-primary:hover { background: #4f46e5; transform: translateY(-2px); }
+        
+        .demo-btn-success { background: #10b981; }
+        .demo-btn-success:hover { background: #059669; transform: translateY(-2px); }
+        
+        .demo-btn-warning { background: #f59e0b; }
+        .demo-btn-warning:hover { background: #d97706; transform: translateY(-2px); }
+        
+        .demo-btn-danger { background: #ef4444; }
+        .demo-btn-danger:hover { background: #dc2626; transform: translateY(-2px); }
+        
+        .instructions {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .instructions h3 {
+            color: #92400e;
+            margin-bottom: 10px;
+        }
+        .instructions p {
+            color: #78350f;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        .instructions code {
+            background: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #6366f1;
+        }
+        .shortcuts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .shortcut {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+        }
+        .shortcut kbd {
+            background: #6366f1;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .shortcut p {
+            color: #666;
+            margin-top: 8px;
+            font-size: 0.9em;
+        }
+        .side-buttons-demo {
+            position: relative;
+            background: #f8f9fa;
+            border: 2px dashed #6366f1;
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            margin: 20px 0;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .side-buttons-demo p {
+            color: #999;
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            width: 100%;
+        }
+        .mini-btn {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .mini-btn:hover {
+            background: #4f46e5;
+            transform: scale(1.05);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        table th, table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        table th {
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #6366f1;
+        }
+        table tr:hover {
+            background: #f8f9fa;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+        .status.ready {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status.active {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        footer {
+            background: #f8f9fa;
+            padding: 20px 40px;
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+            color: #999;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🌟 GLOBAL NAVIGATION SYSTEM</h1>
+        <p>A fun, multi-directional scroll menu with floating buttons on all sides</p>
+    </header>
+
+    <div class="content">
+
+        <!-- QUICK START -->
+        <div class="section">
+            <h2>⚡ Quick Start</h2>
+            <div class="instructions">
+                <h3>To enable navigation on any page:</h3>
+                <p>Add this single line before <code>&lt;/body&gt;</code>:</p>
+                <p style="font-family: monospace; background: white; padding: 10px; border-radius: 4px; margin-top: 10px;">
+                    &lt;script src="js/global_nav_menu.js" defer&gt;&lt;/script&gt;
+                </p>
+                <p style="margin-top: 10px; font-size: 0.9em;">✅ That's it! The menu appears automatically on every page.</p>
+            </div>
+        </div>
+
+        <!-- FEATURES -->
+        <div class="section">
+            <h2>✨ Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3>📜 Scroll Menu</h3>
+                    <p>Beautiful left-sliding menu with smooth animations and gradient background</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🎨 4-Sided Buttons</h3>
+                    <p>Floating buttons on top, bottom, left, and right sides of screen</p>
+                </div>
+                <div class="feature-card">
+                    <h3>📱 Responsive</h3>
+                    <p>Automatically adapts to different screen sizes and devices</p>
+                </div>
+                <div class="feature-card">
+                    <h3>⌨️ Keyboard Shortcuts</h3>
+                    <p>Use Ctrl+M to toggle menu, Esc to close</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🔍 Auto Detection</h3>
+                    <p>Automatically detects which page you're on and highlights it</p>
+                </div>
+                <div class="feature-card">
+                    <h3>⚡ Lightning Fast</h3>
+                    <p>Minimal overhead, no external dependencies needed</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- KEYBOARD SHORTCUTS -->
+        <div class="section">
+            <h2>⌨️ Keyboard Shortcuts</h2>
+            <div class="shortcuts">
+                <div class="shortcut">
+                    <kbd>Ctrl + M</kbd>
+                    <p>Toggle menu open/close</p>
+                </div>
+                <div class="shortcut">
+                    <kbd>Esc</kbd>
+                    <p>Close menu</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- DEMO BUTTONS -->
+        <div class="section">
+            <h2>🎮 Try the Demo Buttons</h2>
+            <div class="button-demo">
+                <button class="demo-btn demo-btn-primary">🏠 Navigation</button>
+                <button class="demo-btn demo-btn-success">✅ Success</button>
+                <button class="demo-btn demo-btn-warning">⚠️ Warning</button>
+                <button class="demo-btn demo-btn-danger">❌ Danger</button>
+            </div>
+            <div class="button-demo">
+                <button class="demo-btn demo-btn-primary">📊 Dashboard</button>
+                <button class="demo-btn demo-btn-primary">💬 Chat</button>
+                <button class="demo-btn demo-btn-primary">📦 Modules</button>
+                <button class="demo-btn demo-btn-primary">⚙️ Settings</button>
+            </div>
+        </div>
+
+        <!-- PAGES UPDATED -->
+        <div class="section">
+            <h2>📄 Pages Updated</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Page</th>
+                        <th>File</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Portal (Main)</td>
+                        <td>index.html</td>
+                        <td><span class="status ready">✅ Ready</span></td>
+                    </tr>
+                    <tr>
+                        <td>Live Chat</td>
+                        <td>chat.html</td>
+                        <td><span class="status ready">✅ Ready</span></td>
+                    </tr>
+                    <tr>
+                        <td>Admin Console</td>
+                        <td>console.html</td>
+                        <td><span class="status ready">✅ Ready</span></td>
+                    </tr>
+                    <tr>
+                        <td>Module Browser</td>
+                        <td>modules_page.html</td>
+                        <td><span class="status ready">✅ Ready</span></td>
+                    </tr>
+                    <tr>
+                        <td>Claude Console</td>
+                        <td>claude_console.html</td>
+                        <td><span class="status ready">✅ Ready</span></td>
+                    </tr>
+                    <tr>
+                        <td>Archivarius</td>
+                        <td>archivarius.html</td>
+                        <td><span class="status ready">✅ Ready</span></td>
+                    </tr>
+                    <tr>
+                        <td>Builder</td>
+                        <td>builder.html</td>
+                        <td><span class="status ready">✅ Ready</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- FILES -->
+        <div class="section">
+            <h2>📦 Files Included</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>File</th>
+                        <th>Description</th>
+                        <th>Size</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>js/global_nav_menu.js</code></td>
+                        <td>Main navigation system (550+ lines)</td>
+                        <td>~15KB</td>
+                    </tr>
+                    <tr>
+                        <td><code>js/nav_injector.js</code></td>
+                        <td>Auto-injector for pages</td>
+                        <td>~1KB</td>
+                    </tr>
+                    <tr>
+                        <td><code>GLOBAL_NAV_GUIDE.md</code></td>
+                        <td>Complete documentation</td>
+                        <td>Reference</td>
+                    </tr>
+                    <tr>
+                        <td><code>GLOBAL_NAV_IMPLEMENTATION_SUMMARY.md</code></td>
+                        <td>Implementation details</td>
+                        <td>Reference</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- MENU ITEMS -->
+        <div class="section">
+            <h2>📍 Navigation Menu Items</h2>
+            <p>The menu includes quick access to:</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; border-left: 4px solid #3b82f6;">
+                    <strong>📊 PORTAL</strong>
+                    <p style="color: #999; font-size: 0.85em; margin-top: 5px;">Main dashboard</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; border-left: 4px solid #10b981;">
+                    <strong>💬 LIVE CHAT</strong>
+                    <p style="color: #999; font-size: 0.85em; margin-top: 5px;">Real-time chat</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; border-left: 4px solid #f59e0b;">
+                    <strong>📦 MODULES</strong>
+                    <p style="color: #999; font-size: 0.85em; margin-top: 5px;">Module browser</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; border-left: 4px solid #ef4444;">
+                    <strong>❤️ CLAUDE</strong>
+                    <p style="color: #999; font-size: 0.85em; margin-top: 5px;">Claude console</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; border-left: 4px solid #8b5cf6;">
+                    <strong>⚙️ ADMIN</strong>
+                    <p style="color: #999; font-size: 0.85em; margin-top: 5px;">Admin console</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; border-left: 4px solid #06b6d4;">
+                    <strong>📚 ARCHIVARIUS</strong>
+                    <p style="color: #999; font-size: 0.85em; margin-top: 5px;">Archive viewer</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SIDE BUTTONS -->
+        <div class="section">
+            <h2>🎯 Floating Buttons Position</h2>
+            <div class="side-buttons-demo">
+                <p>Floating buttons appear on all 4 sides:</p>
+                <div class="button-grid">
+                    <button class="mini-btn" style="background: #3b82f6;">🏠 Top</button>
+                    <button class="mini-btn" style="background: #10b981;">💾 Bottom</button>
+                    <button class="mini-btn" style="background: #f59e0b;">⬆️ Left</button>
+                    <button class="mini-btn" style="background: #ef4444;">⬇️ Right</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CUSTOMIZATION -->
+        <div class="section">
+            <h2>🎨 Customization</h2>
+            <div style="background: #f0f4ff; border-left: 4px solid #6366f1; padding: 20px; border-radius: 8px;">
+                <h3 style="color: #6366f1; margin-bottom: 10px;">Easy to Customize</h3>
+                <p style="margin-bottom: 10px;">Edit <code>js/global_nav_menu.js</code> to:</p>
+                <ul style="margin-left: 20px; color: #666; line-height: 1.8;">
+                    <li>Add custom menu items</li>
+                    <li>Change colors and themes</li>
+                    <li>Add custom floating buttons</li>
+                    <li>Modify keyboard shortcuts</li>
+                    <li>Adjust responsive breakpoints</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- NEXT STEPS -->
+        <div class="section">
+            <h2>🚀 Next Steps</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <div style="background: #dbeafe; border-left: 4px solid #3b82f6; padding: 20px; border-radius: 8px;">
+                    <h3 style="color: #1e40af; margin-bottom: 10px;">1️⃣ Test It</h3>
+                    <p style="color: #1e3a8a; font-size: 0.9em;">Visit any updated page and see the menu in action. Press Ctrl+M to toggle.</p>
+                </div>
+                <div style="background: #dcfce7; border-left: 4px solid #10b981; padding: 20px; border-radius: 8px;">
+                    <h3 style="color: #165e31; margin-bottom: 10px;">2️⃣ Deploy</h3>
+                    <p style="color: #14532d; font-size: 0.9em;">All files are ready. No backend changes needed. Push to production immediately.</p>
+                </div>
+                <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 20px; border-radius: 8px;">
+                    <h3 style="color: #92400e; margin-bottom: 10px;">3️⃣ Customize</h3>
+                    <p style="color: #78350f; font-size: 0.9em;">Edit the script to add your own menu items and buttons as needed.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>✨ Global Navigation System v1.0.0 | Created December 2, 2025</p>
+        <p>📖 See <code>GLOBAL_NAV_GUIDE.md</code> for complete documentation</p>
+    </footer>
+
+</div>
+
+<script src="/js/global_nav.js"></script>
+</body>
+</html>
+

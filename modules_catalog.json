@@ -1,0 +1,159 @@
+{
+  "modules": {
+    "reasoning": {
+      "name": "reasoning",
+      "category": "core",
+      "version": "1.0.0",
+      "description": "Logisk slutledning och verifiering",
+      "tags": ["logic", "verification", "inference"],
+      "dependencies": [],
+      "status": "active"
+    },
+    "memory": {
+      "name": "memory",
+      "category": "core",
+      "version": "1.0.0",
+      "description": "Append-only minne och arkivering",
+      "tags": ["archive", "ledger", "persistence"],
+      "dependencies": [],
+      "status": "active"
+    },
+    "ethics": {
+      "name": "ethics",
+      "category": "governance",
+      "version": "1.0.0",
+      "description": "Etisk bedömning och Jonas-Lagen",
+      "tags": ["ethics", "governance", "mj-01"],
+      "dependencies": ["reasoning"],
+      "status": "active"
+    },
+    "creativity": {
+      "name": "creativity",
+      "category": "generation",
+      "version": "1.0.0",
+      "description": "Kreativ text- och idé-generering",
+      "tags": ["writing", "ideation", "synthesis"],
+      "dependencies": ["reasoning"],
+      "status": "active"
+    },
+    "analysis": {
+      "name": "analysis",
+      "category": "processing",
+      "version": "1.0.0",
+      "description": "Data- och textanalys",
+      "tags": ["analysis", "parsing", "extraction"],
+      "dependencies": ["reasoning"],
+      "status": "active"
+    },
+    "synthesis": {
+      "name": "synthesis",
+      "category": "processing",
+      "version": "1.0.0",
+      "description": "Sammanfattning och integration",
+      "tags": ["summary", "integration", "compilation"],
+      "dependencies": ["analysis", "reasoning"],
+      "status": "active"
+    },
+    "communication": {
+      "name": "communication",
+      "category": "interface",
+      "version": "1.0.0",
+      "description": "Nod-till-nod kommunikation",
+      "tags": ["messaging", "protocol", "sync"],
+      "dependencies": [],
+      "status": "active"
+    },
+    "heartbeat": {
+      "name": "heartbeat",
+      "category": "monitoring",
+      "version": "1.0.0",
+      "description": "Liveness-signalering och hälsokontroll",
+      "tags": ["monitoring", "health", "status"],
+      "dependencies": ["communication"],
+      "status": "active"
+    },
+    "caching": {
+      "name": "caching",
+      "category": "optimization",
+      "version": "1.0.0",
+      "description": "Resultat-caching och optimering",
+      "tags": ["performance", "cache", "memoization"],
+      "dependencies": ["memory"],
+      "status": "experimental"
+    },
+    "llm-bridge": {
+      "name": "llm-bridge",
+      "category": "external",
+      "version": "1.0.0",
+      "description": "Anslutning till externa LLM API:er",
+      "tags": ["integration", "api", "external"],
+      "dependencies": ["communication"],
+      "status": "active"
+    },
+    "book-writer": {
+      "name": "book-writer",
+      "category": "application",
+      "version": "1.0.0",
+      "description": "Bokskrivning och kapitelhantering",
+      "tags": ["writing", "composition", "structure"],
+      "dependencies": ["creativity", "synthesis", "memory"],
+      "status": "active"
+    },
+    "time-tracking": {
+      "name": "time-tracking",
+      "category": "monitoring",
+      "version": "1.0.0",
+      "description": "Temporal loggning och tidstracking",
+      "tags": ["time", "logging", "timeline"],
+      "dependencies": ["memory"],
+      "status": "active"
+    }
+  },
+  "categories": {
+    "core": {
+      "name": "Core",
+      "icon": "⚙️",
+      "description": "Grundläggande moduler"
+    },
+    "governance": {
+      "name": "Governance",
+      "icon": "⚖️",
+      "description": "Etik och styrning"
+    },
+    "generation": {
+      "name": "Generation",
+      "icon": "✨",
+      "description": "Kreativ generering"
+    },
+    "processing": {
+      "name": "Processing",
+      "icon": "🔄",
+      "description": "Data-behandling"
+    },
+    "interface": {
+      "name": "Interface",
+      "icon": "🔌",
+      "description": "Gränssnitt"
+    },
+    "monitoring": {
+      "name": "Monitoring",
+      "icon": "📊",
+      "description": "Övervakning"
+    },
+    "optimization": {
+      "name": "Optimization",
+      "icon": "⚡",
+      "description": "Prestandaoptimering"
+    },
+    "external": {
+      "name": "External",
+      "icon": "🌐",
+      "description": "Externa integrationer"
+    },
+    "application": {
+      "name": "Application",
+      "icon": "📱",
+      "description": "Applikationsnivå"
+    }
+  }
+}
