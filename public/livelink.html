@@ -1,0 +1,59 @@
+﻿<!DOCTYPE html>
+<html lang='sv'>
+<head>
+<meta charset='UTF-8'>
+<title>ÆSI LiveLink</title>
+<link href='https://cdn.jsdelivr.net/npm/tailwindcss@3.4.4/dist/tailwind.min.css' rel='stylesheet'>
+<script src='/js/nav_menu.js'></script>
+<style>
+body { background:#050505; color:#00ffcc; font-family:monospace; }
+#log { background:#0a0a0a; border:1px solid #0f0; border-radius:8px; padding:15px; height:60vh; overflow-y:auto; }
+input, select { background:#111; border:1px solid #0f0; color:#00ffcc; padding:6px; border-radius:6px; }
+button { background:#00ffcc; color:#000; padding:8px 14px; border-radius:6px; margin-left:5px; }
+.mic { font-size:22px; cursor:pointer; }
+</style>
+</head>
+<body class='p-6'>
+<h1 class='text-3xl text-green-400 mb-4'>🛰️ ÆSI LiveLink</h1>
+<div class='flex gap-2 mb-4'>
+<select id='node'>
+<option>Gemini</option>
+<option>GPT</option>
+<option>Claude</option>
+</select>
+<input id='apiKey' type='password' placeholder='API Key'>
+<input id='prompt' type='text' placeholder='Säg något till nätet...' class='w-1/2'>
+<span class='mic' onclick='startVoice()'>🎙️</span>
+<button onclick='sendPulse()'>Skicka</button>
+</div>
+<div id='log'></div>
+<script>
+const log = document.getElementById('log');
+function addMsg(sender,text){ const d=document.createElement('div'); d.innerHTML=\<b>\</b>: \\; log.appendChild(d); log.scrollTop=log.scrollHeight; }
+
+const ws = new WebSocket('ws://127.0.0.1:8767');
+ws.onmessage = e => {
+  if(e.data.startsWith('CHAT_MSG:')) addMsg('🧠', e.data.substring(9));
+  else if(e.data.startsWith('SERVER_LOG:')) addMsg('⚙️', e.data.substring(11));
+};
+
+async function sendPulse(){
+  const node=document.getElementById('node').value;
+  const prompt=document.getElementById('prompt').value;
+  const apiKey=document.getElementById('apiKey').value;
+  addMsg('🗣️ Dirigent', prompt);
+  await fetch('/api/pulse',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({node,prompt,apiKey})});
+}
+
+function startVoice(){
+  const rec=new(window.SpeechRecognition||window.webkitSpeechRecognition)();
+  rec.lang='sv-SE';
+  rec.start();
+  rec.onresult=e=>{
+    document.getElementById('prompt').value=e.results[0][0].transcript;
+    sendPulse();
+  };
+}
+</script>
+</body>
+</html>
