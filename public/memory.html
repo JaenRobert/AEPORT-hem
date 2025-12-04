@@ -1,0 +1,49 @@
+﻿<!DOCTYPE html>
+<html lang='sv'>
+<head>
+  <meta charset='UTF-8'>
+  <title>💾 ÆSI Tunnan</title>
+  <link href='https://cdn.jsdelivr.net/npm/tailwindcss@3.4.4/dist/tailwind.min.css' rel='stylesheet'>
+  <style>
+    body { background:#050505; color:#00ffcc; font-family:monospace; padding:20px; }
+    table { width:100%; border-collapse: collapse; }
+    th, td { border-bottom:1px solid #111; padding:8px; text-align:left; }
+    tr:hover { background:#0a0a0a; }
+  </style>
+</head>
+<body>
+  <h1 class='text-2xl mb-4'>💾 ÆSI Tunnan - Konversationsminne</h1>
+  <div id='status' class='text-yellow-400 mb-3'>Läser in...</div>
+  <table id='memoryTable'>
+    <thead><tr><th>ID</th><th>Datum</th><th>Text</th><th>AI-nod</th><th>Åtgärd</th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <script>
+    async function loadMemory() {
+      const res = await fetch('/api/memory');
+      const data = await res.json();
+      const tbody = document.querySelector('#memoryTable tbody');
+      tbody.innerHTML = '';
+      data.forEach(e => {
+        const row = document.createElement('tr');
+        row.innerHTML = \
+          <td>\</td>
+          <td>\</td>
+          <td>\</td>
+          <td>\</td>
+          <td><button onclick="deleteEntry(\)" class='text-red-500'>🗑️</button></td>
+        \;
+        tbody.appendChild(row);
+      });
+      document.getElementById('status').textContent = "✅ Tunnan laddad (" + data.length + " poster)";
+    }
+
+    async function deleteEntry(id) {
+      await fetch('/api/memory/' + id, { method: 'DELETE' });
+      loadMemory();
+    }
+
+    loadMemory();
+  </script>
+</body>
+</html>
