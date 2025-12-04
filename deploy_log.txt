@@ -45,3 +45,5 @@ Netlify OK
 Rollback aktiverad: .\backup_index_20251204_224413.html
 [22:44:23] --- DEPLOY KLAR ---
 
+
+[2025-12-04 22:44:55] --- START DEPLOY v1.6 ---
