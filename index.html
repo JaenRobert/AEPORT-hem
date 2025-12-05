@@ -2,114 +2,208 @@
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
-    <title>ÆSI PORTAL v6.0 | CHRONOS EDITOR</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ÆSI PORTAL v6.2 | NEURAL LINK</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        /* LAYOUT: 3 Kolumner (Chatt | Cockpit | Minne) */
-        body { background: #050505; color: #e5e5e5; height: 100vh; display: grid; grid-template-columns: 300px 1fr 350px; font-family: 'Courier New', monospace; overflow: hidden; }
+        /* ÆSI MASTER THEME v6.2 */
+        :root {
+            --bg-deep: #050505;
+            --bg-panel: #0a0a0a;
+            --border: #222;
+            --accent: #6366f1; /* Indigo */
+            --archivarius: #facc15; /* Yellow */
+            --text-main: #e5e5e5;
+            --text-dim: #888;
+        }
         
-        /* GEMENSAMMA STILAR */
-        .panel { display: flex; flex-direction: column; background: #0a0a0a; border-right: 1px solid #222; }
-        .header { padding: 15px; border-bottom: 1px solid #222; font-weight: bold; display: flex; align-items: center; gap: 10px; color: #fff; background: #000; }
-        .content { flex: 1; overflow-y: auto; padding: 15px; }
+        body { 
+            background: var(--bg-deep); 
+            color: var(--text-main); 
+            height: 100vh; 
+            display: grid; 
+            grid-template-columns: 320px 1fr 300px; 
+            font-family: 'JetBrains Mono', 'Courier New', monospace; 
+            overflow: hidden; 
+        }
         
-        /* VÄNSTER: CHATT (Archivarius) */
-        .msg { padding: 10px; margin-bottom: 10px; background: #111; border-radius: 4px; border-left: 2px solid #333; font-size: 0.8rem; line-height: 1.4; }
-        .msg.archivarius { border-left-color: #facc15; background: rgba(250, 204, 21, 0.05); color: #fef08a; }
-        .chat-input-area { padding: 15px; border-top: 1px solid #222; background: #000; }
+        /* --- PANEL STRUCTURE --- */
+        .panel { 
+            display: flex; 
+            flex-direction: column; 
+            background: var(--bg-panel); 
+            border-right: 1px solid var(--border); 
+            position: relative;
+        }
         
-        /* MITTEN: COCKPIT (Kontroller) */
-        .cockpit-panel { background: #080808; display: flex; flex-direction: column; }
-        .preview-box { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #444; }
-        .control-deck { padding: 20px; background: #111; border-top: 1px solid #333; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .header { 
+            padding: 15px; 
+            border-bottom: 1px solid var(--border); 
+            font-weight: 700; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            color: #fff; 
+            background: #000; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.75rem;
+        }
         
-        label { display: block; font-size: 0.65rem; color: #666; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
-        select, input[type="text"] { width: 100%; background: #000; border: 1px solid #333; padding: 10px; color: #fff; outline: none; font-family: inherit; font-size: 0.8rem; }
-        select:focus, input:focus { border-color: #6366f1; }
+        .content { flex: 1; overflow-y: auto; padding: 15px; scrollbar-width: thin; scrollbar-color: #333 #000; }
+        
+        /* --- VÄNSTER: CHATT (NEURAL LINK) --- */
+        .msg { 
+            padding: 12px; 
+            margin-bottom: 15px; 
+            background: #111; 
+            border-radius: 6px; 
+            border-left: 3px solid #333; 
+            font-size: 0.8rem; 
+            line-height: 1.5; 
+            animation: fadeIn 0.3s ease;
+        }
+        .msg strong { display: block; margin-bottom: 4px; font-size: 0.7rem; opacity: 0.7; }
+        .msg.user { border-left-color: var(--accent); background: #0f0f15; }
+        .msg.archivarius { border-left-color: var(--archivarius); background: rgba(250, 204, 21, 0.05); color: #fef9c3; }
+        .msg.system { border-left-color: #ef4444; color: #fca5a5; }
+        
+        .chat-input-area { padding: 15px; border-top: 1px solid var(--border); background: #000; }
+        .chat-input {
+            width: 100%; background: #111; border: 1px solid #333; padding: 12px; 
+            color: #fff; outline: none; border-radius: 4px; font-family: inherit;
+            transition: border-color 0.2s;
+        }
+        .chat-input:focus { border-color: var(--accent); }
 
-        .action-btn { background: #1e1b4b; color: #818cf8; border: 1px solid #4338ca; padding: 15px; width: 100%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s; }
-        .action-btn:hover { background: #312e81; color: #fff; box-shadow: 0 0 15px rgba(99, 102, 241, 0.3); }
+        /* --- MITTEN: COCKPIT (WEAVER) --- */
+        .preview-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; }
+        .control-deck { padding: 25px; background: #080808; border-top: 1px solid var(--border); }
+        
+        .setting-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.65rem; color: var(--text-dim); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
+        
+        select, input[type="text"] { 
+            width: 100%; background: #111; border: 1px solid #333; padding: 10px; 
+            color: #fff; outline: none; font-family: inherit; font-size: 0.8rem; border-radius: 4px;
+        }
+        select:focus, input:focus { border-color: var(--accent); }
 
-        /* HÖGER: MINNET (Filväljare) */
-        .memory-panel { border-right: none; border-left: 1px solid #222; }
+        .action-btn { 
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); 
+            color: #818cf8; border: 1px solid #4338ca; 
+            padding: 15px; width: 100%; cursor: pointer; font-weight: bold; 
+            display: flex; align-items: center; justify-content: center; gap: 10px; 
+            border-radius: 4px; transition: all 0.2s; text-transform: uppercase; font-size: 0.8rem;
+        }
+        .action-btn:hover { filter: brightness(1.2); box-shadow: 0 0 20px rgba(99, 102, 241, 0.2); }
+        .action-btn:active { transform: translateY(1px); }
+
+        /* --- HÖGER: MINNET (DATA BANK) --- */
         .file-list { padding: 0; }
-        .file-row { display: flex; align-items: center; gap: 10px; padding: 8px 15px; border-bottom: 1px solid #1a1a1a; font-size: 0.75rem; color: #888; cursor: pointer; transition: background 0.1s; }
-        .file-row:hover { background: #151515; color: #fff; }
-        .file-row input[type="checkbox"] { accent-color: #6366f1; cursor: pointer; }
-        
-        /* RESULTAT LÄNKAR */
-        .result-link { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; background: #000; border: 1px solid #333; color: #4ade80; text-decoration: none; margin-top: 5px; font-size: 0.8rem; transition: all 0.2s; width: 100%; }
-        .result-link:hover { border-color: #4ade80; background: #052e16; }
-        .result-link.txt { color: #60a5fa; }
-        .result-link.txt:hover { border-color: #60a5fa; background: #172554; }
+        .file-row { 
+            display: flex; align-items: center; gap: 10px; padding: 8px 15px; 
+            border-bottom: 1px solid #1a1a1a; font-size: 0.75rem; color: var(--text-dim); 
+            cursor: pointer; transition: all 0.1s; 
+        }
+        .file-row:hover { background: #151515; color: #fff; padding-left: 18px; }
+        .file-row input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; }
+        .file-icon { width: 14px; height: 14px; opacity: 0.7; }
 
+        /* --- UTILS --- */
+        .result-link { 
+            display: flex; align-items: center; justify-content: center; gap: 8px; 
+            padding: 12px; background: #111; border: 1px solid #333; color: #4ade80; 
+            text-decoration: none; margin-top: 8px; font-size: 0.75rem; border-radius: 4px; 
+            transition: all 0.2s; width: 100%; font-weight: bold;
+        }
+        .result-link:hover { border-color: #4ade80; background: rgba(74, 222, 128, 0.1); }
+        .result-link.txt { color: #60a5fa; }
+        .result-link.txt:hover { border-color: #60a5fa; background: rgba(96, 165, 250, 0.1); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Status dots */
+        .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .dot.online { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
+        .dot.offline { background: #ef4444; }
     </style>
 </head>
 <body>
 
-    <!-- 1. VÄNSTER: ARCHIVARIUS CHATT -->
+    <!-- 1. VÄNSTER: NEURAL CHATT -->
     <div class="panel">
-        <div class="header" style="color: #facc15;">
-            <i data-lucide="bot" class="w-4 h-4"></i> ARCHIVARIUS
+        <div class="header" style="color: var(--archivarius);">
+            <i data-lucide="brain-circuit" class="w-4 h-4"></i> ARCHIVARIUS (AI)
         </div>
         <div id="chat-log" class="content">
             <div class="msg archivarius">
-                <strong>SYSTEM:</strong> Chronos Editor v6.0 online.<br>
-                Jag är redo att filtrera tidslinjen. Välj dina parametrar i Cockpiten.
+                <strong>SYSTEM [v6.2]:</strong> Neural koppling redo.<br>
+                Jag har tillgång till dina API-nycklar i .env.<br>
+                Ställ en fråga om dina loggar eller be mig analysera mönster.
             </div>
         </div>
         <div class="chat-input-area">
-            <input type="text" id="chat-in" placeholder="Kommando till arkivet..." onkeydown="handleChat(event)">
+            <input type="text" id="chat-in" class="chat-input" placeholder="Fråga Brunnen..." onkeydown="handleChat(event)" autocomplete="off">
+            <div class="text-[10px] text-gray-600 mt-2 flex justify-between">
+                <span>MODEL: AUTO</span>
+                <span id="connection-status"><span class="dot online"></span>CONNECTED</span>
+            </div>
         </div>
     </div>
 
     <!-- 2. MITTEN: CHRONOS COCKPIT -->
-    <div class="cockpit-panel">
-        <div class="preview-area preview-box">
-            <div id="weave-status" class="text-center">
-                <i data-lucide="layers" class="w-16 h-16 mx-auto mb-4 opacity-20"></i>
-                <div class="text-xs text-gray-500 uppercase tracking-widest">Vävstatus: Väntar</div>
+    <div class="panel">
+        <div class="preview-area">
+            <div id="weave-status" class="text-center p-8">
+                <div class="mb-6 relative">
+                    <div class="absolute inset-0 bg-indigo-500 blur-2xl opacity-10 rounded-full"></div>
+                    <i data-lucide="layers" class="w-20 h-20 mx-auto text-indigo-500 relative z-10"></i>
+                </div>
+                <h2 class="text-xl font-bold text-white mb-2">CHRONOS EDITOR</h2>
+                <div class="text-xs text-gray-500 uppercase tracking-widest mb-6">Master Weaving Engine</div>
+                <div id="download-links" class="w-72 mx-auto"></div>
             </div>
-            <div id="download-links" class="w-64 mt-6"></div>
         </div>
         
         <div class="control-deck">
-            <!-- Inställningar -->
-            <div>
-                <label><i data-lucide="layout-template" class="inline w-3 h-3 mr-1"></i> FORMAT MALL</label>
-                <select id="template-select" class="mb-4">
-                    <option value="standard">Standard (Master History)</option>
-                    <option value="legal">⚖️ Lagbok & Protokoll (Röd)</option>
-                    <option value="story">🌲 Narrativ Krönika (Grön)</option>
-                </select>
-                
-                <label><i data-lucide="filter" class="inline w-3 h-3 mr-1"></i> NOD FILTER (T.ex. "Ernie")</label>
-                <input type="text" id="node-filter" placeholder="Lämna tomt för alla noder...">
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label><i data-lucide="layout-template" class="inline w-3 h-3 mr-1"></i> FORMAT</label>
+                    <select id="template-select">
+                        <option value="standard">Standard (Master)</option>
+                        <option value="legal">⚖️ Lagbok (Röd)</option>
+                        <option value="story">🌲 Krönika (Grön)</option>
+                    </select>
+                </div>
+                <div>
+                    <label><i data-lucide="filter" class="inline w-3 h-3 mr-1"></i> NOD FILTER</label>
+                    <input type="text" id="node-filter" placeholder="Alla noder...">
+                </div>
             </div>
             
-            <!-- Startknapp -->
-            <div class="flex flex-col justify-end">
-                <button onclick="triggerWeave()" class="action-btn">
-                    <i data-lucide="loom" class="w-5 h-5"></i> STARTA VÄVAREN
-                </button>
-            </div>
+            <button onclick="triggerWeave()" class="action-btn">
+                <i data-lucide="loom" class="w-5 h-5"></i> INITIERA VÄVNING
+            </button>
         </div>
     </div>
 
-    <!-- 3. HÖGER: MINNESBANK (FILVÄLJARE) -->
-    <div class="memory-panel">
-        <div class="header" style="color: #6366f1; justify-content: space-between;">
+    <!-- 3. HÖGER: MINNESBANK -->
+    <div class="panel memory-panel">
+        <div class="header" style="color: var(--accent); justify-content: space-between;">
             <span class="flex items-center gap-2"><i data-lucide="database" class="w-4 h-4"></i> MINNET</span>
-            <button onclick="toggleAll()" class="text-[10px] bg-[#111] px-2 py-1 border border-[#333] hover:bg-[#222]">VÄLJ ALLA</button>
+            <button onclick="toggleAll()" class="text-[10px] bg-[#111] px-2 py-1 border border-[#333] hover:bg-[#fff] hover:text-black transition-colors rounded">VÄLJ ALLA</button>
         </div>
+        
         <div id="memory-list" class="content file-list">
             <!-- Filer laddas här -->
-            <div class="text-center p-4 text-gray-600 text-xs">Laddar minnesbank...</div>
+            <div class="text-center p-8 text-gray-600 text-xs animate-pulse">Scanner Brunnen...</div>
         </div>
-        <div class="p-2 border-t border-[#222] bg-[#000] text-[10px] text-gray-500 flex justify-between">
-            <span id="file-count">0 filer</span>
-            <span onclick="loadMem()" class="cursor-pointer hover:text-white">REFRESH</span>
+        
+        <div class="p-3 border-t border-[#222] bg-[#050505] text-[10px] text-gray-500 flex justify-between items-center">
+            <span id="file-count">Scanning...</span>
+            <span onclick="loadMem()" class="cursor-pointer hover:text-white flex items-center gap-1"><i data-lucide="refresh-cw" class="w-3 h-3"></i> SYNC</span>
         </div>
     </div>
 
@@ -117,38 +211,41 @@
         lucide.createIcons();
         const API = window.location.origin;
 
-        // --- 1. LADDA OCH VISA FILER ---
+        // --- 1. LADDA MINNET ---
         async function loadMem() {
             const list = document.getElementById('memory-list');
             try {
                 const r = await fetch(API + '/memory');
                 const d = await r.json();
                 list.innerHTML = '';
-                document.getElementById('file-count').innerText = `${d.count} objekt`;
+                document.getElementById('file-count').innerText = `${d.count} OBJEKT SÄKRADE`;
                 
                 d.files.forEach(f => {
-                    // Vi visar bara JSON-filer för vävning, men visar andra som info
                     const isWeavable = f.type === 'json';
-                    const icon = isWeavable ? 'file-json' : (f.type === 'link' ? 'link' : 'file-text');
-                    const opacity = isWeavable ? '1' : '0.4';
+                    const iconName = isWeavable ? 'file-json' : (f.type === 'link' ? 'link' : 'file-text');
+                    const colorClass = isWeavable ? 'text-indigo-400' : 'text-gray-600';
+                    const opacity = isWeavable ? '1' : '0.5';
                     
                     const row = document.createElement('label');
                     row.className = 'file-row';
                     row.style.opacity = opacity;
                     
-                    // Endast JSON får checkbox
-                    const checkbox = isWeavable ? `<input type="checkbox" class="file-check" value="${f.name}" checked>` : `<i data-lucide="lock" class="w-3 h-3 text-gray-600"></i>`;
+                    const checkbox = isWeavable 
+                        ? `<input type="checkbox" class="file-check" value="${f.name}" checked>` 
+                        : `<i data-lucide="lock" class="w-3 h-3 text-gray-700"></i>`;
                     
                     row.innerHTML = `
                         ${checkbox}
-                        <i data-lucide="${icon}" class="w-3 h-3 text-gray-500"></i>
-                        <span class="truncate" title="${f.name}">${f.name}</span>
+                        <i data-lucide="${iconName}" class="file-icon ${colorClass}"></i>
+                        <span class="truncate w-full" title="${f.name}">${f.name}</span>
+                        ${f.folder !== 'json' ? `<span class="text-[9px] bg-[#222] px-1 rounded text-gray-500">${f.folder}</span>` : ''}
                     `;
                     list.appendChild(row);
                 });
                 lucide.createIcons();
             } catch(e) {
-                list.innerHTML = '<div class="text-red-500 p-4 text-xs">Kunde inte nå Brunnen. Är servern igång?</div>';
+                list.innerHTML = '<div class="text-red-500 p-4 text-xs text-center">Kunde inte nå Servern.<br>Kontrollera start_portal.bat</div>';
+                document.getElementById('connection-status').innerHTML = '<span class="dot offline"></span>OFFLINE';
             }
         }
 
@@ -158,19 +255,20 @@
             const linksDiv = document.getElementById('download-links');
             
             // UI Feedback
-            statusDiv.innerHTML = '<div class="text-yellow-500 animate-pulse font-bold">VÄVER TRÅDAR...</div><div class="text-xs text-gray-600 mt-2">Analyserar tidslinjer & filter</div>';
+            statusDiv.innerHTML = `
+                <div class="mb-6"><i data-lucide="loader-2" class="w-16 h-16 mx-auto text-yellow-500 animate-spin"></i></div>
+                <h2 class="text-xl font-bold text-white mb-2">BEARBETAR DATA</h2>
+                <div class="text-xs text-yellow-500 uppercase tracking-widest">Väver samman tidslinjer...</div>
+            `;
+            lucide.createIcons();
             linksDiv.innerHTML = '';
 
-            // Hämta inställningar
             const template = document.getElementById('template-select').value;
             const filterNode = document.getElementById('node-filter').value;
-            
-            // Hämta valda filer
             const checkboxes = document.querySelectorAll('.file-check:checked');
             const selectedFiles = Array.from(checkboxes).map(cb => cb.value);
             
-            // Logga i chatten
-            addLog('DIRIGENT', `Initiera vävning. Mall: ${template}. Filer: ${selectedFiles.length || 'ALLA'}.`);
+            addLog('DIRIGENT', `Initiera vävning. Mall: ${template.toUpperCase()}. Filer: ${selectedFiles.length || 'ALLA'}.`);
 
             try {
                 const res = await fetch(API + '/weave', {
@@ -186,23 +284,25 @@
                 const data = await res.json();
                 
                 if (data.status === 'success') {
-                    statusDiv.innerHTML = `<div class="text-green-500 font-bold mb-1">VÄVNING KLAR</div><div class="text-[10px] text-gray-500">${data.message}</div>`;
+                    statusDiv.innerHTML = `
+                        <div class="mb-6"><i data-lucide="check-circle" class="w-16 h-16 mx-auto text-green-500"></i></div>
+                        <h2 class="text-xl font-bold text-white mb-2">VÄVNING KLAR</h2>
+                        <div class="text-xs text-gray-500 uppercase tracking-widest">${data.message}</div>
+                    `;
                     
                     linksDiv.innerHTML = `
                         <a href="/public/FULL_HISTORY.html" target="_blank" class="result-link">
                             <i data-lucide="book-open" class="w-4 h-4"></i> ÖPPNA BOKEN (HTML)
                         </a>
                         <a href="/public/FULL_CONTEXT.txt" target="_blank" class="result-link txt">
-                            <i data-lucide="cpu" class="w-4 h-4"></i> AI CONTEXT (TXT)
+                            <i data-lucide="cpu" class="w-4 h-4"></i> HÄMTA KONTEXT (TXT)
                         </a>
                     `;
                     lucide.createIcons();
-                    addLog('ARCHIVARIUS', `Vävning slutförd. ${data.message}`);
-                } else {
-                    throw new Error(data.error || "Okänt fel");
-                }
+                    addLog('ARCHIVARIUS', `Generering slutförd. Boken är redo.`);
+                } else { throw new Error(data.error); }
             } catch (err) {
-                statusDiv.innerHTML = '<div class="text-red-500 font-bold">KRITISKT FEL</div>';
+                statusDiv.innerHTML = `<div class="text-red-500 font-bold">KRITISKT FEL</div><div class="text-xs text-red-400 mt-2">${err.message}</div>`;
                 addLog('SYSTEM', `Fel vid vävning: ${err.message}`);
             }
         }
@@ -210,25 +310,50 @@
         // --- 3. CHATT LOGIK ---
         async function handleChat(e) {
             if(e.key === 'Enter') {
-                const txt = e.target.value;
+                const input = e.target;
+                const txt = input.value.trim();
                 if(!txt) return;
-                addLog('DIRIGENT', txt);
-                e.target.value = '';
                 
+                addLog('DIRIGENT', txt);
+                input.value = '';
+                input.disabled = true; // Lås input medan AI tänker
+                
+                // Visa laddar-indikator i chatten
+                const loadingId = 'loading-' + Date.now();
+                const log = document.getElementById('chat-log');
+                log.innerHTML += `<div id="${loadingId}" class="msg archivarius opacity-50"><i data-lucide="loader" class="w-3 h-3 animate-spin inline mr-2"></i> Tänker...</div>`;
+                lucide.createIcons();
+                log.scrollTop = log.scrollHeight;
+
                 try {
                     const r = await fetch(API + '/chat', { method:'POST', body: JSON.stringify({text:txt}) });
                     const d = await r.json();
+                    
+                    // Ta bort laddar-indikator
+                    document.getElementById(loadingId).remove();
                     addLog(d.node, d.reply);
                 } catch(e) {
-                    addLog('SYSTEM', 'Kunde inte nå Archivarius.');
+                    document.getElementById(loadingId).remove();
+                    addLog('SYSTEM', 'Kunde inte nå Archivarius API.');
                 }
+                
+                input.disabled = false;
+                input.focus();
             }
         }
 
         function addLog(who, txt) {
             const l = document.getElementById('chat-log');
-            const cls = (who === 'ARCHIVARIUS' || who === 'SYSTEM') ? 'msg archivarius' : 'msg';
-            l.innerHTML += `<div class="${cls}"><strong>${who}:</strong> ${txt}</div>`;
+            const cls = (who.includes('ARCHIVARIUS') || who === 'SYSTEM') ? 'msg archivarius' : 'msg user';
+            
+            // Konvertera enkla radbrytningar till <br>
+            const cleanTxt = txt.replace(/\n/g, '<br>');
+            
+            l.innerHTML += `
+                <div class="${cls}">
+                    <strong>${who}</strong>
+                    ${cleanTxt}
+                </div>`;
             l.scrollTop = l.scrollHeight;
         }
         
@@ -238,7 +363,6 @@
             boxes.forEach(b => b.checked = !allChecked);
         }
 
-        // Initiera vid start
         loadMem();
     </script>
 </body>
