@@ -4,6 +4,8 @@ import json
 import os
 import sys
 import socket
+import glob
+from datetime import datetime
 
 # --- KONFIGURATION ---
 START_PORT = 8000
@@ -14,7 +16,7 @@ EXTENSIONS = {'.json', '.txt', '.md'}
 class AESIHandler(http.server.SimpleHTTPRequestHandler):
     """
     ÆSI Custom Handler.
-    Hanterar statiska filer (Frontend) och API-anrop (/chat, /memory).
+    Hanterar statiska filer (Frontend) och API-anrop (/chat, /memory, /weave).
     """
 
     def do_OPTIONS(self):
@@ -25,17 +27,16 @@ class AESIHandler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
-        # API: HÄMTA MINNE (BRUNNEN)
         if self.path == '/memory':
             self.handle_memory_request()
         else:
-            # Standard: Servera filer (index.html etc.)
             super().do_GET()
 
     def do_POST(self):
-        # API: CHATT (PORTALEN)
         if self.path == '/chat':
             self.handle_chat_request()
+        elif self.path == '/weave':
+            self.handle_weave()
         else:
             self.send_error(404, "Endpoint not found")
 
@@ -82,6 +83,100 @@ class AESIHandler(http.server.SimpleHTTPRequestHandler):
             
         except Exception as e:
             self.send_json({"error": str(e)}, status=500)
+
+    def handle_weave(self):
+        """Väver alla JSON-loggar till HTML och TXT."""
+        try:
+            messages = self.weave_logs()
+            html_content = self.generate_html_history(messages)
+            txt_content = self.generate_txt_context(messages)
+            
+            # Skriv HTML
+            html_path = os.path.join(os.getcwd(), 'public', 'FULL_HISTORY.html')
+            os.makedirs(os.path.dirname(html_path), exist_ok=True)
+            with open(html_path, 'w', encoding='utf-8') as f:
+                f.write(html_content)
+            
+            # Skriv TXT
+            txt_path = os.path.join(os.getcwd(), 'public', 'FULL_CONTEXT.txt')
+            with open(txt_path, 'w', encoding='utf-8') as f:
+                f.write(txt_content)
+            
+            self.send_json({
+                "status": "woven",
+                "files_created": ["FULL_HISTORY.html", "FULL_CONTEXT.txt"],
+                "message_count": len(messages)
+            })
+        except Exception as e:
+            self.send_json({"error": str(e)}, status=500)
+
+    def weave_logs(self):
+        """Läser alla JSON-loggar och extraherar meddelanden."""
+        messages = []
+        json_files = glob.glob(os.path.join(os.getcwd(), 'memory', 'logs', 'json', '*.json'))
+        
+        for filepath in sorted(json_files):
+            try:
+                with open(filepath, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    if isinstance(data, list):
+                        messages.extend(data)
+                    elif isinstance(data, dict):
+                        messages.append(data)
+            except Exception as e:
+                print(f"Fel vid läsning av {filepath}: {e}")
+        
+        return messages
+
+    def generate_html_history(self, messages):
+        """Skapar vacker HTML för alla meddelanden."""
+        html = """<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>ÆSI Väv Historia</title>
+  <style>
+    body { background: #080808; color: #00ffe0; font-family: monospace; padding: 20px; margin: 0; }
+    .container { max-width: 900px; margin: 0 auto; }
+    h1 { color: #00ffe0; border-bottom: 2px solid #00ffe0; padding-bottom: 10px; }
+    .meta { color: #666; font-size: 0.9em; margin-bottom: 20px; }
+    .message { background: #181818; padding: 12px; margin: 10px 0; border-left: 3px solid #00ffe0; border-radius: 4px; }
+    .sender { color: #00bfa0; font-weight: bold; }
+    .timestamp { color: #666; font-size: 0.85em; margin-top: 4px; }
+    .text { margin-top: 8px; color: #fff; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧶 ÆSI Väv Historia</h1>
+    <div class="meta">Genererad: """ + datetime.now().isoformat() + """</div>
+"""
+        for msg in messages:
+            sender = msg.get('sender') or msg.get('node') or 'OKÄND'
+            text = msg.get('text') or msg.get('reply') or msg.get('message') or ''
+            timestamp = msg.get('timestamp') or msg.get('date') or ''
+            html += f"""    <div class="message">
+      <div class="sender">{sender}</div>
+      <div class="text">{text}</div>
+      <div class="timestamp">{timestamp}</div>
+    </div>
+"""
+        html += """  </div>
+</body>
+</html>"""
+        return html
+
+    def generate_txt_context(self, messages):
+        """Skapar plaintext för AI-läsning."""
+        lines = ["ÆSI VÄV HISTORIA - KONTEXT", "=" * 50, ""]
+        for msg in messages:
+            sender = msg.get('sender') or msg.get('node') or 'OKÄND'
+            text = msg.get('text') or msg.get('reply') or msg.get('message') or ''
+            timestamp = msg.get('timestamp') or msg.get('date') or ''
+            lines.append(f"[{sender}] {timestamp}")
+            lines.append(text)
+            lines.append("")
+        return "\n".join(lines)
 
     def send_json(self, data, status=200):
         self.send_response(status)

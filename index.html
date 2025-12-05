@@ -21,6 +21,10 @@
     #right h3 { color:#00ffe0; margin-bottom:16px; }
     #memory-list { list-style:none; padding:0; }
     #memory-list li { background:#181818; margin-bottom:8px; padding:8px 12px; border-radius:4px; color:#fff; border-left:3px solid #00ffe0; }
+    #weave-btn { background:#00ffe0; color:#000; border:none; border-radius:6px; padding:10px 20px; font-weight:bold; cursor:pointer; margin-top:16px; width:100%; }
+    #weave-result { margin-top:16px; padding:12px; background:#181818; border-radius:6px; display:none; }
+    #weave-result a { color:#00ffe0; text-decoration:none; display:block; margin:8px 0; }
+    #weave-result a:hover { text-decoration:underline; }
     @media (max-width:900px) {
       #container { flex-direction:column; }
       #nav, #right { width:100%; border:none; }
@@ -49,6 +53,8 @@
     <aside id="right">
       <h3>🗃️ Memory Viewer</h3>
       <ul id="memory-list"></ul>
+      <button id="weave-btn" onclick="triggerWeave()">🧶 VÄV HISTORIA</button>
+      <div id="weave-result"></div>
     </aside>
   </div>
   <script>
@@ -110,6 +116,35 @@
       }
     }
     setTimeout(loadMemory, 1000);
+
+    // Weave trigger
+    async function triggerWeave() {
+      const btn = document.getElementById("weave-btn");
+      const result = document.getElementById("weave-result");
+      btn.disabled = true;
+      btn.textContent = "🧶 Väver...";
+      result.innerHTML = "";
+      try {
+        const res = await fetch(`http://localhost:${backendPort}/weave`, {
+          method: "POST"
+        });
+        const data = await res.json();
+        if (data.status === "woven") {
+          result.innerHTML = `<div style="color:#00ffe0;">✅ Väv klar! ${data.message_count} meddelanden.</div>
+            <a href="http://localhost:${backendPort}/public/FULL_HISTORY.html" target="_blank">📄 ÖPPNA BOKEN</a>
+            <a href="http://localhost:${backendPort}/public/FULL_CONTEXT.txt" target="_blank">🤖 AI KONTEXT</a>`;
+          result.style.display = "block";
+        } else {
+          result.innerHTML = `<div style="color:#ff4444;">❌ ${data.error || 'Okänt fel'}</div>`;
+          result.style.display = "block";
+        }
+      } catch (e) {
+        result.innerHTML = `<div style="color:#ff4444;">❌ Anslutningsfel: ${e.message}</div>`;
+        result.style.display = "block";
+      }
+      btn.disabled = false;
+      btn.textContent = "🧶 VÄV HISTORIA";
+    }
   </script>
 </body>
 </html>
