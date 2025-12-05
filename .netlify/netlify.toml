@@ -1,8 +1,6 @@
 headersOrigin = "config"
 redirectsOrigin = "config"
 plugins = []
-functionsDirectory = "C:\\Users\\jaenr\\Min enhet (jaenrobert@gmail.com)\\AEPORT_LOCAL\\server"
-functionsDirectoryOrigin = "config-v1"
 
 [functions]
 
@@ -11,9 +9,7 @@ functionsDirectoryOrigin = "config-v1"
 [build]
 publish = "C:\\Users\\jaenr\\Min enhet (jaenrobert@gmail.com)\\AEPORT_LOCAL\\public"
 publishOrigin = "config"
-commandOrigin = "config"
-command = "npm run build"
-functions = "C:\\Users\\jaenr\\Min enhet (jaenrobert@gmail.com)\\AEPORT_LOCAL\\server"
+commandOrigin = "ui"
 
 [build.environment]
 
@@ -34,38 +30,25 @@ for = "/*"
 
 [headers.values]
 X-Frame-Options = "DENY"
-X-Content-Type-Options = "nosniff"
 X-XSS-Protection = "1; mode=block"
-Referrer-Policy = "strict-origin-when-cross-origin"
-Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+X-Content-Type-Options = "nosniff"
+Referrer-Policy = "no-referrer-when-downgrade"
 
 [[headers]]
 for = "/js/*"
 
 [headers.values]
-Cache-Control = "public, max-age=31536000, immutable"
+Cache-Control = "public, max-age=31536000"
 
 [[headers]]
 for = "/css/*"
 
 [headers.values]
-Cache-Control = "public, max-age=31536000, immutable"
+Cache-Control = "public, max-age=31536000"
 
 [[redirects]]
 from = "/api/*"
 to = "/.netlify/functions/exec"
-status = 200.0
-force = false
-
-[redirects.query]
-
-[redirects.conditions]
-
-[redirects.headers]
-
-[[redirects]]
-from = "/api/*"
-to = "/.netlify/functions/:splat"
 status = 200.0
 force = false
 

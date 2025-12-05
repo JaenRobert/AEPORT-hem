@@ -7,134 +7,760 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ÆSI Builder</title>
-  <link rel="stylesheet" href="/css/aesi-ui.css">
-  <script src="/js/menu.js"></script>
+  <title>ÆSI Byggare - Visual Page Builder</title>
+  <link rel="stylesheet" href="css/navigation.css">
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
   <style>
-    body{background:#000;color:#0f0;font-family:Consolas,monospace;}
-    .builder-container {
-      display: grid;
-      grid-template-columns: 250px 1fr;
-      gap: 2rem;
-      padding: 2rem;
-      min-height: calc(100vh - 100px);
+    body {
+      margin: 0;
+      padding: 80px 20px 20px;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+      color: #ffffff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
     }
     
-    .blocks-panel {
-      background: rgba(0, 255, 224, 0.05);
-      border: 2px solid #00ffe0;
-      border-radius: 12px;
-      padding: 1.5rem;
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
     }
     
-    .blocks-panel h2 {
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    
+    .header h1 {
       color: #00ffe0;
-      margin-bottom: 1rem;
-      font-size: 1.2rem;
+      font-size: 2.5rem;
+      margin-bottom: 8px;
+      text-shadow: 0 0 20px rgba(0, 255, 224, 0.5);
     }
     
-    .aesi-block {
-      background: #1a1a1a;
-      border: 1px solid #00ffe0;
-      border-radius: 8px;
-      padding: 1rem;
-      margin-bottom: 0.75rem;
+    .builder-layout {
+      display: grid;
+      grid-template-columns: 250px 1fr 300px;
+      gap: 20px;
+      height: calc(100vh - 200px);
+    }
+    
+    .toolbox {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(0, 255, 224, 0.2);
+      border-radius: 12px;
+      padding: 16px;
+      overflow-y: auto;
+    }
+    
+    .canvas {
+      background: rgba(255, 255, 255, 0.02);
+      border: 2px dashed rgba(0, 255, 224, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      overflow-y: auto;
+      min-height: 400px;
+    }
+    
+    .properties {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(0, 255, 224, 0.2);
+      border-radius: 12px;
+      padding: 16px;
+      overflow-y: auto;
+    }
+    
+    .section-title {
+      color: #00ffe0;
+      font-size: 1.1rem;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+    
+    .component-item {
+      padding: 10px;
+      margin-bottom: 8px;
+      background: rgba(0, 255, 224, 0.1);
+      border: 1px solid rgba(0, 255, 224, 0.3);
+      border-radius: 6px;
       cursor: grab;
       transition: all 0.3s ease;
       text-align: center;
-      font-size: 1.1rem;
     }
     
-    .aesi-block:hover {
-      background: rgba(0, 255, 224, 0.1);
+    .component-item:hover {
+      background: rgba(0, 255, 224, 0.2);
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 255, 224, 0.3);
     }
     
-    .aesi-block.dragging {
-      opacity: 0.5;
+    .component-item:active {
+      cursor: grabbing;
     }
     
-    .canvas-area {
-      background: #0b0b0b;
-      border: 2px dashed #333;
-      border-radius: 12px;
-      padding: 2rem;
-      min-height: 600px;
+    .canvas-element {
+      padding: 12px;
+      margin-bottom: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(0, 255, 224, 0.2);
+      border-radius: 8px;
       position: relative;
+      min-height: 40px;
     }
     
-    .canvas-area.drag-over {
+    .canvas-element:hover {
       border-color: #00ffe0;
-      background: rgba(0, 255, 224, 0.05);
     }
     
-    .canvas-area:empty::before {
-      content: "Drag modules here to build your dashboard";
+    .canvas-element.selected {
+      border-color: #00ffe0;
+      box-shadow: 0 0 12px rgba(0, 255, 224, 0.4);
+    }
+    
+    .element-controls {
       position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: #666;
-      font-size: 1.2rem;
-      pointer-events: none;
+      top: -8px;
+      right: -8px;
+      display: none;
+      gap: 4px;
+    }
+    
+    .canvas-element:hover .element-controls {
+      display: flex;
+    }
+    
+    .control-btn {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .control-btn.delete {
+      background: #ff4444;
+      color: white;
+    }
+    
+    .control-btn.edit {
+      background: #00ffe0;
+      color: black;
+    }
+    
+    .btn {
+      background: #00ffe0;
+      color: #000;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      margin: 4px;
+      transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+      background: #009988;
+      transform: scale(1.05);
+    }
+    
+    .btn.secondary {
+      background: rgba(0, 255, 224, 0.2);
+      color: #00ffe0;
+      border: 1px solid #00ffe0;
+    }
+    
+    .btn.secondary:hover {
+      background: rgba(0, 255, 224, 0.3);
     }
     
     .toolbar {
       display: flex;
-      gap: 1rem;
-      margin-bottom: 2rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    
+    .property-group {
+      margin-bottom: 16px;
+    }
+    
+    .property-group label {
+      display: block;
+      color: #cccccc;
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+    }
+    
+    .property-group input,
+    .property-group select,
+    .property-group textarea {
+      width: 100%;
+      padding: 6px 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(0, 255, 224, 0.3);
+      border-radius: 4px;
+      color: #ffffff;
+      font-size: 14px;
+    }
+    
+    .property-group textarea {
+      min-height: 60px;
+      resize: vertical;
+    }
+    
+    .code-view {
+      margin-top: 20px;
+      height: 300px;
+      border: 1px solid rgba(0, 255, 224, 0.3);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    @media (max-width: 1200px) {
+      .builder-layout {
+        grid-template-columns: 200px 1fr;
+      }
+      
+      .properties {
+        display: none;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .builder-layout {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+      
+      .toolbox {
+        order: 2;
+      }
+      
+      .canvas {
+        order: 1;
+        min-height: 300px;
+      }
+      
+      .header h1 {
+        font-size: 2rem;
+      }
     }
   </style>
 </head>
 <body>
-
   <div class="container">
-    <h1>🔧 ÆSI Builder</h1>
-    <p class="text-muted">Drag modules to create your custom dashboard</p>
-    
-    <div class="toolbar">
-      <button class="aesi-btn" onclick="window.aesiUIEngine.clearCanvas()">
-        🗑️ Clear Canvas
-      </button>
-      <button class="aesi-btn" onclick="window.location.href='/index.html'">
-        👁️ View Dashboard
-      </button>
+    <div class="header">
+      <h1>🔨 ÆSI Sidbyggare</h1>
+      <p>Dra och släpp komponenter för att bygga webbsidor visuellt</p>
     </div>
-    
-    <div class="builder-container">
-      <div class="blocks-panel">
-        <h2>📦 Available Modules</h2>
+
+    <div class="toolbar">
+      <button class="btn" onclick="savePage()">💾 Spara Sida</button>
+      <button class="btn" onclick="loadPage()">📂 Ladda Sida</button>
+      <button class="btn" onclick="exportHTML()">📄 Exportera HTML</button>
+      <button class="btn secondary" onclick="clearCanvas()">🗑️ Rensa</button>
+      <button class="btn secondary" onclick="previewPage()">👁️ Förhandsvisa</button>
+    </div>
+
+    <div class="builder-layout">
+      <!-- Toolbox -->
+      <div class="toolbox">
+        <div class="section-title">🧩 Komponenter</div>
         
-        <div class="aesi-block" data-module="book">
-          📖 Boken
+        <div class="component-item" draggable="true" data-type="text">
+          📝 Text
         </div>
         
-        <div class="aesi-block" data-module="memory">
-          💾 Tunnan
+        <div class="component-item" draggable="true" data-type="heading">
+          📰 Rubrik
         </div>
         
-        <div class="aesi-block" data-module="upload">
-          📤 Upload
+        <div class="component-item" draggable="true" data-type="image">
+          🖼️ Bild
         </div>
         
-        <div class="aesi-block" data-module="chat">
-          💬 AI Chat
+        <div class="component-item" draggable="true" data-type="button">
+          🔘 Knapp
+        </div>
+        
+        <div class="component-item" draggable="true" data-type="input">
+          💬 Input
+        </div>
+        
+        <div class="component-item" draggable="true" data-type="link">
+          🔗 Länk
+        </div>
+        
+        <div class="component-item" draggable="true" data-type="divider">
+          ―― Divider ――
+        </div>
+        
+        <div class="component-item" draggable="true" data-type="container">
+          📦 Container
         </div>
       </div>
-      
-      <div class="canvas-area" id="canvas"></div>
+
+      <!-- Canvas -->
+      <div class="canvas" id="canvas">
+        <div style="text-align: center; color: #666; margin-top: 100px;">
+          Dra komponenter hit för att börja bygga
+        </div>
+      </div>
+
+      <!-- Properties Panel -->
+      <div class="properties">
+        <div class="section-title">⚙️ Egenskaper</div>
+        
+        <div id="properties-panel">
+          <p style="color: #666; font-style: italic;">
+            Välj ett element för att redigera dess egenskaper
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Code View Toggle -->
+    <div style="text-align: center; margin-top: 20px;">
+      <button class="btn secondary" onclick="toggleCodeView()">📝 Visa/Koda</button>
+    </div>
+
+    <!-- Code View (Hidden by default) -->
+    <div class="code-view" id="codeView" style="display: none;">
+      <div id="codeEditor"></div>
     </div>
   </div>
 
-  <script type="module">
-    import { aesiUIEngine } from '/js/ui-engine.js';
-    
-    // Initialize UI Engine
-    document.addEventListener('DOMContentLoaded', () => {
-      window.aesiUIEngine.init('#canvas');
+  <script>
+    let selectedElement = null;
+    let elementCounter = 0;
+    let codeEditor;
+
+    // Initialize Monaco for code view
+    require.config({ 
+      paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' }
     });
+
+    require(["vs/editor/editor.main"], function () {
+      codeEditor = monaco.editor.create(document.getElementById('codeEditor'), {
+        value: '<!DOCTYPE html>\n<html>\n<body>\n  <!-- Your code here -->\n</body>\n</html>',
+        language: "html",
+        theme: "vs-dark",
+        automaticLayout: true,
+        minimap: { enabled: false },
+        fontSize: 14
+      });
+    });
+
+    // Drag and drop functionality
+    document.addEventListener('DOMContentLoaded', () => {
+      const canvas = document.getElementById('canvas');
+      
+      // Drag start
+      document.addEventListener('dragstart', (e) => {
+        if (e.target.classList.contains('component-item')) {
+          e.dataTransfer.setData('text/plain', e.target.dataset.type);
+          e.target.style.opacity = '0.5';
+        }
+      });
+      
+      // Drag end
+      document.addEventListener('dragend', (e) => {
+        if (e.target.classList.contains('component-item')) {
+          e.target.style.opacity = '1';
+        }
+      });
+      
+      // Drag over canvas
+      canvas.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        canvas.style.borderColor = '#00ffe0';
+      });
+      
+      // Drag leave canvas
+      canvas.addEventListener('dragleave', (e) => {
+        canvas.style.borderColor = 'rgba(0, 255, 224, 0.3)';
+      });
+      
+      // Drop on canvas
+      canvas.addEventListener('drop', (e) => {
+        e.preventDefault();
+        canvas.style.borderColor = 'rgba(0, 255, 224, 0.3)';
+        
+        const componentType = e.dataTransfer.getData('text/plain');
+        if (componentType) {
+          createElement(componentType, e.clientX, e.clientY);
+        }
+      });
+      
+      // Click to select elements
+      canvas.addEventListener('click', (e) => {
+        if (e.target.classList.contains('canvas-element')) {
+          selectElement(e.target);
+        } else if (!e.target.closest('.canvas-element')) {
+          deselectElement();
+        }
+      });
+    });
+
+    // Create element on canvas
+    function createElement(type, x, y) {
+      elementCounter++;
+      const elementId = `element-${elementCounter}`;
+      
+      let elementHTML = '';
+      let defaultContent = '';
+      
+      switch (type) {
+        case 'text':
+          elementHTML = `<p id="${elementId}" class="canvas-element" data-type="text">Detta är en textkomponent. Klicka för att redigera.</p>`;
+          defaultContent = 'Detta är en textkomponent. Klicka för att redigera.';
+          break;
+          
+        case 'heading':
+          elementHTML = `<h2 id="${elementId}" class="canvas-element" data-type="heading">Rubrik</h2>`;
+          defaultContent = 'Rubrik';
+          break;
+          
+        case 'image':
+          elementHTML = `<img id="${elementId}" class="canvas-element" data-type="image" src="https://via.placeholder.com/300x200?text=Bild" alt="Placeholder" style="max-width: 100%; height: auto;">`;
+          break;
+          
+        case 'button':
+          elementHTML = `<button id="${elementId}" class="canvas-element" data-type="button" style="padding: 10px 20px; background: #00ffe0; color: black; border: none; border-radius: 5px; cursor: pointer;">Knapp</button>`;
+          defaultContent = 'Knapp';
+          break;
+          
+        case 'input':
+          elementHTML = `<input id="${elementId}" class="canvas-element" data-type="input" type="text" placeholder="Ange text..." style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 100%;">`;
+          break;
+          
+        case 'link':
+          elementHTML = `<a id="${elementId}" class="canvas-element" data-type="link" href="#" style="color: #00ffe0; text-decoration: none;">Länk</a>`;
+          defaultContent = 'Länk';
+          break;
+          
+        case 'divider':
+          elementHTML = `<hr id="${elementId}" class="canvas-element" data-type="divider" style="border: none; border-top: 2px solid #00ffe0; margin: 20px 0;">`;
+          break;
+          
+        case 'container':
+          elementHTML = `<div id="${elementId}" class="canvas-element" data-type="container" style="border: 2px dashed #00ffe0; padding: 20px; min-height: 100px;">Container - lägg till innehåll här</div>`;
+          defaultContent = 'Container - lägg till innehåll här';
+          break;
+      }
+      
+      // Add controls
+      elementHTML = elementHTML.replace('class="canvas-element"', 'class="canvas-element"><div class="element-controls"><button class="control-btn edit" onclick="editElement(\'' + elementId + '\')">✏️</button><button class="control-btn delete" onclick="deleteElement(\'' + elementId + '\')">🗑️</button></div><div class="canvas-element"');
+      
+      const canvas = document.getElementById('canvas');
+      canvas.insertAdjacentHTML('beforeend', elementHTML);
+      
+      // Store element data
+      const element = document.getElementById(elementId);
+      element.dataset.content = defaultContent || '';
+      
+      updateCodeView();
+    }
+
+    // Select element
+    function selectElement(element) {
+      // Deselect previous
+      deselectElement();
+      
+      // Select new
+      element.classList.add('selected');
+      selectedElement = element;
+      
+      // Show properties
+      showProperties(element);
+    }
+
+    // Deselect element
+    function deselectElement() {
+      if (selectedElement) {
+        selectedElement.classList.remove('selected');
+        selectedElement = null;
+      }
+      
+      document.getElementById('properties-panel').innerHTML = `
+        <p style="color: #666; font-style: italic;">
+          Välj ett element för att redigera dess egenskaper
+        </p>
+      `;
+    }
+
+    // Show properties for selected element
+    function showProperties(element) {
+      const type = element.dataset.type;
+      let propertiesHTML = `<div class="property-group">
+        <label>Typ: ${type}</label>
+      </div>`;
+      
+      switch (type) {
+        case 'text':
+        case 'heading':
+          propertiesHTML += `
+            <div class="property-group">
+              <label for="text-content">Innehåll:</label>
+              <textarea id="text-content" onchange="updateElementProperty('content', this.value)">${element.dataset.content || element.textContent}</textarea>
+            </div>
+            <div class="property-group">
+              <label for="text-color">Färg:</label>
+              <input type="color" id="text-color" value="#ffffff" onchange="updateElementStyle('color', this.value)">
+            </div>
+          `;
+          break;
+          
+        case 'image':
+          propertiesHTML += `
+            <div class="property-group">
+              <label for="image-src">Bild-URL:</label>
+              <input type="text" id="image-src" value="${element.src}" onchange="updateElementProperty('src', this.value)">
+            </div>
+            <div class="property-group">
+              <label for="image-alt">Alt-text:</label>
+              <input type="text" id="image-alt" value="${element.alt}" onchange="updateElementProperty('alt', this.value)">
+            </div>
+          `;
+          break;
+          
+        case 'button':
+          propertiesHTML += `
+            <div class="property-group">
+              <label for="button-text">Text:</label>
+              <input type="text" id="button-text" value="${element.textContent}" onchange="updateElementProperty('textContent', this.value)">
+            </div>
+            <div class="property-group">
+              <label for="button-bg">Bakgrund:</label>
+              <input type="color" id="button-bg" value="#00ffe0" onchange="updateElementStyle('backgroundColor', this.value)">
+            </div>
+          `;
+          break;
+          
+        case 'input':
+          propertiesHTML += `
+            <div class="property-group">
+              <label for="input-placeholder">Placeholder:</label>
+              <input type="text" id="input-placeholder" value="${element.placeholder}" onchange="updateElementProperty('placeholder', this.value)">
+            </div>
+            <div class="property-group">
+              <label for="input-type">Typ:</label>
+              <select id="input-type" onchange="updateElementProperty('type', this.value)">
+                <option value="text" ${element.type === 'text' ? 'selected' : ''}>Text</option>
+                <option value="email" ${element.type === 'email' ? 'selected' : ''}>Email</option>
+                <option value="password" ${element.type === 'password' ? 'selected' : ''}>Password</option>
+                <option value="number" ${element.type === 'number' ? 'selected' : ''}>Number</option>
+              </select>
+            </div>
+          `;
+          break;
+          
+        case 'link':
+          propertiesHTML += `
+            <div class="property-group">
+              <label for="link-text">Text:</label>
+              <input type="text" id="link-text" value="${element.textContent}" onchange="updateElementProperty('textContent', this.value)">
+            </div>
+            <div class="property-group">
+              <label for="link-href">URL:</label>
+              <input type="text" id="link-href" value="${element.href}" onchange="updateElementProperty('href', this.value)">
+            </div>
+          `;
+          break;
+      }
+      
+      document.getElementById('properties-panel').innerHTML = propertiesHTML;
+    }
+
+    // Update element property
+    function updateElementProperty(property, value) {
+      if (selectedElement) {
+        selectedElement[property] = value;
+        if (property === 'content') {
+          selectedElement.dataset.content = value;
+          selectedElement.textContent = value;
+        }
+        updateCodeView();
+      }
+    }
+
+    // Update element style
+    function updateElementStyle(property, value) {
+      if (selectedElement) {
+        selectedElement.style[property] = value;
+        updateCodeView();
+      }
+    }
+
+    // Edit element
+    function editElement(elementId) {
+      const element = document.getElementById(elementId);
+      selectElement(element);
+    }
+
+    // Delete element
+    function deleteElement(elementId) {
+      if (confirm('Ta bort detta element?')) {
+        const element = document.getElementById(elementId);
+        element.remove();
+        deselectElement();
+        updateCodeView();
+      }
+    }
+
+    // Save page
+    function savePage() {
+      const pageName = prompt('Spara sida som:', 'min-sida');
+      if (!pageName) return;
+      
+      const pageData = {
+        name: pageName,
+        elements: [],
+        timestamp: new Date().toISOString()
+      };
+      
+      document.querySelectorAll('.canvas-element').forEach(el => {
+        pageData.elements.push({
+          id: el.id,
+          type: el.dataset.type,
+          content: el.dataset.content || el.textContent,
+          styles: el.style.cssText,
+          attributes: {}
+        });
+      });
+      
+      localStorage.setItem(`aesi_page_${pageName}`, JSON.stringify(pageData));
+      alert(`Sida "${pageName}" sparad!`);
+    }
+
+    // Load page
+    function loadPage() {
+      const pageName = prompt('Ladda sida:', 'min-sida');
+      if (!pageName) return;
+      
+      const pageData = JSON.parse(localStorage.getItem(`aesi_page_${pageName}`));
+      if (!pageData) {
+        alert('Sidan hittades inte!');
+        return;
+      }
+      
+      // Clear canvas
+      document.getElementById('canvas').innerHTML = '';
+      
+      // Recreate elements
+      pageData.elements.forEach(elData => {
+        const element = document.createElement('div');
+        element.id = elData.id;
+        element.className = 'canvas-element';
+        element.dataset.type = elData.type;
+        element.dataset.content = elData.content;
+        element.textContent = elData.content;
+        element.style.cssText = elData.styles;
+        
+        // Add controls
+        element.innerHTML = `<div class="element-controls">
+          <button class="control-btn edit" onclick="editElement('${elData.id}')">✏️</button>
+          <button class="control-btn delete" onclick="deleteElement('${elData.id}')">🗑️</button>
+        </div>` + element.innerHTML;
+        
+        document.getElementById('canvas').appendChild(element);
+      });
+      
+      updateCodeView();
+      alert(`Sida "${pageName}" laddad!`);
+    }
+
+    // Export HTML
+    function exportHTML() {
+      const html = generateHTML();
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'aesi-exported-page.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // Generate HTML from canvas
+    function generateHTML() {
+      let html = `<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ÆSI Exported Page</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+  </style>
+</head>
+<body>
+`;
+      
+      document.querySelectorAll('.canvas-element').forEach(el => {
+        const clone = el.cloneNode(true);
+        // Remove controls
+        const controls = clone.querySelector('.element-controls');
+        if (controls) controls.remove();
+        
+        html += clone.outerHTML + '\n';
+      });
+      
+      html += `</body>
+</html>`;
+      
+      return html;
+    }
+
+    // Clear canvas
+    function clearCanvas() {
+      if (confirm('Rensa hela arbetsytan?')) {
+        document.getElementById('canvas').innerHTML = `
+          <div style="text-align: center; color: #666; margin-top: 100px;">
+            Dra komponenter hit för att börja bygga
+          </div>
+        `;
+        deselectElement();
+        updateCodeView();
+      }
+    }
+
+    // Preview page
+    function previewPage() {
+      const html = generateHTML();
+      const newWindow = window.open('', '_blank');
+      newWindow.document.write(html);
+      newWindow.document.close();
+    }
+
+    // Toggle code view
+    function toggleCodeView() {
+      const codeView = document.getElementById('codeView');
+      const isVisible = codeView.style.display !== 'none';
+      
+      codeView.style.display = isVisible ? 'none' : 'block';
+      
+      if (!isVisible && codeEditor) {
+        updateCodeView();
+      }
+    }
+
+    // Update code view
+    function updateCodeView() {
+      if (codeEditor) {
+        const html = generateHTML();
+        codeEditor.setValue(html);
+      }
+    }
   </script>
 
+  <script src="js/navigation_hub.js" defer></script>
 </body>
 </html>

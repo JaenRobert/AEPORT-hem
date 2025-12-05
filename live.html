@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>ÆSI LIVE Portal</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.4/dist/tailwind.min.css">
+  <script src="menu.js" defer></script>
+  <script src="functions.js" defer></script>
+  <style>
+    body { background:#000; color:#0f0; font-family:monospace; }
+    #chat { height:40vh; overflow-y:auto; border:1px solid #0f0; padding:8px; margin-top:10px; }
+    #portal { min-height:40vh; border:1px dashed #0f0; margin-top:10px; padding:8px; }
+    button { background:#004d40; color:#fff; border:none; padding:8px 16px; border-radius:6px; }
+  </style>
+</head>
+<body>
+  <div id="global-nav"></div>
+  <h1 class="text-2xl font-bold mt-4">ÆSI LIVE v4.0</h1>
+  <div id="chat"></div>
+  <div class="mt-4 flex gap-2">
+    <input id="msg" class="border p-2 text-black w-full" placeholder="Skriv till Reflex..." />
+    <button onclick="send()">Skicka</button>
+  </div>
+  <div id="portal"></div>
+  <script>
+    let ws;
+    const chatBox = document.getElementById("chat");
+    const msgInput = document.getElementById("msg");
+
+    function log(msg, cls="") {
+      chatBox.innerHTML += `<div class="${cls}">${msg}</div>`;
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function connect() {
+      ws = new WebSocket("wss://aesi-live.onrender.com");
+      ws.onopen = () => log("✅ Ansluten till Reflex");
+      ws.onmessage = e => {
+        if (e.data.startsWith("PORTAL_CMD:")) eval(e.data.replace("PORTAL_CMD:", "").trim());
+        else log(e.data);
+      };
+      ws.onclose = () => setTimeout(connect, 3000);
+    }
+    connect();
+
+    function send() {
+      const text = msgInput.value.trim();
+      if (!text) return;
+      ws.send("CHAT:" + text);
+      msgInput.value = "";
+    }
+  </script>
+</body>
+</html>

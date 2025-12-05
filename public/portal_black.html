@@ -1,61 +1,360 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Æ PORTEN</title>
-<style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ÆSI Svart Portal - Advanced Access</title>
+  <link rel="stylesheet" href="css/navigation.css">
+  <style>
     body {
-        margin:0; padding:0;
-        background:#000;
-        height:100vh;
-        display:flex; justify-content:center; align-items:center;
-        overflow:hidden;
-        touch-action:none;
+      margin: 0;
+      padding: 80px 20px 20px;
+      background: #000000;
+      color: #ffffff;
+      font-family: 'Courier New', monospace;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
     }
-    #sigill {
-        width:140px; height:140px;
-        border-radius:50%;
-        border:3px solid rgba(200,200,200,0.8);
-        display:flex; justify-content:center; align-items:center;
-        color:silver;
-        font-size:72px;
-        font-family:serif;
-        animation:pulse 2.8s infinite ease-in-out;
-        box-shadow:0 0 20px rgba(160,160,160,0.4);
+
+    /* Animated background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        radial-gradient(circle at 20% 50%, rgba(0, 255, 224, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(0, 255, 224, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(255, 0, 128, 0.05) 0%, transparent 50%);
+      animation: backgroundShift 20s ease-in-out infinite;
+      z-index: -1;
     }
-    @keyframes pulse {
-        0%   { transform:scale(1);   opacity:0.8; }
-        50%  { transform:scale(1.12); opacity:1; }
-        100% { transform:scale(1);   opacity:0.8; }
+
+    @keyframes backgroundShift {
+      0%, 100% { transform: translateX(0) translateY(0); }
+      25% { transform: translateX(-10px) translateY(-10px); }
+      50% { transform: translateX(10px) translateY(10px); }
+      75% { transform: translateX(-5px) translateY(5px); }
     }
-    body::after {
-        content:"";
-        position:absolute; inset:0;
-        background: radial-gradient(circle at 50% 120%, rgba(0,80,140,0.18), transparent 70%);
-        animation:water 6s infinite ease-in-out;
-        opacity:0.45;
-        pointer-events:none;
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
     }
-    @keyframes water {
-        0%   { transform:translateY(0px); }
-        50%  { transform:translateY(-18px); }
-        100% { transform:translateY(0px); }
+
+    .header {
+      margin-bottom: 60px;
     }
-</style>
-  <script src="/js/menu.js"></script>
+
+    .header h1 {
+      font-size: 4rem;
+      color: #00ffe0;
+      text-shadow: 
+        0 0 10px #00ffe0,
+        0 0 20px #00ffe0,
+        0 0 40px #00ffe0;
+      margin-bottom: 16px;
+      animation: glow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+      from { text-shadow: 0 0 10px #00ffe0, 0 0 20px #00ffe0, 0 0 40px #00ffe0; }
+      to { text-shadow: 0 0 20px #00ffe0, 0 0 30px #00ffe0, 0 0 50px #00ffe0; }
+    }
+
+    .subtitle {
+      font-size: 1.2rem;
+      color: #cccccc;
+      margin-bottom: 40px;
+    }
+
+    .access-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 30px;
+      margin-bottom: 60px;
+    }
+
+    .access-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid rgba(0, 255, 224, 0.3);
+      border-radius: 16px;
+      padding: 30px 20px;
+      transition: all 0.4s ease;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .access-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0, 255, 224, 0.1), transparent);
+      transition: left 0.5s;
+    }
+
+    .access-card:hover::before {
+      left: 100%;
+    }
+
+    .access-card:hover {
+      border-color: #00ffe0;
+      transform: translateY(-8px);
+      box-shadow: 
+        0 12px 24px rgba(0, 255, 224, 0.2),
+        0 0 30px rgba(0, 255, 224, 0.1);
+    }
+
+    .access-icon {
+      font-size: 3rem;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .access-card h3 {
+      color: #00ffe0;
+      margin-bottom: 12px;
+      font-size: 1.4rem;
+    }
+
+    .access-card p {
+      color: #cccccc;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    .access-btn {
+      background: linear-gradient(135deg, #00ffe0 0%, #009988 100%);
+      color: #000;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+    }
+
+    .access-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(0, 255, 224, 0.4);
+    }
+
+    .warning {
+      background: rgba(255, 0, 0, 0.1);
+      border: 1px solid rgba(255, 0, 0, 0.3);
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 40px;
+    }
+
+    .warning h4 {
+      color: #ff6666;
+      margin-bottom: 12px;
+    }
+
+    .warning p {
+      color: #cccccc;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .matrix-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      z-index: -2;
+      opacity: 0.03;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: #00ffe0;
+      white-space: pre;
+      line-height: 1.2;
+    }
+
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 2.5rem;
+      }
+
+      .access-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      .access-card {
+        padding: 20px 16px;
+      }
+
+      .container {
+        padding: 0 16px;
+      }
+    }
+  </style>
 </head>
 <body>
-<div id="sigill">Æ</div>
-<script src="portal_guard.js"></script>
+  <!-- Matrix-like background -->
+  <div class="matrix-bg" id="matrixBg"></div>
 
-<!-- GLOBAL NAVIGATION SYSTEM -->
-<script src="js/global_nav_menu.js" defer></script>
+  <div class="container">
+    <div class="header">
+      <h1>⚫ ÆSI SVART PORTAL</h1>
+      <p class="subtitle">Avancerad åtkomst till systemets djupaste funktioner</p>
+    </div>
 
-<!-- COMPLETE NAVIGATION SYSTEM -->
-<link rel="stylesheet" href="css/navigation.css">
-<script src="js/navigation_hub.js" defer></script>
-<script src="/js/global_nav.js"></script>
+    <div class="access-grid">
+      <div class="access-card" onclick="accessSystemCore()">
+        <span class="access-icon">🧠</span>
+        <h3>System Core</h3>
+        <p>Direkt åtkomst till ÆSI:s kärna. Modifera systemparametrar och övervaka interna processer.</p>
+        <button class="access-btn">Öppna Core →</button>
+      </div>
+
+      <div class="access-card" onclick="accessNeuralNetwork()">
+        <span class="access-icon">🕸️</span>
+        <h3>Neural Network</h3>
+        <p>Utforska och konfigurera neurala nätverk. Träna modeller och analysera AI-beteenden.</p>
+        <button class="access-btn">Neural Access →</button>
+      </div>
+
+      <div class="access-card" onclick="accessQuantumInterface()">
+        <span class="access-icon">⚛️</span>
+        <h3>Quantum Interface</h3>
+        <p>Experimentell kvantgränssnitt. Avancerade beräkningar och probabilistiska operationer.</p>
+        <button class="access-btn">Quantum Link →</button>
+      </div>
+
+      <div class="access-card" onclick="accessVoidArchive()">
+        <span class="access-icon">🕳️</span>
+        <h3>Void Archive</h3>
+        <p>Tillgång till borttagna data och arkiverade minnen. Återställ förlorad information.</p>
+        <button class="access-btn">Enter Void →</button>
+      </div>
+
+      <div class="access-card" onclick="accessRealityEngine()">
+        <span class="access-icon">🌌</span>
+        <h3>Reality Engine</h3>
+        <p>Manipulera perceptionslager och alternativa verkligheter. Avancerad simulering.</p>
+        <button class="access-btn">Reality Shift →</button>
+      </div>
+
+      <div class="access-card" onclick="accessChronicle()">
+        <span class="access-icon">⏰</span>
+        <h3>The Chronicle</h3>
+        <p>Tidsbaserade operationer. Analysera historiska data och framtida projektioner.</p>
+        <button class="access-btn">Time Flow →</button>
+      </div>
+    </div>
+
+    <div class="warning">
+      <h4>⚠️ AVANCERAD VARNING</h4>
+      <p>Denna portal ger tillgång till systemets mest kraftfulla funktioner. Felaktig användning kan orsaka instabilitet eller dataförlust. Använd endast om du förstår konsekvenserna av dina åtgärder.</p>
+    </div>
+  </div>
+
+  <script>
+    // Matrix background effect
+    function initMatrixBg() {
+      const matrixEl = document.getElementById('matrixBg');
+      let matrix = '';
+      
+      for (let i = 0; i < 50; i++) {
+        for (let j = 0; j < 80; j++) {
+          matrix += Math.random() > 0.95 ? '1' : '0';
+        }
+        matrix += '\n';
+      }
+      
+      matrixEl.textContent = matrix;
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      initMatrixBg();
+      
+      // Animate matrix occasionally
+      setInterval(() => {
+        if (Math.random() < 0.1) {
+          initMatrixBg();
+        }
+      }, 5000);
+    });
+
+    // Access functions
+    function accessSystemCore() {
+      if (confirm('Öppna System Core? Detta kräver avancerade privilegier.')) {
+        alert('🔒 System Core kräver ytterligare autentisering. Kontakta systemadministratör.');
+      }
+    }
+
+    function accessNeuralNetwork() {
+      if (confirm('Aktivera Neural Network Interface? Detta kan påverka AI-beteenden.')) {
+        navigateTo('console.html');
+      }
+    }
+
+    function accessQuantumInterface() {
+      alert('⚛️ Quantum Interface är under utveckling. Tillgänglig i framtida versioner.');
+    }
+
+    function accessVoidArchive() {
+      if (confirm('Enter Void Archive? Borttagna data kan vara instabila.')) {
+        navigateTo('archivarius.html');
+      }
+    }
+
+    function accessRealityEngine() {
+      alert('🌌 Reality Engine kräver experimentell hårdvara. Inte tillgänglig i denna miljö.');
+    }
+
+    function accessChronicle() {
+      if (confirm('Öppna The Chronicle? Detta kan påverka tidslinjära operationer.')) {
+        alert('⏰ Chronicle öppnas... (Funktionalitet under utveckling)');
+      }
+    }
+
+    // Add some mysterious effects
+    document.addEventListener('mousemove', (e) => {
+      const cards = document.querySelectorAll('.access-card');
+      cards.forEach(card => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
+          const intensity = Math.min(1, (x / rect.width + y / rect.height) / 2);
+          card.style.boxShadow = `0 12px 24px rgba(0, 255, 224, ${0.2 + intensity * 0.3})`;
+        }
+      });
+    });
+
+    // Easter egg
+    let clickCount = 0;
+    document.addEventListener('click', () => {
+      clickCount++;
+      if (clickCount === 10) {
+        document.body.style.animation = 'backgroundShift 5s ease-in-out infinite';
+        setTimeout(() => {
+          document.body.style.animation = '';
+        }, 5000);
+        clickCount = 0;
+      }
+    });
+  </script>
+
+  <script src="js/navigation_hub.js" defer></script>
 </body>
 </html>
 

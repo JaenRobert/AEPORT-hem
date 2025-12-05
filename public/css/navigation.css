@@ -1,0 +1,333 @@
+/* ÆSI Navigation System - Complete Styling */
+
+:root {
+  --nav-bg: #0a0a0a;
+  --nav-border: #00ffe0;
+  --nav-text: #ffffff;
+  --nav-text-secondary: #cccccc;
+  --nav-hover: #00ffe0;
+  --nav-disabled: #666666;
+  --modal-bg: rgba(0, 0, 0, 0.8);
+  --modal-content-bg: #1a1a1a;
+  --shadow: 0 4px 12px rgba(0, 255, 224, 0.3);
+}
+
+.aesi-navigation-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: var(--nav-bg);
+  border-bottom: 2px solid var(--nav-border);
+  box-shadow: var(--shadow);
+  z-index: 10000;
+  font-family: 'Consolas', 'Monaco', monospace;
+}
+
+.aesi-nav-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.aesi-nav-btn {
+  background: transparent;
+  border: 1px solid var(--nav-border);
+  color: var(--nav-text);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.aesi-nav-btn:hover:not(.disabled) {
+  background: var(--nav-hover);
+  color: #000;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 255, 224, 0.4);
+}
+
+.aesi-nav-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: var(--nav-disabled);
+  color: var(--nav-disabled);
+}
+
+.aesi-nav-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.aesi-nav-current {
+  flex: 1;
+  text-align: center;
+}
+
+.current-page-info {
+  color: var(--nav-hover);
+  font-weight: bold;
+  font-size: 16px;
+  text-shadow: 0 0 8px rgba(0, 255, 224, 0.5);
+}
+
+.aesi-nav-menu {
+  display: flex;
+  gap: 8px;
+}
+
+/* Modal Styles */
+.aesi-page-menu-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--modal-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+  animation: fadeIn 0.3s ease;
+}
+
+.aesi-page-menu-content {
+  background: var(--modal-content-bg);
+  border: 2px solid var(--nav-border);
+  border-radius: 12px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  animation: slideUp 0.3s ease;
+}
+
+.aesi-page-menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--nav-border);
+  background: var(--nav-bg);
+}
+
+.aesi-page-menu-header h3 {
+  margin: 0;
+  color: var(--nav-hover);
+  font-size: 18px;
+}
+
+.close-menu {
+  background: none;
+  border: none;
+  color: var(--nav-text);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.close-menu:hover {
+  background: var(--nav-hover);
+  color: #000;
+}
+
+.aesi-page-menu-list {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.aesi-menu-category {
+  padding: 12px 20px 4px;
+  font-weight: bold;
+  color: var(--nav-hover);
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid rgba(0, 255, 224, 0.2);
+  margin-bottom: 8px;
+}
+
+.aesi-menu-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-left: 3px solid transparent;
+}
+
+.aesi-menu-item:hover {
+  background: rgba(0, 255, 224, 0.1);
+  border-left-color: var(--nav-hover);
+}
+
+.aesi-menu-item.current {
+  background: rgba(0, 255, 224, 0.2);
+  border-left-color: var(--nav-hover);
+}
+
+.menu-icon {
+  font-size: 20px;
+  margin-right: 12px;
+  width: 24px;
+  text-align: center;
+}
+
+.menu-text {
+  flex: 1;
+}
+
+.menu-name {
+  font-weight: bold;
+  color: var(--nav-text);
+  margin-bottom: 2px;
+}
+
+.menu-desc {
+  font-size: 12px;
+  color: var(--nav-text-secondary);
+}
+
+.current-indicator {
+  color: var(--nav-hover);
+  font-weight: bold;
+  font-size: 16px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .aesi-nav-container {
+    padding: 6px 12px;
+  }
+  
+  .aesi-nav-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  
+  .current-page-info {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  .aesi-nav-container {
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px;
+  }
+  
+  .aesi-nav-controls,
+  .aesi-nav-current,
+  .aesi-nav-menu {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .aesi-nav-controls {
+    order: 2;
+  }
+  
+  .aesi-nav-current {
+    order: 1;
+  }
+  
+  .aesi-nav-menu {
+    order: 3;
+  }
+  
+  .aesi-page-menu-content {
+    width: 95%;
+    max-height: 90vh;
+  }
+}
+
+@media (max-width: 480px) {
+  .aesi-navigation-bar {
+    font-size: 12px;
+  }
+  
+  .aesi-nav-btn {
+    min-width: 36px;
+    min-height: 36px;
+    padding: 4px 6px;
+  }
+  
+  .current-page-info {
+    font-size: 12px;
+  }
+  
+  .aesi-menu-item {
+    padding: 8px 12px;
+  }
+  
+  .menu-icon {
+    font-size: 16px;
+    margin-right: 8px;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus styles for keyboard navigation */
+.aesi-nav-btn:focus,
+.close-menu:focus,
+.aesi-menu-item:focus {
+  outline: 2px solid var(--nav-hover);
+  outline-offset: 2px;
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .aesi-navigation-bar {
+    border-bottom-width: 3px;
+  }
+  
+  .aesi-nav-btn {
+    border-width: 2px;
+  }
+}
+
+/* Print styles */
+@media print {
+  .aesi-navigation-bar,
+  .aesi-page-menu-modal {
+    display: none !important;
+  }
+}

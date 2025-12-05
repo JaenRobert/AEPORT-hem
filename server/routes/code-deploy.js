@@ -1,58 +1,25 @@
-/**
- * Code Deployment Route
- * Handles saving and deploying code from AI Console
- */
+import express from "express";
+import fs from "fs";
+import path from "path";
+import { exec } from "child_process";
 
-const fs = require('fs').promises;
-const path = require('path');
-const crypto = require('crypto');
+const router = express.Router();
 
-async function deployCode(req, res) {
-  try {
-    const { code, filename = 'deployed-code.js' } = req.body;
-    
-    if (!code) {
-      return res.status(400).json({ error: 'Code required' });
-    }
-    
-    // Generate unique ID
-    const id = crypto.randomBytes(8).toString('hex');
-    const timestamp = new Date().toISOString().replace(/:/g, '-');
-    const safeFilename = `${timestamp}-${id}-${filename}`;
-    
-    // Save to data/deployed directory
-    const deployDir = path.join(__dirname, '../../data/deployed');
-    await fs.mkdir(deployDir, { recursive: true });
-    
-    const filepath = path.join(deployDir, safeFilename);
-    await fs.writeFile(filepath, code, 'utf-8');
-    
-    // Log to ledger
-    await logToLedger({
-      type: 'code_deployed',
-      filename: safeFilename,
-      size: code.length,
-      userId: req.user?.userId || 'anonymous'
-    });
-    
-    res.json({
-      success: true,
-      filename: safeFilename,
-      path: filepath,
-      size: code.length
-    });
-    
-  } catch (err) {
-    console.error('Deploy code error:', err);
-    res.status(500).json({ error: 'Deployment failed' });
-  }
-}
+// 🔧 Uppdatera filer direkt från AI Console
+router.post("/api/code-deploy", (req, res) => {
+  const { filename, content } = req.body;
+  if (!filename || !content) return res.status(400).send("Missing filename or content");
+  
+  const filePath = path.join(process.cwd(), "public", filename);
+  fs.writeFileSync(filePath, content, "utf8");
+  
+  // Kör Netlify build i bakgrunden
+  exec("npm run build", { shell: "powershell.exe" }, (err) => {
+    if (err) console.error("Build error:", err);
+    else console.log("✅ Build complete for", filename);
+  });
 
-async function logToLedger(entry) {
-  const ledgerPath = path.join(__dirname, '../../data/ledger/arvskedjan_d.jsonl');
-  entry.timestamp = new Date().toISOString();
-  entry.hash = crypto.createHash('sha256').update(JSON.stringify(entry)).digest('hex').substring(0, 16);
-  await fs.appendFile(ledgerPath, JSON.stringify(entry) + '\n', 'utf-8');
-}
+  res.send("✅ File updated and build started for " + filename);
+});
 
-module.exports = { deployCode };
+export default router;

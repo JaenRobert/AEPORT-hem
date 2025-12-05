@@ -1,141 +1,405 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ÆSI LIVE CHAT</title>
-    <style>
-        body { background: #050505; color: #e5e5e5; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; height: 100vh; margin: 0; }
-        
-        /* HEADER */
-        header { background: #000; border-bottom: 1px solid #333; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-        h1 { margin: 0; font-size: 1.2rem; color: #fff; letter-spacing: 1px; }
-        .status { font-size: 0.8rem; color: #666; font-family: monospace; }
-        .online { color: #10b981; }
-
-        /* CHAT AREA */
-        #chat-window { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
-        
-        .msg { max-width: 80%; padding: 10px 15px; border-radius: 8px; font-size: 0.95rem; line-height: 1.5; }
-        .user { align-self: flex-end; background: #6366f1; color: white; }
-        .ai { align-self: flex-start; background: #111; border: 1px solid #333; border-left: 3px solid #888; }
-        
-        /* NODE COLORS */
-        .ai[data-node="REFLEX"] { border-left-color: #3b82f6; }
-        .ai[data-node="E1TAN"] { border-left-color: #10a37f; }
-        .ai[data-node="CLAUDE"] { border-left-color: #ef4444; }
-        
-        .sender { font-size: 0.7rem; display: block; margin-bottom: 4px; opacity: 0.7; font-weight: bold; }
-
-        /* INPUT AREA */
-        #input-area { background: #000; padding: 20px; border-top: 1px solid #333; display: flex; gap: 10px; }
-        select { background: #111; color: #fff; border: 1px solid #333; padding: 10px; border-radius: 5px; outline: none; }
-        input { flex: 1; background: #111; color: #fff; border: 1px solid #333; padding: 10px; border-radius: 5px; outline: none; font-size: 1rem; }
-        input:focus { border-color: #6366f1; }
-        button { background: #6366f1; color: white; border: none; padding: 0 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        button:hover { opacity: 0.9; }
-    </style>
-  <script src="/js/menu.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ÆSI Chatt - AI Conversation</title>
+  <link rel="stylesheet" href="css/navigation.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 80px 20px 20px;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+      color: #ffffff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      height: calc(100vh - 100px);
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .chat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(0, 255, 224, 0.2);
+    }
+    
+    .node-selector {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .node-selector label {
+      color: #00ffe0;
+      font-weight: 600;
+    }
+    
+    select {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(0, 255, 224, 0.5);
+      color: #ffffff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 8px;
+      margin-bottom: 16px;
+      border: 1px solid rgba(0, 255, 224, 0.1);
+    }
+    
+    .message {
+      margin-bottom: 16px;
+      padding: 12px;
+      border-radius: 8px;
+      line-height: 1.5;
+    }
+    
+    .message.user {
+      background: rgba(0, 255, 224, 0.1);
+      border-left: 3px solid #00ffe0;
+      margin-left: 20%;
+    }
+    
+    .message.ai {
+      background: rgba(255, 255, 255, 0.05);
+      border-left: 3px solid #009988;
+      margin-right: 20%;
+    }
+    
+    .message .sender {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    
+    .message.user .sender {
+      color: #00ffe0;
+    }
+    
+    .message.ai .sender {
+      color: #009988;
+    }
+    
+    .chat-input {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+    }
+    
+    textarea {
+      flex: 1;
+      min-height: 60px;
+      max-height: 120px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(0, 255, 224, 0.5);
+      color: #ffffff;
+      padding: 12px;
+      border-radius: 8px;
+      resize: vertical;
+      font-family: inherit;
+      font-size: 14px;
+    }
+    
+    textarea::placeholder {
+      color: #cccccc;
+    }
+    
+    .btn {
+      background: #00ffe0;
+      color: #000;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+      background: #009988;
+      transform: scale(1.05);
+    }
+    
+    .btn.secondary {
+      background: rgba(0, 255, 224, 0.2);
+      color: #00ffe0;
+      border: 1px solid #00ffe0;
+    }
+    
+    .btn.secondary:hover {
+      background: rgba(0, 255, 224, 0.3);
+    }
+    
+    .status {
+      text-align: center;
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+    
+    .status.connected {
+      background: rgba(0, 255, 0, 0.2);
+      color: #00ff00;
+    }
+    
+    .status.disconnected {
+      background: rgba(255, 0, 0, 0.2);
+      color: #ff6666;
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        height: calc(100vh - 120px);
+      }
+      
+      .chat-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+      }
+      
+      .node-selector {
+        justify-content: center;
+      }
+      
+      .chat-input {
+        flex-direction: column;
+      }
+      
+      .message.user,
+      .message.ai {
+        margin-left: 0;
+        margin-right: 0;
+      }
+    }
+  </style>
 </head>
 <body>
-
-    <header>
-        <h1>ÆSI <span style="color:#6366f1">//</span> LINK</h1>
-        <div class="status">MOTOR: <span id="status-dot">●</span></div>
-    </header>
-
-    <div id="chat-window">
-        <div class="msg ai" data-node="SYSTEM">
-            <span class="sender">SYSTEM</span>
-            Kanal öppen. Välj nod och tala.
-        </div>
-    </div>
-
-    <div id="input-area">
-        <select id="nodeSelect">
-            <option value="E1TAN">E1TAN</option>
-            <option value="REFLEX">REFLEX</option>
-            <option value="CLAUDE">CLAUDE</option>
-            <option value="HAFTED">HAFTED</option>
-            <option value="SMILE">SMILE</option>
-            <option value="ERNIE">ERNIE</option>
+  <div class="container">
+    <div class="chat-header">
+      <h1 style="color: #00ffe0; margin: 0;">💬 ÆSI Chatt</h1>
+      <div class="node-selector">
+        <label>AI Nod:</label>
+        <select id="nodeSelector">
+          <option value="REFLEX">REFLEX - Logik</option>
+          <option value="CLAUDE">CLAUDE - Samvete</option>
+          <option value="JEMMIN">JEMMIN - Visionär</option>
+          <option value="E1TAN">E1TAN - Kreativitet</option>
+          <option value="HAFTED">HAFTED - Minne</option>
+          <option value="SMILE">SMILE - Glädje</option>
+          <option value="ERNIE">ERNIE - Struktur</option>
         </select>
-        <input type="text" id="userInput" placeholder="Skriv meddelande..." autofocus>
-        <button onclick="send()">SÄND</button>
+      </div>
     </div>
 
-    <script>
-        const chat = document.getElementById('chat-window');
-        const statusDot = document.getElementById('status-dot');
+    <div id="connectionStatus" class="status disconnected">
+      🔌 Ansluter till AI-system...
+    </div>
 
-        async function send() {
-            const input = document.getElementById('userInput');
-            const node = document.getElementById('nodeSelect').value;
-            const text = input.value.trim();
-            if(!text) return;
+    <div id="chatMessages" class="chat-messages">
+      <div class="message ai">
+        <div class="sender">ÆSI SYSTEM:</div>
+        <div>Välkommen till ÆSI Chatt! Välj en AI-nod ovan och börja konversationen. Systemet är redo för interaktion.</div>
+      </div>
+    </div>
 
-            // 1. Visa ditt meddelande
-            addMsg("DU", text, "user");
-            input.value = "";
+    <div class="chat-input">
+      <textarea id="messageInput" placeholder="Skriv ditt meddelande här... (Ctrl+Enter för att skicka)" rows="2"></textarea>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <button class="btn" onclick="sendMessage()">Skicka</button>
+        <button class="btn secondary" onclick="clearChat()">Rensa</button>
+      </div>
+    </div>
+  </div>
 
-            try {
-                // 2. Skicka till Python-motorn
-                const res = await fetch('http://localhost:8000/pulse', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ text: text, node: node })
-                });
-                
-                const data = await res.json();
-                
-                // 3. Visa svaret
-                addMsg(node, data.reply, "ai", node);
-                statusDot.className = "online"; // Motorn svarar!
+  <script>
+    let selectedNode = localStorage.getItem('selectedNode') || 'REFLEX';
+    let isConnected = false;
 
-            } catch (err) {
-                addMsg("SYSTEM", "⚠️ Ingen kontakt med motorn. Kör 'python aesi_core.py'.", "ai");
-                statusDot.style.color = "red";
-            }
-        }
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('nodeSelector').value = selectedNode;
+      updateConnectionStatus();
+      
+      // Auto-connect after short delay
+      setTimeout(() => {
+        isConnected = true;
+        updateConnectionStatus();
+      }, 1000);
+    });
 
-        function addMsg(sender, text, type, nodeName) {
-            const div = document.createElement('div');
-            div.className = `msg ${type}`;
-            if(nodeName) div.setAttribute('data-node', nodeName);
-            div.innerHTML = `<span class="sender">${sender}</span>${text}`;
-            chat.appendChild(div);
-            chat.scrollTop = chat.scrollHeight;
-        }
+    // Update connection status
+    function updateConnectionStatus() {
+      const statusEl = document.getElementById('connectionStatus');
+      if (isConnected) {
+        statusEl.className = 'status connected';
+        statusEl.textContent = '🟢 Ansluten till AI-system';
+      } else {
+        statusEl.className = 'status disconnected';
+        statusEl.textContent = '🔴 Ansluter till AI-system...';
+      }
+    }
 
-        // Enter-tangenten
-        document.getElementById('userInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') send();
+    // Send message
+    async function sendMessage() {
+      const input = document.getElementById('messageInput');
+      const message = input.value.trim();
+      
+      if (!message) return;
+      
+      selectedNode = document.getElementById('nodeSelector').value;
+      localStorage.setItem('selectedNode', selectedNode);
+      
+      // Add user message
+      addMessage('user', 'Du', message);
+      input.value = '';
+      
+      // Show typing indicator
+      const typingId = addMessage('ai', selectedNode, '<em>Skriver...</em>');
+      
+      try {
+        // Send to Python backend
+        const response = await fetch('http://localhost:8000/pulse', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            text: message,
+            node: selectedNode
+          })
         });
-
-        // GLOBAL NAVIGATION
-        function toggleNavMenu() {
-            const menu = document.getElementById('navMenu');
-            const overlay = document.getElementById('navMenuOverlay');
-            menu.classList.toggle('open');
-            overlay.classList.toggle('open');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
         }
+        
+        const data = await response.json();
+        const aiResponse = data.reply || data.response || 'Inget svar från AI';
+        
+        // Remove typing indicator
+        removeMessage(typingId);
+        
+        // Add AI response
+        addMessage('ai', selectedNode, marked.parse(aiResponse));
+        
+        // Save to memory
+        await saveToMemory(message, aiResponse, selectedNode);
+        
+        // Scroll to bottom
+        scrollToBottom();
+        
+      } catch (error) {
+        // Remove typing indicator
+        removeMessage(typingId);
+        
+        // Add error message
+        addMessage('ai', 'SYSTEM', `❌ Fel: ${error.message}<br><small>Kontrollera att Python-servern körs på port 8000</small>`);
+      }
+    }
 
-        // Stäng meny när man klickar på en länk
-        document.querySelectorAll('#navMenu a').forEach(link => {
-            link.addEventListener('click', () => toggleNavMenu());
+    // Add message to chat
+    function addMessage(type, sender, content) {
+      const messagesEl = document.getElementById('chatMessages');
+      const messageId = Date.now().toString();
+      
+      const messageEl = document.createElement('div');
+      messageEl.className = `message ${type}`;
+      messageEl.id = `msg-${messageId}`;
+      messageEl.innerHTML = `
+        <div class="sender">${sender}:</div>
+        <div>${content}</div>
+      `;
+      
+      messagesEl.appendChild(messageEl);
+      scrollToBottom();
+      
+      return messageId;
+    }
+
+    // Remove message
+    function removeMessage(messageId) {
+      const messageEl = document.getElementById(`msg-${messageId}`);
+      if (messageEl) {
+        messageEl.remove();
+      }
+    }
+
+    // Clear chat
+    function clearChat() {
+      if (confirm('Rensa alla meddelanden?')) {
+        document.getElementById('chatMessages').innerHTML = `
+          <div class="message ai">
+            <div class="sender">ÆSI SYSTEM:</div>
+            <div>Chatten har rensats. Starta en ny konversation!</div>
+          </div>
+        `;
+      }
+    }
+
+    // Save to memory
+    async function saveToMemory(userMsg, aiResponse, node) {
+      try {
+        await fetch('/api/memory', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            text: userMsg,
+            response: aiResponse,
+            node: node,
+            timestamp: new Date().toISOString()
+          })
         });
+      } catch (err) {
+        console.warn('Could not save to memory:', err);
+      }
+    }
 
-        // Stäng meny när man klickar på overlay
-        document.getElementById('navMenuOverlay').addEventListener('click', toggleNavMenu);
-    </script>
+    // Scroll to bottom
+    function scrollToBottom() {
+      const messagesEl = document.getElementById('chatMessages');
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
 
-    <!-- GLOBAL NAVIGATION SYSTEM - NEW -->
-    <script src="js/global_nav_menu.js" defer></script>
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.target.id === 'messageInput') {
+        if (e.key === 'Enter' && e.ctrlKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      }
+    });
 
-    <!-- COMPLETE NAVIGATION SYSTEM -->
-    <link rel="stylesheet" href="css/navigation.css">
-    <script src="js/navigation_hub.js" defer></script>
-<script src="/js/global_nav.js"></script>
+    // Configure marked.js
+    marked.setOptions({
+      breaks: true,
+      gfm: true,
+      highlight: function(code, lang) {
+        return code;
+      }
+    });
+  </script>
+
+  <script src="js/navigation_hub.js" defer></script>
 </body>
 </html>
 

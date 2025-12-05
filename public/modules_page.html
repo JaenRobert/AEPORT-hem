@@ -1,643 +1,525 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ÆSI Module Browser</title>
-    <link rel="stylesheet" href="/css/module_ui.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: #050505;
-            color: #d4d4d4;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            overflow: hidden;
-            height: 100vh;
-        }
-
-        /* HEADER */
-        #header {
-            background: #0a0a0a;
-            border-bottom: 1px solid #262626;
-            padding: 12px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 60px;
-            z-index: 100;
-            position: sticky;
-            top: 0;
-            gap: 16px;
-        }
-
-        #header h1 {
-            font-size: 16px;
-            font-weight: bold;
-            color: #eee;
-            letter-spacing: 1px;
-            margin: 0;
-        }
-
-        .header-search {
-            flex: 1;
-            max-width: 300px;
-        }
-
-        .header-search input {
-            width: 100%;
-            background: #111;
-            color: #eee;
-            border: 1px solid #333;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            outline: none;
-            transition: all 0.2s;
-        }
-
-        .header-search input:focus {
-            border-color: #6366f1;
-            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
-        }
-
-        .header-controls {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .btn-header {
-            background: #6366f1;
-            border: none;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-
-        .btn-header:hover {
-            background: #4f46e5;
-        }
-
-        /* MAIN CONTAINER */
-        #container {
-            display: grid;
-            grid-template-columns: 200px 1fr;
-            height: calc(100vh - 60px);
-            gap: 0;
-        }
-
-        /* SIDEBAR */
-        #sidebar {
-            background: #0a0a0a;
-            border-right: 1px solid #262626;
-            overflow-y: auto;
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .sidebar-section {
-            border-bottom: 1px solid #262626;
-            padding-bottom: 12px;
-        }
-
-        .sidebar-section h3 {
-            font-size: 11px;
-            font-weight: bold;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
-        }
-
-        .category-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            width: 100%;
-            padding: 8px;
-            background: #111;
-            border: 1px solid #333;
-            border-radius: 4px;
-            color: #d4d4d4;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.2s;
-            text-align: left;
-            margin-bottom: 4px;
-        }
-
-        .category-btn:hover {
-            background: #262626;
-            border-color: #6366f1;
-        }
-
-        .category-btn.active {
-            background: #6366f1;
-            border-color: #6366f1;
-            color: white;
-        }
-
-        .category-icon {
-            font-size: 16px;
-            flex-shrink: 0;
-        }
-
-        .favorites-list {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .favorite-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 8px;
-            background: #1a1a1a;
-            border-radius: 4px;
-            font-size: 11px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .favorite-item:hover {
-            background: #262626;
-        }
-
-        /* MAIN CONTENT */
-        #main {
-            background: #050505;
-            overflow-y: auto;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
-
-        /* CATEGORY SECTION */
-        .category-section {
-            display: none;
-        }
-
-        .category-section.active {
-            display: block;
-        }
-
-        .category-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 12px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid #262626;
-        }
-
-        .category-header .icon {
-            font-size: 24px;
-        }
-
-        .category-header h2 {
-            font-size: 18px;
-            font-weight: bold;
-            color: white;
-            margin: 0;
-        }
-
-        .category-header .count {
-            margin-left: auto;
-            font-size: 12px;
-            color: #888;
-        }
-
-        /* MODULE GRID */
-        .module-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 12px;
-        }
-
-        .module-card {
-            background: #1a1a1a;
-            border: 2px solid;
-            border-radius: 8px;
-            padding: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-            user-select: none;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .module-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: currentColor;
-        }
-
-        .module-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-            border-color: currentColor;
-        }
-
-        .module-icon {
-            font-size: 32px;
-            text-align: center;
-        }
-
-        .module-name {
-            font-size: 13px;
-            font-weight: bold;
-            color: #eee;
-            line-height: 1.3;
-        }
-
-        .module-description {
-            font-size: 11px;
-            color: #888;
-            line-height: 1.3;
-            flex: 1;
-        }
-
-        .module-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            margin-top: auto;
-        }
-
-        .module-tag {
-            background: #111;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-size: 9px;
-            color: #666;
-            border: 1px solid #222;
-        }
-
-        .module-actions {
-            display: flex;
-            gap: 4px;
-            margin-top: 8px;
-        }
-
-        .module-actions button {
-            flex: 1;
-            background: #6366f1;
-            border: none;
-            color: white;
-            padding: 4px;
-            border-radius: 3px;
-            font-size: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .module-actions button:hover {
-            background: #4f46e5;
-        }
-
-        .module-actions .btn-favorite {
-            background: transparent;
-            border: 1px solid #333;
-            color: #d4d4d4;
-            flex: 0 0 auto;
-        }
-
-        .module-actions .btn-favorite.active {
-            background: #fbbf24;
-            border-color: #fbbf24;
-            color: #000;
-        }
-
-        /* EMPTY STATE */
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #888;
-        }
-
-        .empty-state-icon {
-            font-size: 48px;
-            margin-bottom: 12px;
-        }
-
-        /* SCROLLBARS */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #333;
-            border-radius: 3px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #444;
-        }
-
-        /* RESPONSIVE */
-        @media (max-width: 768px) {
-            #container {
-                grid-template-columns: 1fr;
-            }
-
-            #sidebar {
-                display: none;
-            }
-
-            .module-grid {
-                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            }
-        }
-    </style>
-  <script src="/js/menu.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ÆSI Moduler - Module Management</title>
+  <link rel="stylesheet" href="css/navigation.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 80px 20px 20px;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+      color: #ffffff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    
+    .header h1 {
+      color: #00ffe0;
+      font-size: 2.5rem;
+      margin-bottom: 8px;
+      text-shadow: 0 0 20px rgba(0, 255, 224, 0.5);
+    }
+    
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+    
+    .module-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(0, 255, 224, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .module-card:hover {
+      border-color: #00ffe0;
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0, 255, 224, 0.2);
+    }
+    
+    .module-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    
+    .module-icon {
+      font-size: 2rem;
+      margin-right: 12px;
+    }
+    
+    .module-title {
+      color: #00ffe0;
+      font-size: 1.25rem;
+      margin: 0;
+    }
+    
+    .module-status {
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    
+    .status-active {
+      background: rgba(0, 255, 0, 0.2);
+      color: #00ff00;
+    }
+    
+    .status-inactive {
+      background: rgba(255, 255, 0, 0.2);
+      color: #ffff00;
+    }
+    
+    .status-error {
+      background: rgba(255, 0, 0, 0.2);
+      color: #ff6666;
+    }
+    
+    .module-description {
+      color: #cccccc;
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+    
+    .module-controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      background: #00ffe0;
+      color: #000;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+      background: #009988;
+      transform: scale(1.05);
+    }
+    
+    .btn.secondary {
+      background: rgba(0, 255, 224, 0.2);
+      color: #00ffe0;
+      border: 1px solid #00ffe0;
+    }
+    
+    .btn.secondary:hover {
+      background: rgba(0, 255, 224, 0.3);
+    }
+    
+    .btn.danger {
+      background: #ff4444;
+      color: #fff;
+    }
+    
+    .btn.danger:hover {
+      background: #cc3333;
+    }
+    
+    .module-details {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(0, 255, 224, 0.2);
+      font-size: 0.85rem;
+      color: #999;
+    }
+    
+    .system-info {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(0, 255, 224, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 32px;
+    }
+    
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    
+    .info-item {
+      text-align: center;
+    }
+    
+    .info-value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #00ffe0;
+      display: block;
+    }
+    
+    .info-label {
+      font-size: 0.9rem;
+      color: #cccccc;
+    }
+    
+    @media (max-width: 768px) {
+      .modules-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .header h1 {
+        font-size: 2rem;
+      }
+      
+      .module-controls {
+        justify-content: center;
+      }
+      
+      .info-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
 </head>
 <body>
-
-    <!-- HEADER -->
-    <div id="header">
-        <h1>📦 MODULE BROWSER</h1>
-        <div class="header-search">
-            <input id="search-input" type="text" placeholder="🔍 Search modules (Ctrl+P)...">
-        </div>
-        <div class="header-controls">
-            <button class="btn-header" onclick="location.href='index.html'">← PORTAL</button>
-            <button class="btn-header" onclick="location.href='console.html'">⚙️ ADMIN</button>
-            <button class="btn-header" onclick="location.href='chat.html'">💬 CHAT</button>
-        </div>
+  <div class="container">
+    <div class="header">
+      <h1>📦 ÆSI Moduler</h1>
+      <p>Hantera och konfigurera systemmoduler</p>
     </div>
 
-    <!-- CONTAINER -->
-    <div id="container">
-        <!-- SIDEBAR -->
-        <div id="sidebar">
-            <!-- CATEGORIES -->
-            <div class="sidebar-section">
-                <h3>📂 Categories</h3>
-                <div id="categories-list"></div>
-            </div>
-
-            <!-- FAVORITES -->
-            <div class="sidebar-section" id="favorites-section" style="display: none;">
-                <h3>⭐ Favorites</h3>
-                <div id="favorites-list" class="favorites-list"></div>
-            </div>
-
-            <!-- RECENTLY USED -->
-            <div class="sidebar-section" id="recent-section" style="display: none;">
-                <h3>🕐 Recent</h3>
-                <div id="recent-list" class="favorites-list"></div>
-            </div>
+    <!-- System Info -->
+    <div class="system-info">
+      <h3 style="color: #00ffe0; margin-bottom: 8px;">📊 Systemöversikt</h3>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-value" id="totalModules">8</span>
+          <span class="info-label">Totala moduler</span>
         </div>
-
-        <!-- MAIN CONTENT -->
-        <div id="main">
-            <!-- Categories will be rendered here -->
+        <div class="info-item">
+          <span class="info-value status-active" id="activeModules">7</span>
+          <span class="info-label">Aktiva moduler</span>
         </div>
+        <div class="info-item">
+          <span class="info-value" id="systemUptime">00:00:00</span>
+          <span class="info-label">Drifttid</span>
+        </div>
+        <div class="info-item">
+          <span class="info-value" id="memoryUsage">0 MB</span>
+          <span class="info-label">Minne</span>
+        </div>
+      </div>
     </div>
 
-    <script src="./js/modules_loader.js"></script>
-    <script src="./js/global_nav_menu.js" defer></script>
+    <!-- Modules Grid -->
+    <div class="modules-grid" id="modulesGrid">
+      <!-- Modules will be loaded here -->
+    </div>
+  </div>
 
-    <!-- COMPLETE NAVIGATION SYSTEM -->
-    <link rel="stylesheet" href="css/navigation.css">
-    <script src="js/navigation_hub.js" defer></script>
-    <script>
-        // Render the module browser UI
-        const ModuleBrowser = {
-            activeCategory: null,
+  <script>
+    let modules = [];
+    let systemStartTime = Date.now();
 
-            async init() {
-                // Wait for AesiModulesLoader to be ready
-                const maxWait = 5000;
-                const startTime = Date.now();
-                while (!AesiModulesLoader.allModules.length && Date.now() - startTime < maxWait) {
-                    await new Promise(r => setTimeout(r, 100));
-                }
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeModules();
+      updateSystemStats();
+      setInterval(updateSystemStats, 5000); // Update every 5 seconds
+    });
 
-                this.renderCategories();
-                this.renderModules();
-                this.attachEventListeners();
-                this.updateFavorites();
-                this.updateRecent();
-            },
+    // Initialize modules
+    function initializeModules() {
+      modules = [
+        {
+          id: 'navigation',
+          name: 'Navigation',
+          description: 'Global navigationssystem för alla sidor',
+          icon: '🧭',
+          status: 'active',
+          version: '3.0',
+          dependencies: [],
+          lastUsed: new Date().toISOString()
+        },
+        {
+          id: 'ai_core',
+          name: 'AI Core',
+          description: 'Python-baserad AI-motor med 7 noder',
+          icon: '🤖',
+          status: 'active',
+          version: '5.0',
+          dependencies: ['python'],
+          lastUsed: new Date().toISOString()
+        },
+        {
+          id: 'chat_system',
+          name: 'Chat System',
+          description: 'Real-tidschatt med AI-integration',
+          icon: '💬',
+          status: 'active',
+          version: '4.0',
+          dependencies: ['ai_core', 'websocket'],
+          lastUsed: new Date().toISOString()
+        },
+        {
+          id: 'page_builder',
+          name: 'Sidbyggare',
+          description: 'Visuell sidbyggare med drag & drop',
+          icon: '🔨',
+          status: 'active',
+          version: '3.0',
+          dependencies: ['monaco'],
+          lastUsed: new Date().toISOString()
+        },
+        {
+          id: 'memory_system',
+          name: 'Minnessystem',
+          description: 'Konversationshistorik och datalagring',
+          icon: '🧠',
+          status: 'active',
+          version: '2.0',
+          dependencies: ['database'],
+          lastUsed: new Date().toISOString()
+        },
+        {
+          id: 'archive_manager',
+          name: 'Arkivhanterare',
+          description: 'Dataarkivering och historikhantering',
+          icon: '📚',
+          status: 'active',
+          version: '2.0',
+          dependencies: ['filesystem'],
+          lastUsed: new Date().toISOString()
+        },
+        {
+          id: 'deployment_system',
+          name: 'Distributionssystem',
+          description: 'Automatisk distribution till Netlify',
+          icon: '🚀',
+          status: 'active',
+          version: '3.0',
+          dependencies: ['netlify'],
+          lastUsed: new Date().toISOString()
+        },
+        {
+          id: 'console_admin',
+          name: 'Admin-konsol',
+          description: 'Systemadministration och övervakning',
+          icon: '⚙️',
+          status: 'active',
+          version: '2.0',
+          dependencies: ['system'],
+          lastUsed: new Date().toISOString()
+        }
+      ];
 
-            renderCategories() {
-                const categoriesList = document.querySelector('#categories-list');
-                categoriesList.innerHTML = Object.entries(AesiModulesLoader.categories)
-                    .map(([key, cat]) => {
-                        const count = AesiModulesLoader.getModulesByCategory(key).length;
-                        return `
-                            <button class="category-btn" onclick="ModuleBrowser.selectCategory('${key}')" data-category="${key}">
-                                <span class="category-icon">${cat.icon}</span>
-                                <span>${cat.label} (${count})</span>
-                            </button>
-                        `;
-                    })
-                    .join('');
+      renderModules();
+    }
 
-                // Select first category by default
-                const firstCat = Object.keys(AesiModulesLoader.categories)[0];
-                this.selectCategory(firstCat);
-            },
+    // Render modules
+    function renderModules() {
+      const grid = document.getElementById('modulesGrid');
+      
+      grid.innerHTML = modules.map(module => `
+        <div class="module-card" data-id="${module.id}">
+          <div class="module-header">
+            <div style="display: flex; align-items: center;">
+              <span class="module-icon">${module.icon}</span>
+              <h3 class="module-title">${module.name}</h3>
+            </div>
+            <span class="module-status status-${module.status}">
+              ${module.status === 'active' ? 'AKTIV' : 'INAKTIV'}
+            </span>
+          </div>
+          
+          <p class="module-description">${module.description}</p>
+          
+          <div class="module-controls">
+            <button class="btn ${module.status === 'active' ? 'secondary' : ''}" 
+                    onclick="toggleModule('${module.id}')">
+              ${module.status === 'active' ? 'Inaktivera' : 'Aktivera'}
+            </button>
+            <button class="btn secondary" onclick="configureModule('${module.id}')">
+              Konfigurera
+            </button>
+            <button class="btn secondary" onclick="viewModuleInfo('${module.id}')">
+              Info
+            </button>
+          </div>
+          
+          <div class="module-details">
+            Version: ${module.version} • 
+            Senast använd: ${new Date(module.lastUsed).toLocaleDateString('sv-SE')}
+          </div>
+        </div>
+      `).join('');
+    }
 
-            selectCategory(category) {
-                // Update active button
-                document.querySelectorAll('.category-btn').forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.category === category);
-                });
+    // Toggle module status
+    function toggleModule(moduleId) {
+      const module = modules.find(m => m.id === moduleId);
+      if (!module) return;
+      
+      if (module.status === 'active') {
+        // Check dependencies before deactivating
+        const dependentModules = modules.filter(m => 
+          m.dependencies && m.dependencies.includes(moduleId) && m.status === 'active'
+        );
+        
+        if (dependentModules.length > 0) {
+          alert(`Kan inte inaktivera ${module.name}. Följande moduler är beroende:\n${dependentModules.map(m => '- ' + m.name).join('\n')}`);
+          return;
+        }
+        
+        module.status = 'inactive';
+        alert(`${module.name} inaktiverad`);
+      } else {
+        // Check if dependencies are available
+        const missingDeps = module.dependencies.filter(dep => 
+          !modules.find(m => m.id === dep && m.status === 'active')
+        );
+        
+        if (missingDeps.length > 0) {
+          alert(`Kan inte aktivera ${module.name}. Följande beroenden saknas:\n${missingDeps.join('\n')}`);
+          return;
+        }
+        
+        module.status = 'active';
+        alert(`${module.name} aktiverad`);
+      }
+      
+      module.lastUsed = new Date().toISOString();
+      renderModules();
+      updateSystemStats();
+    }
 
-                this.activeCategory = category;
-                this.renderModules();
-            },
+    // Configure module
+    function configureModule(moduleId) {
+      const module = modules.find(m => m.id === moduleId);
+      if (!module) return;
+      
+      const config = prompt(`Konfigurera ${module.name}:`, JSON.stringify({
+        version: module.version,
+        autoStart: true,
+        debug: false
+      }, null, 2));
+      
+      if (config) {
+        try {
+          const parsedConfig = JSON.parse(config);
+          alert(`${module.name} konfigurerad:\n${JSON.stringify(parsedConfig, null, 2)}`);
+        } catch (e) {
+          alert('Ogiltig JSON-konfiguration');
+        }
+      }
+    }
 
-            renderModules() {
-                const main = document.querySelector('#main');
-                const modules = this.activeCategory 
-                    ? AesiModulesLoader.getModulesByCategory(this.activeCategory)
-                    : AesiModulesLoader.allModules;
+    // View module info
+    function viewModuleInfo(moduleId) {
+      const module = modules.find(m => m.id === moduleId);
+      if (!module) return;
+      
+      alert(`${module.icon} ${module.name} v${module.version}
 
-                if (!modules.length) {
-                    main.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><p>No modules found</p></div>';
-                    return;
-                }
+Beskrivning: ${module.description}
 
-                const category = AesiModulesLoader.categories[this.activeCategory];
-                main.innerHTML = `
-                    <div class="category-section active">
-                        <div class="category-header">
-                            <span class="icon">${category.icon}</span>
-                            <h2>${category.label}</h2>
-                            <span class="count">${modules.length} modules</span>
-                        </div>
-                        <div class="module-grid">
-                            ${modules.map(m => this.renderModuleCard(m)).join('')}
-                        </div>
-                    </div>
-                `;
+Status: ${module.status.toUpperCase()}
+Senast använd: ${new Date(module.lastUsed).toLocaleDateString('sv-SE')}
 
-                // Attach click handlers
-                modules.forEach(m => {
-                    const card = document.querySelector(`[data-module-id="${m.id}"]`);
-                    if (card) {
-                        card.style.borderColor = m.color;
-                        card.style.color = m.color;
-                        
-                        const favoriteBtn = card.querySelector('.btn-favorite');
-                        if (favoriteBtn) {
-                            favoriteBtn.classList.toggle('active', AesiModulesLoader.isFavorite(m.id));
-                        }
-                    }
-                });
-            },
+Beroenden: ${module.dependencies.length > 0 ? module.dependencies.join(', ') : 'Inga'}
 
-            renderModuleCard(module) {
-                return `
-                    <div class="module-card" data-module-id="${module.id}" style="border-color: ${module.color}; color: ${module.color};">
-                        <div class="module-icon">${module.icon}</div>
-                        <div class="module-name">${module.name}</div>
-                        <div class="module-description">${module.description}</div>
-                        ${module.tags?.length ? `
-                            <div class="module-tags">
-                                ${module.tags.slice(0, 2).map(t => `<span class="module-tag">${t}</span>`).join('')}
-                            </div>
-                        ` : ''}
-                        <div class="module-actions">
-                            <button onclick="AesiModulesLoader.loadModule('${module.id}')">Open</button>
-                            <button class="btn-favorite" onclick="ModuleBrowser.toggleFavorite('${module.id}', event)" title="Add to favorites">⭐</button>
-                        </div>
-                    </div>
-                `;
-            },
+Systeminformation:
+- ID: ${module.id}
+- Version: ${module.version}
+- Aktiverad: ${module.status === 'active' ? 'Ja' : 'Nej'}`);
+    }
 
-            toggleFavorite(moduleId, event) {
-                event.stopPropagation();
-                AesiModulesLoader.toggleFavorite(moduleId);
-                this.updateFavorites();
-                this.renderModules(); // Re-render to update favorite button
-            },
+    // Update system statistics
+    function updateSystemStats() {
+      const activeModules = modules.filter(m => m.status === 'active').length;
+      const uptime = Math.floor((Date.now() - systemStartTime) / 1000);
+      const hours = Math.floor(uptime / 3600);
+      const minutes = Math.floor((uptime % 3600) / 60);
+      const seconds = uptime % 60;
+      
+      document.getElementById('totalModules').textContent = modules.length;
+      document.getElementById('activeModules').textContent = activeModules;
+      document.getElementById('systemUptime').textContent = 
+        `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      
+      // Simulate memory usage
+      const memoryUsage = Math.floor(Math.random() * 50) + 100;
+      document.getElementById('memoryUsage').textContent = `${memoryUsage} MB`;
+    }
 
-            updateFavorites() {
-                const favSection = document.querySelector('#favorites-section');
-                const favList = document.querySelector('#favorites-list');
-                
-                if (AesiModulesLoader.favorites.length) {
-                    favSection.style.display = 'block';
-                    favList.innerHTML = AesiModulesLoader.favorites
-                        .map(id => {
-                            const m = AesiModulesLoader.getModule(id);
-                            return m ? `
-                                <div class="favorite-item" onclick="AesiModulesLoader.loadModule('${id}')" title="${m.description}">
-                                    <span>${m.icon}</span>
-                                    <span>${m.name}</span>
-                                </div>
-                            ` : '';
-                        })
-                        .join('');
-                } else {
-                    favSection.style.display = 'none';
-                }
-            },
+    // Export module configuration
+    window.exportModules = function() {
+      const data = {
+        exported_at: new Date().toISOString(),
+        modules: modules
+      };
+      
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'aesi_modules_config.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      alert('Modulkonfiguration exporterad!');
+    };
 
-            updateRecent() {
-                const recentSection = document.querySelector('#recent-section');
-                const recentList = document.querySelector('#recent-list');
-                const recent = AesiModulesLoader.getRecentlyUsed();
-                
-                if (recent.length) {
-                    recentSection.style.display = 'block';
-                    recentList.innerHTML = recent
-                        .map(m => `
-                            <div class="favorite-item" onclick="AesiModulesLoader.loadModule('${m.id}')" title="${m.description}">
-                                <span>${m.icon}</span>
-                                <span>${m.name}</span>
-                            </div>
-                        `)
-                        .join('');
-                } else {
-                    recentSection.style.display = 'none';
-                }
-            },
-
-            attachEventListeners() {
-                // Search
-                const searchInput = document.querySelector('#search-input');
-                if (searchInput) {
-                    searchInput.addEventListener('input', (e) => {
-                        const query = e.target.value;
-                        if (query) {
-                            this.renderSearchResults(query);
-                        } else {
-                            this.renderModules();
-                        }
-                    });
-                }
-
-                // Listen to favorites changes
-                AesiModulesLoader.on('favorites-changed', () => this.updateFavorites());
-                AesiModulesLoader.on('recently-used-changed', () => this.updateRecent());
-            },
-
-            renderSearchResults(query) {
-                const results = AesiModulesLoader.search(query);
-                const main = document.querySelector('#main');
-
-                if (!results.length) {
-                    main.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔍</div><p>No modules match "' + query + '"</p></div>';
-                    return;
-                }
-
-                main.innerHTML = `
-                    <div class="category-section active">
-                        <div class="category-header">
-                            <h2>Search Results</h2>
-                            <span class="count">${results.length} matches</span>
-                        </div>
-                        <div class="module-grid">
-                            ${results.map(m => this.renderModuleCard(m)).join('')}
-                        </div>
-                    </div>
-                `;
-
-                // Attach colors and handlers
-                results.forEach(m => {
-                    const card = document.querySelector(`[data-module-id="${m.id}"]`);
-                    if (card) {
-                        card.style.borderColor = m.color;
-                        card.style.color = m.color;
-                    }
-                });
+    // Import module configuration
+    window.importModules = function() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = function(e) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            const data = JSON.parse(e.target.result);
+            if (data.modules) {
+              modules = data.modules;
+              renderModules();
+              updateSystemStats();
+              alert('Modulkonfiguration importerad!');
             }
+          } catch (err) {
+            alert('Ogiltig konfigurationsfil: ' + err.message);
+          }
         };
+        reader.readAsText(file);
+      };
+      input.click();
+    };
+  </script>
 
-        // Initialize when modules loader is ready
-        ModuleBrowser.init();
-    </script>
-
-<script src="/js/global_nav.js"></script>
+  <script src="js/navigation_hub.js" defer></script>
 </body>
 </html>
 

@@ -3,203 +3,142 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ÆSI NEXUS - Upload</title>
-  <script src="/js/menu.js"></script>
+  <title>ÆSI Upload - Uploads</title>
   <style>
-    .container {
-      max-width: 1200px;
-      margin: 2rem auto;
-      padding: 0 2rem;
+    body {
+      background: #050505;
+      color: #00ffe0;
+      font-family: monospace;
+      padding: 20px;
+      margin: 0;
     }
-    
-    .upload-zone {
-      border: 3px dashed rgba(0, 212, 255, 0.5);
-      border-radius: 16px;
-      padding: 4rem 2rem;
+    #drop-zone {
+      border: 2px dashed #00ffe0;
+      padding: 50px;
       text-align: center;
-      background: rgba(15, 52, 96, 0.3);
-      cursor: pointer;
-      transition: all 0.3s ease;
-      margin-bottom: 2rem;
-    }
-    
-    .upload-zone:hover {
-      border-color: #00d4ff;
-      background: rgba(15, 52, 96, 0.5);
-    }
-    
-    .upload-zone.dragover {
-      border-color: #00d4ff;
-      background: rgba(0, 212, 255, 0.2);
-    }
-    
-    .upload-btn {
-      padding: 1rem 2rem;
-      background: linear-gradient(135deg, #00d4ff, #0088cc);
-      color: #fff;
-      border: none;
       border-radius: 8px;
-      font-size: 1.1rem;
+      background: #0a0a0a;
+      margin: 20px 0;
       cursor: pointer;
-      margin-top: 1rem;
+      transition: background 0.3s;
     }
-    
-    .file-list {
-      display: grid;
-      gap: 1rem;
+    #drop-zone:hover, #drop-zone.drag-over {
+      background: #00ffe022;
+      border-color: #00bfa0;
     }
-    
-    .file-item {
-      background: rgba(15, 52, 96, 0.3);
-      border: 1px solid rgba(0, 212, 255, 0.3);
-      border-radius: 12px;
-      padding: 1.5rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    #drop-zone input {
+      display: none;
     }
-    
-    .delete-btn {
-      padding: 0.5rem 1rem;
-      background: rgba(239, 68, 68, 0.6);
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
+    #uploaded-list {
+      list-style: none;
+      padding: 0;
+      margin: 20px 0;
+    }
+    #uploaded-list li {
+      padding: 10px;
+      margin: 5px 0;
+      background: #181818;
+      border-left: 3px solid #00ffe0;
+      border-radius: 4px;
+    }
+    h1 {
+      color: #00ffe0;
+      border-bottom: 1px solid #222;
+      padding-bottom: 10px;
     }
   </style>
 </head>
 <body>
+  <script src="aesi_menu.js"></script>
+  <script src="aesi_core.js"></script>
+  <script src="aesi_sync.js"></script>
+  <script src="aesi_index.js"></script>
 
-  <div class="container">
-    <h1>📤 Filuppladdning</h1>
-    
-    <div class="upload-zone" id="uploadZone">
-      <div style="font-size: 4rem; margin-bottom: 1rem;">📁</div>
-      <h2>Släpp filer här</h2>
-      <p>eller klicka för att bläddra</p>
-      <p style="color: #888; font-size: 0.9rem; margin-top: 1rem;">
-        Tillåtna format: TXT, MD, JSON, PDF (max 10MB)
-      </p>
-      <input type="file" id="fileInput" style="display: none;" multiple>
-      <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
-        Välj filer
-      </button>
-    </div>
+  <h1>📤 ÆSI Upload - Filhantering</h1>
 
-    <h2>Uppladdade filer</h2>
-    <div class="file-list" id="fileList"></div>
+  <div id="drop-zone">
+    <p style="font-size:1.2em">📁 Släpp filer här eller klicka för att välja</p>
+    <input type="file" id="file-input" multiple>
   </div>
 
-  <script>
-    const API_BASE = window.location.origin;
-    const uploadZone = document.getElementById('uploadZone');
-    const fileInput = document.getElementById('fileInput');
-    const fileList = document.getElementById('fileList');
-    
-    // Drag & drop
-    uploadZone.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      uploadZone.classList.add('dragover');
-    });
-    
-    uploadZone.addEventListener('dragleave', () => {
-      uploadZone.classList.remove('dragover');
-    });
-    
-    uploadZone.addEventListener('drop', async (e) => {
-      e.preventDefault();
-      uploadZone.classList.remove('dragover');
-      await handleFiles(e.dataTransfer.files);
-    });
-    
-    // File input
-    fileInput.addEventListener('change', async (e) => {
-      await handleFiles(e.target.files);
-    });
-    
-    // Handle file upload
-    async function handleFiles(files) {
-      const token = localStorage.getItem('aesi_token');
-      
-      if (!token) {
-        alert('Du måste vara inloggad för att ladda upp filer');
-        window.location.href = '/login.html';
-        return;
-      }
-      
-      for (const file of files) {
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-          try {
-            const res = await fetch(`${API_BASE}/api/upload`, {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                filename: file.name,
-                content: e.target.result
-              })
-            });
-            
-            if (res.ok) {
-              loadFiles();
-            } else {
-              alert('Upload misslyckades');
-            }
-          } catch (err) {
-            console.error('Upload error:', err);
-          }
-        };
-        reader.readAsText(file);
-      }
-    }
-    
-    // Load files
-    async function loadFiles() {
-      try {
-        const res = await fetch(`${API_BASE}/api/upload/list`);
-        const data = await res.json();
-        
-        fileList.innerHTML = data.files.map(f => `
-          <div class="file-item">
-            <div>
-              <strong>${f.originalName}</strong><br>
-              <small style="color: #888;">${new Date(f.uploadedAt).toLocaleString('sv-SE')}</small>
-            </div>
-            <button class="delete-btn" onclick="deleteFile('${f.id}')">🗑️ Ta bort</button>
-          </div>
-        `).join('');
-        
-      } catch (err) {
-        console.error('Load files error:', err);
-      }
-    }
-    
-    // Delete file
-    async function deleteFile(id) {
-      const token = localStorage.getItem('aesi_token');
-      
-      if (!confirm('Är du säker?')) return;
-      
-      try {
-        await fetch(`${API_BASE}/api/upload/${id}`, {
-          method: 'DELETE',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        loadFiles();
-      } catch (err) {
-        console.error('Delete error:', err);
-      }
-    }
-    
-    // Initialize
-    loadFiles();
-  </script>
+  <h2>Sparade filer:</h2>
+  <ul id="uploaded-list"></ul>
 
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const dropZone = document.querySelector("#drop-zone");
+      const fileInput = document.querySelector("#file-input");
+      const uploadedList = document.querySelector("#uploaded-list");
+
+      const saveFile = (file) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const dbReq = indexedDB.open("ÆSI_DB", 1);
+          dbReq.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains("uploads"))
+              db.createObjectStore("uploads", { keyPath: "name" });
+          };
+          dbReq.onsuccess = (e) => {
+            const db = e.target.result;
+            const tx = db.transaction("uploads", "readwrite");
+            tx.objectStore("uploads").put({
+              name: file.name,
+              data: e.target.result,
+              type: file.type,
+              date: new Date().toISOString()
+            });
+            tx.oncomplete = () => {
+              const li = document.createElement("li");
+              li.textContent = file.name + " ✅ sparad lokalt";
+              uploadedList.appendChild(li);
+              console.log("✅ Fil sparad:", file.name);
+            };
+          };
+        };
+        reader.readAsDataURL(file);
+      };
+
+      const handleFiles = (files) => {
+        for (const file of files) saveFile(file);
+      };
+
+      // Drag & drop
+      dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropZone.classList.add("drag-over");
+      });
+
+      dropZone.addEventListener("dragleave", () => {
+        dropZone.classList.remove("drag-over");
+      });
+
+      dropZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropZone.classList.remove("drag-over");
+        handleFiles(e.dataTransfer.files);
+      });
+
+      // Klick för att välja
+      dropZone.addEventListener("click", () => fileInput.click());
+      fileInput.addEventListener("change", (e) => handleFiles(e.target.files));
+
+      // Ladda tidigare sparade filer
+      const dbReq = indexedDB.open("ÆSI_DB", 1);
+      dbReq.onsuccess = (e) => {
+        const db = e.target.result;
+        const tx = db.transaction("uploads", "readonly");
+        const req = tx.objectStore("uploads").getAll();
+        req.onsuccess = () => {
+          req.result.forEach((u) => {
+            const li = document.createElement("li");
+            li.textContent = u.name + " ✅ sparad lokalt (" + u.date + ")";
+            uploadedList.appendChild(li);
+          });
+        };
+      };
+    });
+  </script>
 </body>
 </html>
 

@@ -3,32 +3,489 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Archivarius</title>
-<link rel="stylesheet" href="css/archivarius.css">
-  <script src="/js/menu.js"></script>
+<title>ÆSI Arkiv - Data Archive</title>
+<link rel="stylesheet" href="css/navigation.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 80px 20px 20px;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+      color: #ffffff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    
+    .header h1 {
+      color: #00ffe0;
+      font-size: 2.5rem;
+      margin-bottom: 8px;
+      text-shadow: 0 0 20px rgba(0, 255, 224, 0.5);
+    }
+    
+    .archive-grid {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    
+    .sidebar {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(0, 255, 224, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    
+    .main-content {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(0, 255, 224, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      min-height: 500px;
+    }
+    
+    .section-title {
+      color: #00ffe0;
+      font-size: 1.25rem;
+      margin-bottom: 16px;
+      border-bottom: 1px solid rgba(0, 255, 224, 0.3);
+      padding-bottom: 8px;
+    }
+    
+    .archive-item {
+      padding: 12px;
+      margin-bottom: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(0, 255, 224, 0.1);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .archive-item:hover {
+      border-color: #00ffe0;
+      background: rgba(0, 255, 224, 0.05);
+    }
+    
+    .archive-item.selected {
+      border-color: #00ffe0;
+      background: rgba(0, 255, 224, 0.1);
+    }
+    
+    .archive-meta {
+      font-size: 0.8rem;
+      color: #cccccc;
+      margin-top: 4px;
+    }
+    
+    .content-viewer {
+      height: 100%;
+      overflow-y: auto;
+    }
+    
+    .content-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(0, 255, 224, 0.2);
+    }
+    
+    .content-title {
+      color: #00ffe0;
+      font-size: 1.2rem;
+      margin: 0;
+    }
+    
+    .content-meta {
+      font-size: 0.9rem;
+      color: #cccccc;
+    }
+    
+    .content-body {
+      line-height: 1.6;
+      white-space: pre-wrap;
+      font-family: 'Consolas', monospace;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid rgba(0, 255, 224, 0.1);
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    
+    .btn {
+      background: #00ffe0;
+      color: #000;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      margin: 4px;
+      transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+      background: #009988;
+      transform: scale(1.05);
+    }
+    
+    .btn.secondary {
+      background: rgba(0, 255, 224, 0.2);
+      color: #00ffe0;
+      border: 1px solid #00ffe0;
+    }
+    
+    .btn.secondary:hover {
+      background: rgba(0, 255, 224, 0.3);
+    }
+    
+    .btn.danger {
+      background: #ff4444;
+      color: #fff;
+    }
+    
+    .btn.danger:hover {
+      background: #cc3333;
+    }
+    
+    .filter-controls {
+      margin-bottom: 16px;
+    }
+    
+    .filter-controls select,
+    .filter-controls input {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(0, 255, 224, 0.3);
+      color: #ffffff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      margin-right: 8px;
+    }
+    
+    .empty-state {
+      text-align: center;
+      color: #666;
+      padding: 40px;
+    }
+    
+    .empty-state h3 {
+      color: #00ffe0;
+      margin-bottom: 16px;
+    }
+    
+    @media (max-width: 768px) {
+      .archive-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .header h1 {
+        font-size: 2rem;
+      }
+      
+      .content-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+    }
+  </style>
 </head>
 <body>
-    <nav style="padding:12px;background:#111;color:#fff;display:flex;gap:12px;align-items:center;">
-        <a href="/index.html" style="color:#fff">◀ Back</a>
-        <strong>Archivarius</strong>
-        <button id="btnRefresh" style="margin-left:auto">Refresh</button>
-    </nav>
-
-    <div style="display:flex;gap:12px;padding:12px;">
-        <div style="flex:1;">
-            <div id="dropZone" style="border:2px dashed #4F46E5;padding:24px;border-radius:8px;text-align:center;">Drag & drop files here or click to upload</div>
-            <div style="margin-top:12px;">
-                <h3>Archive List</h3>
-                <div id="list"></div>
-            </div>
-        </div>
-        <div style="width:420px;">
-            <h3>Metadata</h3>
-            <div id="meta">Select an item to view metadata</div>
-        </div>
+  <div class="container">
+    <div class="header">
+      <h1>📚 ÆSI Arkiv</h1>
+      <p>Utforska och hantera arkiverade data från systemet</p>
     </div>
 
-<script src="js/archivarius_ui.js"></script>
+    <div class="archive-grid">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="section-title">📂 Arkiv</div>
+        
+        <div class="filter-controls">
+          <select id="archiveType" onchange="filterArchives()">
+            <option value="all">Alla typer</option>
+            <option value="memory">Minne</option>
+            <option value="chat">Chatt</option>
+            <option value="system">System</option>
+            <option value="pages">Sidor</option>
+          </select>
+          <input type="text" id="searchInput" placeholder="Sök..." onkeyup="filterArchives()">
+        </div>
+        
+        <div id="archiveList">
+          <!-- Archive items will be loaded here -->
+        </div>
+        
+        <div style="margin-top: 20px;">
+          <button class="btn secondary" onclick="refreshArchives()">🔄 Uppdatera</button>
+          <button class="btn secondary" onclick="exportArchives()">📄 Exportera</button>
+          <button class="btn danger" onclick="clearArchives()">🗑️ Rensa allt</button>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <div id="contentViewer">
+          <div class="empty-state">
+            <h3>📂 Välj ett arkiv</h3>
+            <p>Klicka på ett objekt i listan till vänster för att visa dess innehåll.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let archives = [];
+    let selectedArchive = null;
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      loadArchives();
+    });
+
+    // Load archives
+    async function loadArchives() {
+      try {
+        // Load memory entries
+        const memoryResponse = await fetch('/api/memory/list');
+        const memoryData = await memoryResponse.json();
+        
+        // Load chat logs (if available)
+        // Load system logs
+        // Load saved pages
+        
+        archives = [];
+        
+        // Add memory entries
+        if (memoryData && memoryData.entries) {
+          memoryData.entries.forEach(entry => {
+            archives.push({
+              id: `memory_${entry.timestamp}`,
+              type: 'memory',
+              title: `AI Chatt - ${entry.node}`,
+              content: `Användare: ${entry.text}\n\nAI (${entry.node}): ${entry.response}`,
+              timestamp: entry.timestamp,
+              metadata: { node: entry.node }
+            });
+          });
+        }
+        
+        // Add sample system logs
+        archives.push({
+          id: 'system_001',
+          type: 'system',
+          title: 'Systemstart - Version 5.0',
+          content: `[INFO] ÆSI NEXUS v5.0 initialized\n[INFO] Python core connected on port 8000\n[INFO] Node backend active on port 3000\n[INFO] Navigation system loaded\n[INFO] All modules operational`,
+          timestamp: new Date().toISOString(),
+          metadata: { level: 'info' }
+        });
+        
+        // Add sample pages
+        const savedPages = Object.keys(localStorage).filter(key => key.startsWith('aesi_page_'));
+        savedPages.forEach(pageKey => {
+          const pageData = JSON.parse(localStorage.getItem(pageKey));
+          archives.push({
+            id: `page_${pageKey}`,
+            type: 'pages',
+            title: `Sparad sida: ${pageData.name}`,
+            content: `Sida: ${pageData.name}\nSkapad: ${pageData.timestamp}\nElement: ${pageData.elements?.length || 0}`,
+            timestamp: pageData.timestamp,
+            metadata: { elements: pageData.elements?.length || 0 }
+          });
+        });
+        
+        displayArchives();
+        
+      } catch (error) {
+        console.error('Failed to load archives:', error);
+        showError('Kunde inte ladda arkiv: ' + error.message);
+      }
+    }
+
+    // Display archives in sidebar
+    function displayArchives() {
+      const archiveList = document.getElementById('archiveList');
+      
+      if (archives.length === 0) {
+        archiveList.innerHTML = '<p style="color: #666; font-style: italic;">Inga arkiv tillgängliga</p>';
+        return;
+      }
+      
+      archiveList.innerHTML = archives.map(archive => `
+        <div class="archive-item" data-id="${archive.id}" onclick="selectArchive('${archive.id}')">
+          <div>${archive.title}</div>
+          <div class="archive-meta">
+            ${new Date(archive.timestamp).toLocaleString('sv-SE')} • ${archive.type}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Filter archives
+    function filterArchives() {
+      const typeFilter = document.getElementById('archiveType').value;
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      
+      const filtered = archives.filter(archive => {
+        const matchesType = typeFilter === 'all' || archive.type === typeFilter;
+        const matchesSearch = archive.title.toLowerCase().includes(searchTerm) || 
+                             archive.content.toLowerCase().includes(searchTerm);
+        return matchesType && matchesSearch;
+      });
+      
+      // Update display
+      const archiveList = document.getElementById('archiveList');
+      archiveList.innerHTML = filtered.map(archive => `
+        <div class="archive-item ${selectedArchive === archive.id ? 'selected' : ''}" 
+             data-id="${archive.id}" onclick="selectArchive('${archive.id}')">
+          <div>${archive.title}</div>
+          <div class="archive-meta">
+            ${new Date(archive.timestamp).toLocaleString('sv-SE')} • ${archive.type}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Select archive
+    function selectArchive(archiveId) {
+      selectedArchive = archiveId;
+      const archive = archives.find(a => a.id === archiveId);
+      
+      if (archive) {
+        // Update selection
+        document.querySelectorAll('.archive-item').forEach(item => {
+          item.classList.remove('selected');
+        });
+        document.querySelector(`[data-id="${archiveId}"]`).classList.add('selected');
+        
+        // Show content
+        showArchiveContent(archive);
+      }
+    }
+
+    // Show archive content
+    function showArchiveContent(archive) {
+      const viewer = document.getElementById('contentViewer');
+      
+      viewer.innerHTML = `
+        <div class="content-header">
+          <h2 class="content-title">${archive.title}</h2>
+          <div class="content-meta">
+            Typ: ${archive.type} • 
+            Datum: ${new Date(archive.timestamp).toLocaleString('sv-SE')}
+          </div>
+        </div>
+        <div class="content-body">${archive.content}</div>
+        <div style="margin-top: 16px;">
+          <button class="btn secondary" onclick="copyArchiveContent('${archive.id}')">📋 Kopiera</button>
+          <button class="btn secondary" onclick="downloadArchive('${archive.id}')">💾 Ladda ner</button>
+        </div>
+      `;
+    }
+
+    // Copy archive content
+    function copyArchiveContent(archiveId) {
+      const archive = archives.find(a => a.id === archiveId);
+      if (archive) {
+        navigator.clipboard.writeText(archive.content).then(() => {
+          alert('Innehåll kopierat till urklipp!');
+        });
+      }
+    }
+
+    // Download archive
+    function downloadArchive(archiveId) {
+      const archive = archives.find(a => a.id === archiveId);
+      if (archive) {
+        const blob = new Blob([archive.content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${archive.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+    }
+
+    // Refresh archives
+    function refreshArchives() {
+      loadArchives();
+    }
+
+    // Export all archives
+    function exportArchives() {
+      const exportData = {
+        exported_at: new Date().toISOString(),
+        total_archives: archives.length,
+        archives: archives
+      };
+      
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `aesi_archives_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // Clear all archives
+    function clearArchives() {
+      if (!confirm('Rensa ALLA arkiv? Detta kan inte ångras!')) return;
+      
+      // Clear localStorage pages
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('aesi_page_')) {
+          localStorage.removeItem(key);
+        }
+      });
+      
+      // Clear memory (would need backend call)
+      archives = [];
+      displayArchives();
+      
+      document.getElementById('contentViewer').innerHTML = `
+        <div class="empty-state">
+          <h3>🗑️ Arkiv rensat</h3>
+          <p>Alla arkiv har tagits bort.</p>
+        </div>
+      `;
+    }
+
+    // Show error
+    function showError(message) {
+      document.getElementById('contentViewer').innerHTML = `
+        <div class="empty-state">
+          <h3>❌ Fel</h3>
+          <p>${message}</p>
+        </div>
+      `;
+    }
+
+    // Search input handler
+    document.getElementById('searchInput').addEventListener('input', filterArchives);
+  </script>
 
     <!-- GLOBAL NAVIGATION SYSTEM -->
     <script src="js/global_nav_menu.js" defer></script>

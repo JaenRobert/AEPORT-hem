@@ -62,3 +62,6 @@ data/ledger/*
 # Live sync data
 data/live/*
 !data/live/.gitkeep
+
+# Local Netlify folder
+.netlify

@@ -3,119 +3,165 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ÆSI NEXUS v3.0</title>
-  <link rel="stylesheet" href="/css/aesi-ui.css">
-  <script src="/js/menu.js"></script>
+  <title>ÆSI NEXUS - Hem</title>
+  <link rel="stylesheet" href="css/navigation.css">
   <style>
+    body {
+      margin: 0;
+      padding: 80px 20px 20px;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+      color: #ffffff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+    }
+    
     .hero {
       text-align: center;
-      padding: 4rem 2rem;
-      max-width: 1200px;
-      margin: 0 auto;
+      padding: 60px 20px;
+      background: rgba(0, 255, 224, 0.05);
+      border-radius: 16px;
+      margin-bottom: 40px;
+      border: 1px solid rgba(0, 255, 224, 0.2);
     }
     
     .hero h1 {
-      font-size: 3.5rem;
-      margin-bottom: 1rem;
+      color: #00ffe0;
+      font-size: 3rem;
+      margin-bottom: 16px;
+      text-shadow: 0 0 20px rgba(0, 255, 224, 0.5);
     }
     
-    .hero .logo {
-      font-size: 5rem;
-      margin-bottom: 2rem;
+    .hero p {
+      font-size: 1.2rem;
+      color: #cccccc;
+      max-width: 600px;
+      margin: 0 auto 32px;
     }
     
-    .feature-grid {
+    .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 2rem;
-      padding: 2rem;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
       max-width: 1200px;
       margin: 0 auto;
     }
     
-    .feature-card {
-      background: rgba(15, 52, 96, 0.3);
-      border: 2px solid rgba(0, 212, 255, 0.3);
-      border-radius: 16px;
-      padding: 2rem;
-      text-align: center;
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(0, 255, 224, 0.2);
+      border-radius: 12px;
+      padding: 24px;
       transition: all 0.3s ease;
       cursor: pointer;
     }
     
-    .feature-card:hover {
-      border-color: #00d4ff;
-      transform: translateY(-8px);
-      box-shadow: 0 8px 24px rgba(0, 212, 255, 0.4);
+    .card:hover {
+      border-color: #00ffe0;
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0, 255, 224, 0.2);
     }
     
-    .feature-card .icon {
-      font-size: 4rem;
-      margin-bottom: 1rem;
+    .card-icon {
+      font-size: 2rem;
+      margin-bottom: 16px;
+      display: block;
     }
     
-    .feature-card h3 {
-      font-size: 1.5rem;
-      margin-bottom: 0.5rem;
-      color: #00d4ff;
+    .card h3 {
+      color: #00ffe0;
+      margin-bottom: 8px;
+      font-size: 1.25rem;
     }
     
-    .feature-card p {
-      color: #cbd5e1;
+    .card p {
+      color: #cccccc;
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+    
+    .card-btn {
+      background: #00ffe0;
+      color: #000;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    
+    .card-btn:hover {
+      background: #009988;
+      transform: scale(1.05);
+    }
+    
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 2rem;
+      }
+      
+      .grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      
+      .card {
+        padding: 16px;
+      }
     }
   </style>
 </head>
 <body>
-
   <div class="hero">
-    <div class="logo">⚡</div>
-    <h1>
-      <span style="color: #00d4ff;">ÆSI</span>
-      <span style="color: #e94560;">NEXUS</span>
-    </h1>
-    <p style="font-size: 1.2rem; color: #cbd5e1;">
-      AI-driven utvecklingsplattform med säker autentisering och persistent minne
-    </p>
+    <h1>⚡ ÆSI NEXUS</h1>
+    <p>Ditt kompletta AI-utvecklings ekosystem. Navigera genom olika verktyg och funktioner med det avancerade navigationssystemet.</p>
   </div>
 
-  <div class="feature-grid">
-    <div class="feature-card" onclick="location.href='/builder.html'">
-      <div class="icon">🔧</div>
-      <h3>Builder</h3>
-      <p>Drag & drop module creator</p>
+  <div class="grid">
+    <div class="card" onclick="navigateTo('portal.html')">
+      <span class="card-icon">🧠</span>
+      <h3>AI Portal</h3>
+      <p>Interagera med olika AI-noder inklusive REFLEX, CLAUDE, JEMMIN och fler. Starta konversationer och få hjälp med uppgifter.</p>
+      <button class="card-btn">Öppna Portal →</button>
     </div>
 
-    <div class="feature-card" onclick="location.href='/ai_console.html'">
-      <div class="icon">💻</div>
-      <h3>AI Console</h3>
-      <p>Chat + live code editor</p>
+    <div class="card" onclick="navigateTo('chat.html')">
+      <span class="card-icon">💬</span>
+      <h3>Direkt Chatt</h3>
+      <p>Enkel och direkt kommunikation med AI-systemet. Perfekt för snabba frågor och konversationer.</p>
+      <button class="card-btn">Starta Chatt →</button>
     </div>
 
-    <div class="feature-card" onclick="location.href='/book.html'">
-      <div class="icon">📖</div>
-      <h3>Boken</h3>
-      <p>Chapter management</p>
+    <div class="card" onclick="navigateTo('builder.html')">
+      <span class="card-icon">🔨</span>
+      <h3>Sidbyggare</h3>
+      <p>Bygg och design webbsidor visuellt. Dra och släpp komponenter för att skapa professionella sidor snabbt.</p>
+      <button class="card-btn">Öppna Byggare →</button>
     </div>
 
-    <div class="feature-card" onclick="location.href='/memory.html'">
-      <div class="icon">💾</div>
-      <h3>Tunnan</h3>
-      <p>Conversation history</p>
+    <div class="card" onclick="navigateTo('console.html')">
+      <span class="card-icon">⚙️</span>
+      <h3>Administratör</h3>
+      <p>Systemadministration och övervakning. Hantera moduler, användare och systeminställningar.</p>
+      <button class="card-btn">Öppna Konsol →</button>
     </div>
 
-    <div class="feature-card" onclick="location.href='/uploads.html'">
-      <div class="icon">📤</div>
-      <h3>Upload</h3>
-      <p>File management</p>
+    <div class="card" onclick="navigateTo('archivarius.html')">
+      <span class="card-icon">📚</span>
+      <h3>Arkiv</h3>
+      <p>Utforska och hantera arkiverade data, konversationer och historiska poster från systemet.</p>
+      <button class="card-btn">Öppna Arkiv →</button>
     </div>
 
-    <div class="feature-card" onclick="location.href='/portal.html'">
-      <div class="icon">🎛️</div>
-      <h3>Portal</h3>
-      <p>Command center</p>
+    <div class="card" onclick="navigateTo('modules_page.html')">
+      <span class="card-icon">📦</span>
+      <h3>Moduler</h3>
+      <p>Hantera och konfigurera systemmoduler. Aktivera, inaktivera och anpassa funktionalitet.</p>
+      <button class="card-btn">Hantera Moduler →</button>
     </div>
   </div>
 
+  <script src="js/navigation_hub.js" defer></script>
 </body>
 </html>
 

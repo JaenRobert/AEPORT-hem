@@ -158,9 +158,9 @@ Write-Host ""
 
 # Step 4: Inject navigation menus
 Write-Host "[4/10] 🧭 Injecting navigation menus..." -ForegroundColor Yellow
-if (Test-Path "scripts/inject-menu.js") {
+if (Test-Path "scripts/inject_menu_simple.ps1") {
     Write-Log "Running menu injection..." -Color Gray
-    node scripts/inject-menu.js 2>&1 | Out-Null
+    powershell -ExecutionPolicy Bypass -File scripts/inject_menu_simple.ps1
     Write-Log "✅ Navigation menus injected" -Color Green
 } else {
     Write-Log "⚠️  Menu injection script not found, skipping" -Color Yellow

@@ -1,102 +1,328 @@
-<!--
-  ÆSI AI Console v3.0
-  Integrated AI chat with live code editor
--->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ÆSI NEXUS V3.1 - The Living IDE</title>
-  <link rel="stylesheet" href="/css/aesi-ui.css">
-  <script src="/js/menu.js"></script>
+  <title>ÆSI Console - Live AI + Editor</title>
+  <script src="./js/menu.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.4/dist/tailwind.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
   <style>
-    body { margin: 0; padding: 0; overflow: hidden; }
+    html, body { margin:0; height:100%; background:#050505; color:#00ffe0; font-family:monospace; }
+    body { padding-top: 60px; } /* Space for menu */
+    #container { display:flex; height:calc(100vh - 60px); }
+    #chat { flex:1; border-right:2px solid #00ffe0; padding:1rem; overflow-y:auto; display:flex; flex-direction:column; }
+    #right-panel { flex:1.5; display:flex; flex-direction:column; }
+    #editor { flex:1; height:50%; border-bottom:2px solid #00ffe0; }
+    #preview { flex:1; height:50%; background:#fff; border:none; }
+    #messages { flex:1; overflow-y:auto; margin-bottom:1rem; }
+    .msg { margin:0.5rem 0; padding:0.5rem; border-radius:8px; }
+    .msg.user { background:#001a1a; border-left:3px solid #00ffe0; }
+    .msg.ai { background:#0a0a0a; border-left:3px solid #009988; }
+    #input-area { display:flex; gap:0.5rem; margin-top:1rem; }
+    textarea { flex:1; min-height:60px; background:#0a0a0a; color:#0ff; border:1px solid #00ffe0; padding:10px; border-radius:8px; resize:vertical; }
+    button { background:#00ffe0; color:#000; padding:8px 16px; border-radius:8px; border:none; cursor:pointer; font-weight:bold; }
+    button:hover { background:#009988; }
+    select { background:#0a0a0a; color:#0ff; border:1px solid #00ffe0; padding:8px; border-radius:8px; }
+    .toolbar { padding:0.5rem 1rem; background:#0a0a0a; border-bottom:1px solid #00ffe0; display:flex; gap:1rem; align-items:center; }
+    .status { padding:0.25rem 0.75rem; border-radius:12px; font-size:0.75rem; font-weight:600; }
+    .status.ready { background:#001a00; color:#00ff00; }
+    .status.syncing { background:#1a1a00; color:#ffff00; }
+    @media (max-width: 1024px) {
+      #container { flex-direction:column; }
+      #chat, #right-panel { flex:1; }
+    }
   </style>
 </head>
 <body>
-
-  <!-- Project Tabs -->
-  <div class="tabs" id="projectTabs">
-    <button class="tab active" data-project="0">
-      📄 Projekt 1
-      <span class="tab-close" onclick="closeTab(event, 0)">×</span>
-    </button>
-    <button class="tab" onclick="newProject()">
-      ➕ Ny
-    </button>
-  </div>
-
-  <!-- Main Grid -->
-  <div class="aesi-grid">
+  <div id="container">
     <!-- Chat Panel -->
-    <div id="chat-panel" class="aesi-panel">
-      <div class="editor-toolbar">
-        <h3 style="margin: 0; color: var(--aesi-primary);">💬 AI Chat</h3>
-        <div class="toolbar-group">
-          <select id="nodeSelector" class="aesi-select" style="width: auto;">
-            <option value="REFLEX">REFLEX</option>
-            <option value="CLAUDE">CLAUDE</option>
-            <option value="JEMMIN">JEMMIN</option>
-            <option value="E1TAN">E1TAN</option>
-            <option value="HAFTED">HAFTED</option>
-            <option value="SMILE">SMILE</option>
-            <option value="ERNIE">ERNIE</option>
-          </select>
-          <button class="btn-icon" id="clearChat" title="Clear chat">🗑️</button>
-        </div>
+    <div id="chat">
+      <h2 class="text-xl mb-2">🤖 ÆSI Chat</h2>
+      <div class="mb-2">
+        <label class="text-sm">AI Node:</label>
+        <select id="nodeSelector">
+          <option value="REFLEX">REFLEX - Logik</option>
+          <option value="CLAUDE">CLAUDE - Samvete</option>
+          <option value="JEMMIN">JEMMIN - Visionär</option>
+          <option value="E1TAN">E1TAN - Kreativitet</option>
+          <option value="HAFTED">HAFTED - Minne</option>
+          <option value="SMILE">SMILE - Glädje</option>
+          <option value="ERNIE">ERNIE - Struktur</option>
+        </select>
       </div>
-      
-      <div id="chat-messages"></div>
-      
-      <div class="chat-input-area">
-        <input 
-          type="text" 
-          id="userInput" 
-          class="aesi-input" 
-          placeholder="Skriv till AI... (Markdown stöds)"
-          autocomplete="off"
-        >
-        <button class="aesi-btn" id="sendBtn">Skicka</button>
-        <button class="btn-icon" id="saveChat" title="Save to Tunnan">💾</button>
+      <div id="messages"></div>
+      <div id="input-area">
+        <textarea id="input" placeholder="Skriv till AI..."></textarea>
+        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+          <button onclick="sendMessage()">Skicka</button>
+          <button onclick="clearChat()" style="background:#ff4444;">Rensa</button>
+        </div>
       </div>
     </div>
 
     <!-- Editor + Preview Panel -->
-    <div class="aesi-panel">
-      <div class="editor-toolbar">
-        <h3 style="margin: 0; color: var(--aesi-primary);">💻 Live Editor</h3>
-        <div class="toolbar-group">
-          <span class="status-badge" id="editorStatus">Ready</span>
-          <select id="languageSelector" class="aesi-select" style="width: auto;">
-            <option value="html">HTML</option>
-            <option value="javascript">JavaScript</option>
-            <option value="css">CSS</option>
-            <option value="markdown">Markdown</option>
-            <option value="json">JSON</option>
-          </select>
-          <button class="aesi-btn" id="saveCode">💾 Save</button>
-          <button class="aesi-btn" id="deployCode">🚀 Deploy</button>
-        </div>
+    <div id="right-panel">
+      <div class="toolbar">
+        <h3 style="margin:0; color:#00ffe0;">💻 Live Editor</h3>
+        <span class="status ready" id="status">Ready</span>
+        <select id="langSelector" onchange="changeLanguage()">
+          <option value="html">HTML</option>
+          <option value="javascript">JavaScript</option>
+          <option value="css">CSS</option>
+          <option value="python">Python</option>
+          <option value="json">JSON</option>
+        </select>
+        <button onclick="saveCode()">💾 Save</button>
+        <button onclick="deployCode()">🚀 Deploy</button>
+        <button onclick="updatePreview()">🔄 Preview</button>
       </div>
-      
       <div id="editor"></div>
-      
-      <div class="editor-toolbar">
-        <h3 style="margin: 0; color: var(--aesi-primary);">👁️ Live Preview</h3>
-        <div class="toolbar-group">
-          <button class="btn-icon" id="refreshPreview" title="Refresh">🔄</button>
-          <button class="btn-icon" id="fullscreenPreview" title="Fullscreen">⛶</button>
-        </div>
+      <div class="toolbar" style="border-top:1px solid #00ffe0; border-bottom:none;">
+        <h3 style="margin:0; color:#00ffe0;">👁️ Live Preview</h3>
+        <button onclick="fullscreenPreview()">⛶</button>
       </div>
-      
       <iframe id="preview"></iframe>
     </div>
   </div>
 
-  <script src="/js/ai_console_v3.1.js"></script>
+  <script>
+    // Initialize Monaco Editor
+    let editor;
+    require.config({ 
+      paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' }
+    });
+    
+    require(["vs/editor/editor.main"], function () {
+      editor = monaco.editor.create(document.getElementById('editor'), {
+        value: "<!DOCTYPE html>\n<html>\n<head>\n  <title>ÆSI NEXUS</title>\n</head>\n<body>\n  <h1>Hello from ÆSI!</h1>\n</body>\n</html>",
+        language: "html",
+        theme: "vs-dark",
+        automaticLayout: true,
+        minimap: { enabled: true },
+        fontSize: 14
+      });
 
+      // Auto-save on change
+      editor.onDidChangeModelContent(() => {
+        updateStatus('syncing');
+        clearTimeout(window.saveTimeout);
+        window.saveTimeout = setTimeout(() => {
+          localStorage.setItem('aesi_code', editor.getValue());
+          updateStatus('ready');
+        }, 1000);
+      });
+
+      // Load saved code
+      const saved = localStorage.getItem('aesi_code');
+      if (saved) {
+        editor.setValue(saved);
+      }
+
+      // Auto-update preview
+      setInterval(() => {
+        if (editor.getModel().getLanguageId() === 'html') {
+          updatePreview();
+        }
+      }, 2000);
+    });
+
+    // Chat functionality
+    async function sendMessage() {
+      const msg = document.getElementById('input').value;
+      if (!msg.trim()) return;
+      
+      const node = document.getElementById('nodeSelector').value;
+      const box = document.getElementById('messages');
+      
+      // Add user message
+      const userMsg = document.createElement('div');
+      userMsg.className = 'msg user';
+      userMsg.innerHTML = `<b>Du:</b> ${escapeHtml(msg)}`;
+      box.appendChild(userMsg);
+      
+      document.getElementById('input').value = "";
+      box.scrollTop = box.scrollHeight;
+
+      try {
+        // Send to Python core (aesi_core.py on port 8000)
+        const res = await fetch("http://localhost:8000/pulse", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: msg, node: node })
+        });
+        
+        const data = await res.json();
+        const reply = data.reply || data.response || "No response";
+        
+        // Add AI message with Markdown support
+        const aiMsg = document.createElement('div');
+        aiMsg.className = 'msg ai';
+        aiMsg.innerHTML = `<b>${node}:</b><br>${marked.parse(reply)}`;
+        box.appendChild(aiMsg);
+        
+        // Save to memory
+        await saveToMemory(msg, reply, node);
+        
+        // Check if AI generated code
+        const codeMatch = reply.match(/```[\\w]*\\n([\\s\\S]*?)```/);
+        if (codeMatch && confirm('AI generated code. Insert into editor?')) {
+          editor.setValue(codeMatch[1].trim());
+        }
+        
+      } catch (err) {
+        const errMsg = document.createElement('div');
+        errMsg.className = 'msg ai';
+        errMsg.innerHTML = `<b>Error:</b> ${err.message}<br><small>Make sure aesi_core.py is running on port 8000</small>`;
+        box.appendChild(errMsg);
+      }
+      
+      box.scrollTop = box.scrollHeight;
+    }
+
+    // Save to memory (Tunnan)
+    async function saveToMemory(userMsg, aiResponse, node) {
+      try {
+        await fetch('/api/memory', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('aesi_token')}`
+          },
+          body: JSON.stringify({
+            text: userMsg,
+            response: aiResponse,
+            node: node,
+            timestamp: new Date().toISOString()
+          })
+        });
+      } catch (err) {
+        console.warn('Could not save to memory:', err);
+      }
+    }
+
+    // Clear chat
+    function clearChat() {
+      if (confirm('Clear all messages?')) {
+        document.getElementById('messages').innerHTML = '';
+      }
+    }
+
+    // Update preview
+    function updatePreview() {
+      if (!editor) return;
+      const code = editor.getValue();
+      const iframe = document.getElementById('preview');
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      doc.open();
+      doc.write(code);
+      doc.close();
+    }
+
+    // Save code
+    async function saveCode() {
+      const code = editor.getValue();
+      const filename = prompt('Filename (e.g., test.html):', 'untitled.html');
+      if (!filename) return;
+
+      try {
+        const res = await fetch('/api/deploy-code', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('aesi_token')}`
+          },
+          body: JSON.stringify({ code, filename })
+        });
+
+        if (res.ok) {
+          alert(`✅ Saved: ${filename}`);
+          updateStatus('ready');
+        } else {
+          alert('❌ Save failed');
+        }
+      } catch (err) {
+        alert(`Error: ${err.message}`);
+      }
+    }
+
+    // Deploy code
+    async function deployCode() {
+      if (!confirm('Deploy to Netlify?')) return;
+      
+      updateStatus('syncing');
+      const code = editor.getValue();
+      
+      try {
+        const res = await fetch('/api/deploy', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code })
+        });
+
+        if (res.ok) {
+          alert('🚀 Deployed successfully!');
+        }
+      } catch (err) {
+        alert(`Deploy failed: ${err.message}`);
+      }
+      
+      updateStatus('ready');
+    }
+
+    // Change language
+    function changeLanguage() {
+      if (!editor) return;
+      const lang = document.getElementById('langSelector').value;
+      monaco.editor.setModelLanguage(editor.getModel(), lang);
+    }
+
+    // Update status
+    function updateStatus(status) {
+      const badge = document.getElementById('status');
+      badge.className = 'status';
+      if (status === 'syncing') {
+        badge.classList.add('syncing');
+        badge.textContent = 'Syncing...';
+      } else {
+        badge.classList.add('ready');
+        badge.textContent = 'Ready';
+      }
+    }
+
+    // Fullscreen preview
+    function fullscreenPreview() {
+      const iframe = document.getElementById('preview');
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      }
+    }
+
+    // Enter to send
+    document.getElementById('input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && e.ctrlKey) {
+        sendMessage();
+      }
+    });
+
+    // Utility function
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Configure marked.js
+    marked.setOptions({
+      breaks: true,
+      gfm: true,
+      highlight: function(code, lang) {
+        return code;
+      }
+    });
+
+    console.log('✅ ÆSI Console loaded - All modules integrated');
+  </script>
 </body>
 </html>

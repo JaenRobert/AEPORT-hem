@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>ÆSI WebCore Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg: #080808;
+      --accent: #00ffe0;
+      --text: #fff;
+      --panel: #181818;
+      --border: #222;
+      --menu-bg: #101010;
+      --menu-hover: #00ffe022;
+    }
+    html, body {
+      margin: 0; padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', 'Consolas', monospace;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+    }
+    #webcore-root {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      width: 100vw;
+    }
+    .webcore-menu {
+      background: var(--menu-bg);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      height: 48px;
+      gap: 8px;
+      z-index: 10;
+    }
+    .webcore-menu .menu-btn {
+      background: none;
+      border: none;
+      color: var(--accent);
+      font-weight: bold;
+      font-size: 1rem;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .webcore-menu .menu-btn:hover, .webcore-menu .menu-btn.active {
+      background: var(--menu-hover);
+      color: #000;
+    }
+    .webcore-main {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+      min-width: 0;
+    }
+    .webcore-sidebar {
+      width: 260px;
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .webcore-sidebar h3 {
+      margin: 16px 0 8px 16px;
+      color: var(--accent);
+      font-size: 1.1rem;
+    }
+    .module-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 0 16px 0;
+    }
+    .module-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      transition: background 0.2s, border-color 0.2s;
+      font-size: 0.98rem;
+    }
+    .module-item:hover, .module-item.selected {
+      background: var(--menu-hover);
+      border-left: 3px solid var(--accent);
+      color: var(--accent);
+    }
+    .module-meta {
+      font-size: 0.8em;
+      color: #aaa;
+      margin-left: auto;
+    }
+    .webcore-content {
+      flex: 1;
+      display: flex;
+      flex-direction: row;
+      min-width: 0;
+      min-height: 0;
+    }
+    .webcore-ai-panel {
+      width: 340px;
+      background: var(--panel);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      min-width: 240px;
+      max-width: 420px;
+      height: 100%;
+    }
+    .ai-chat-header {
+      color: var(--accent);
+      font-weight: bold;
+      padding: 12px 16px 8px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 1.1rem;
+      background: #101010;
+    }
+    .ai-chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 16px;
+      font-size: 0.98rem;
+    }
+    .ai-chat-input {
+      display: flex;
+      gap: 8px;
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      background: #101010;
+    }
+    .ai-chat-input textarea {
+      flex: 1;
+      resize: none;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #181818;
+      color: var(--text);
+      font-size: 1rem;
+      padding: 8px;
+      min-height: 38px;
+      max-height: 80px;
+    }
+    .ai-chat-input button {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 1rem;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .ai-chat-input button:hover {
+      background: #00bfa0;
+    }
+    .webcore-editor-panel {
+      flex: 1;
+      background: #111;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 0;
+      position: relative;
+    }
+    .editor-header {
+      color: var(--accent);
+      font-weight: bold;
+      padding: 12px 16px 8px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 1.1rem;
+      background: #101010;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .editor-toolbar {
+      margin-left: auto;
+      display: flex;
+      gap: 8px;
+    }
+    .editor-toolbar button {
+      background: none;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      border-radius: 5px;
+      padding: 4px 10px;
+      font-size: 0.95em;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .editor-toolbar button:hover {
+      background: var(--accent);
+      color: #000;
+    }
+    .editor-content {
+      flex: 1;
+      overflow: auto;
+      background: #181818;
+      color: #fff;
+      font-family: 'Consolas', monospace;
+      font-size: 1rem;
+      padding: 18px 20px;
+      min-height: 0;
+      min-width: 0;
+      white-space: pre-wrap;
+      outline: none;
+    }
+    .drag-over {
+      background: #00ffe033 !important;
+      border: 2px dashed var(--accent) !important;
+    }
+    @media (max-width: 900px) {
+      .webcore-sidebar { display: none; }
+      .webcore-ai-panel { display: none; }
+      .webcore-content { flex-direction: column; }
+      .webcore-editor-panel { width: 100vw; }
+    }
+  </style>
+</head>
+<body>
+  <div id="webcore-root">
+    <div class="webcore-menu" id="webcore-menu"></div>
+    <div class="webcore-main">
+      <aside class="webcore-sidebar" id="webcore-sidebar"></aside>
+      <section class="webcore-content">
+        <div class="webcore-editor-panel">
+          <div class="editor-header">
+            <span id="editor-title">Välj modul i menyn</span>
+            <div class="editor-toolbar">
+              <button id="save-btn" title="Spara (Ctrl+S)">💾 Spara</button>
+              <button id="reload-btn" title="Ladda om">🔄 Ladda om</button>
+              <button id="new-btn" title="Ny fil">➕ Ny</button>
+            </div>
+          </div>
+          <div class="editor-content" id="editor-content" contenteditable="true" spellcheck="false"></div>
+        </div>
+        <aside class="webcore-ai-panel">
+          <div class="ai-chat-header">🤖 ÆSI AI-panel</div>
+          <div class="ai-chat-messages" id="ai-chat-messages"></div>
+          <div class="ai-chat-input">
+            <textarea id="ai-chat-input" rows="1" placeholder="Skriv till Reflex, Gemini eller GPT..."></textarea>
+            <button id="ai-send-btn">Skicka</button>
+          </div>
+        </aside>
+      </section>
+    </div>
+  </div>
+  <script>
+    // --- DYNAMISK MENY OCH MODULINDEXERING ---
+    const menuItems = [
+      { id: "portal", label: "Portal", icon: "🧠", file: "portal.html" },
+      { id: "book", label: "Book", icon: "📖", file: "book.html" },
+      { id: "memory", label: "Tunnan", icon: "🗃️", file: "memory.html" },
+      { id: "uploads", label: "Uploads", icon: "⬆️", file: "uploads.html" },
+      { id: "arkivarius", label: "Arkivarius", icon: "📦", file: "archivarius.html" }
+    ];
+    const menuEl = document.getElementById("webcore-menu");
+    menuItems.forEach(item => {
+      const btn = document.createElement("button");
+      btn.className = "menu-btn";
+      btn.innerHTML = `${item.icon} ${item.label}`;
+      btn.onclick = () => loadModule(item.file, item.label);
+      menuEl.appendChild(btn);
+    });
+
+    // --- MODULINDEXERING ---
+    const sidebar = document.getElementById("webcore-sidebar");
+    sidebar.innerHTML = `<h3>Moduler</h3><div class="module-list" id="module-list"></div>`;
+    const moduleList = document.getElementById("module-list");
+
+    // Indexera alla .html, .js, .md, .json, .py, .ps1 i /public/
+    async function indexModules() {
+      // Netlify/vanilla: vi kan inte läsa filsystemet direkt, så vi listar kända moduler
+      const files = [
+        // HTML
+        "index.html", "portal.html", "book.html", "memory.html", "uploads.html", "archivarius.html",
+        // JS
+        "js/navigation_hub.js", "js/menu.js", "js/aesi_menu.js", "js/aesi_core.js", "js/aesi_sync.js", "js/aesi_index.js",
+        // MD
+        "README.md",
+        // JSON
+        "package.json",
+        // PY
+        "aesi_core.py",
+        // PS1
+        "scripts/CLEAN_AND_DEPLOY.ps1", "scripts/VALIDATION.ps1", "scripts/DEPLOY_NOW.ps1", "scripts/SYSTEM_COMPLETE.ps1"
+      ];
+      files.forEach(file => {
+        const ext = file.split('.').pop();
+        const icon = ext === "html" ? "🧩"
+          : ext === "js" ? "📜"
+          : ext === "md" ? "📄"
+          : ext === "json" ? "🗂️"
+          : ext === "py" ? "🐍"
+          : ext === "ps1" ? "⚡"
+          : "📁";
+        const div = document.createElement("div");
+        div.className = "module-item";
+        div.innerHTML = `${icon} <span>${file}</span> <span class="module-meta">${ext}</span>`;
+        div.onclick = () => loadModule(file, file);
+        moduleList.appendChild(div);
+      });
+    }
+    indexModules();
+
+    // --- MODULLOADING & EDITOR ---
+    const editorTitle = document.getElementById("editor-title");
+    const editorContent = document.getElementById("editor-content");
+    let currentFile = null;
+
+    async function loadModule(file, label) {
+      editorTitle.textContent = label || file;
+      currentFile = file;
+      editorContent.textContent = "Laddar...";
+      try {
+        const res = await fetch(file);
+        if (!res.ok) throw new Error("Kunde inte läsa filen");
+        const text = await res.text();
+        editorContent.textContent = text;
+      } catch (e) {
+        editorContent.textContent = "Kunde inte läsa filen: " + e.message;
+      }
+    }
+
+    // --- Spara (IndexedDB) ---
+    document.getElementById("save-btn").onclick = () => {
+      if (!currentFile) return;
+      const content = editorContent.textContent;
+      saveToIndexedDB(currentFile, content);
+      alert("Sparat lokalt (IndexedDB).");
+    };
+    function saveToIndexedDB(filename, content) {
+      const dbReq = indexedDB.open("aesi_webcore_db", 1);
+      dbReq.onupgradeneeded = e => {
+        e.target.result.createObjectStore("files");
+      };
+      dbReq.onsuccess = e => {
+        const db = e.target.result;
+        const tx = db.transaction("files", "readwrite");
+        tx.objectStore("files").put(content, filename);
+      };
+    }
+
+    // --- Ladda om ---
+    document.getElementById("reload-btn").onclick = () => {
+      if (currentFile) loadModule(currentFile, currentFile);
+    };
+
+    // --- Ny fil ---
+    document.getElementById("new-btn").onclick = () => {
+      editorTitle.textContent = "Ny fil";
+      editorContent.textContent = "";
+      currentFile = null;
+    };
+
+    // --- Drag & Drop ---
+    editorContent.addEventListener("dragover", e => {
+      e.preventDefault();
+      editorContent.classList.add("drag-over");
+    });
+    editorContent.addEventListener("dragleave", e => {
+      editorContent.classList.remove("drag-over");
+    });
+    editorContent.addEventListener("drop", e => {
+      e.preventDefault();
+      editorContent.classList.remove("drag-over");
+      const file = e.dataTransfer.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = evt => {
+          editorContent.textContent = evt.target.result;
+          editorTitle.textContent = file.name;
+          currentFile = file.name;
+        };
+        reader.readAsText(file);
+      }
+    });
+
+    // --- AI-CHAT PANEL ---
+    const aiChatMessages = document.getElementById("ai-chat-messages");
+    const aiChatInput = document.getElementById("ai-chat-input");
+    const aiSendBtn = document.getElementById("ai-send-btn");
+    aiSendBtn.onclick = sendAIMessage;
+    aiChatInput.addEventListener("keydown", e => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendAIMessage();
+      }
+    });
+    function sendAIMessage() {
+      const msg = aiChatInput.value.trim();
+      if (!msg) return;
+      addAIMessage("user", msg);
+      aiChatInput.value = "";
+      setTimeout(() => {
+        // Simulerad AI-svar (Reflex/Gemini/GPT)
+        addAIMessage("ai", "🤖 " + aiSimulate(msg));
+      }, 600);
+    }
+    function addAIMessage(sender, text) {
+      const div = document.createElement("div");
+      div.style.marginBottom = "10px";
+      div.innerHTML = `<b style="color:${sender==='user'?'#00ffe0':'#fff'}">${sender==='user'?'Du':'AI'}:</b> ${text}`;
+      aiChatMessages.appendChild(div);
+      aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+    }
+    function aiSimulate(msg) {
+      // Enkel AI-echo/mock
+      if (msg.toLowerCase().includes("bok")) return "Boken är indexerad och synlig i portalen.";
+      if (msg.toLowerCase().includes("tunna")) return "Minnestunnan visar alla loggar och konversationer.";
+      if (msg.toLowerCase().includes("arkiv")) return "Arkivarius indexerar och söker bland alla dokument.";
+      if (msg.toLowerCase().includes("portal")) return "Portalen är din AI-kommandocentral.";
+      return "Jag är Reflex/Gemini/GPT – ställ en fråga om någon modul!";
+    }
+
+    // --- Synk till Proton Drive (mock) ---
+    function syncToProtonDrive(filename, content) {
+      // Endast mock – ingen riktig synk i browser
+      console.log("Synkar", filename, "till Proton Drive (mock)");
+    }
+  </script>
+</body>
+</html>
