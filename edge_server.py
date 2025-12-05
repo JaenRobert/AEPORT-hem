@@ -95,7 +95,7 @@ async def server_handler(websocket, path):
                 elif command == "status":
                     await broadcast("SERVER_LOG: Systemstatus: Online. Noder: Dirigent (Aktiv), Reflex (Väntar).")
 
-                elif command == "/get_news" or command == "get_news":
+                elif command == "/get_news" or command == "get_news" or command.startswith("/get_news"):
                     # Skicka nyhetsflödet till den anropande klienten
                     await send_news_feed(websocket)
                     await add_news_item("SYSTEM", f"Ny klient ansluten. Totalt: {len(CONNECTED_CLIENTS)}")
