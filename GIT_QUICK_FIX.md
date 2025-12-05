@@ -11,7 +11,7 @@
 ## 🚀 ONE-COMMAND FIX
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File FIX_GIT_COMPLETE.ps1
+powershell -ExecutionPolicy Bypass -File fix_git_overload.ps1
 ```
 
 This will:
