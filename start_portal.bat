@@ -5,7 +5,7 @@ color 0A
 cls
 
 echo ====================================================
-echo    AESI PORTAL v5.3 - SYSTEM INITIALIZATION
+echo    AESI PORTAL v5.4 - SYSTEM INITIALIZATION
 echo ====================================================
 echo.
 
@@ -32,12 +32,11 @@ echo     - Mappar: OK
 
 echo.
 echo [3] RENSAR GAMLA SIGNALER (PORT 8000-8080)...
-for %%P in (8000 8001 8080) do (
-  for /f "tokens=5" %%a in ('netstat -ano ^| findstr :%%P ^| findstr LISTENING') do (
-    echo     - Dodar process pa port %%P (PID=%%a)...
-    taskkill /F /PID %%a >nul 2>&1
-  )
-)
+:: Använder PowerShell för att kirurgiskt döda processer utan att krascha av sökvägen
+powershell -Command "Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }"
+powershell -Command "Get-NetTCPConnection -LocalPort 8001 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }"
+powershell -Command "Get-NetTCPConnection -LocalPort 8080 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }"
+echo     - Städning klar.
 
 echo.
 echo [4] STARTAR MODERSKEPPET...

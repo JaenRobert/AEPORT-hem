@@ -10,16 +10,14 @@ from datetime import datetime
 # --- KONFIGURATION ---
 START_PORT = 8000
 MAX_PORT_RETRIES = 10
-# Vi letar data i dessa mappar
 MEMORY_DIRS = ['json', 'txt', 'gdoc'] 
 PUBLIC_DIR = "public"
-# Filer vi visar i listan "Minnet"
 EXTENSIONS = {'.json', '.txt', '.md', '.gdoc'}
 
 class AESIHandler(http.server.SimpleHTTPRequestHandler):
     """
-    ÆSI Custom Handler v5.3 (Omni-Scanner).
-    Hanterar statiska filer, API-anrop och massiv datavävning från alla mappar.
+    ÆSI Handler v6.0 (Chronos Editor).
+    Stödjer selektiv vävning, nod-filtrering och dynamiska mallar.
     """
 
     def do_OPTIONS(self):
@@ -46,17 +44,14 @@ class AESIHandler(http.server.SimpleHTTPRequestHandler):
             self.send_error(404, "Endpoint not found")
 
     def handle_memory_request(self):
-        """Scannar ALLA undermappar i memory/logs."""
         files_found = []
         base_log_dir = os.path.join(os.getcwd(), 'memory', 'logs')
 
-        # Scanna rekursivt eller specifika mappar
         for subdir in MEMORY_DIRS:
             target = os.path.join(base_log_dir, subdir)
             if os.path.exists(target):
                 for f in os.listdir(target):
                     if any(f.endswith(ext) for ext in EXTENSIONS):
-                        # Snygga till typ-ikonen
                         ftype = "file"
                         if f.endswith(".json"): ftype = "json"
                         elif f.endswith(".txt"): ftype = "text"
@@ -77,9 +72,10 @@ class AESIHandler(http.server.SimpleHTTPRequestHandler):
         try:
             data = json.loads(post_data)
             user_input = data.get('text', '')
+            # Archivarius svarar
             response_data = {
-                "reply": f"Mottaget i Brunnen: '{user_input}'",
-                "node": "ERNIE (060)",
+                "reply": f"Noterat. Arkiverar '{user_input}' i minnesbanken.",
+                "node": "ARCHIVARIUS",
                 "status": "LOGGED"
             }
             self.send_json(response_data)
@@ -87,97 +83,134 @@ class AESIHandler(http.server.SimpleHTTPRequestHandler):
             self.send_json({"error": str(e)}, status=500)
 
     def handle_weave_request(self):
-        """VÄVAREN: Läser JSON-filer från BÅDE 'json' och 'txt' mappen."""
+        """VÄVAREN v6.0: Avancerad logik för filtrering och mallar."""
         try:
-            all_entries = []
-            files_scanned = 0
+            # 1. LÄS PARAMETRAR FRÅN FRONTEND
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            request_data = {}
+            if post_data:
+                request_data = json.loads(post_data)
             
-            # 1. HITTA FILER (Vi letar efter .json överallt där du kan ha lagt dem)
+            selected_files = request_data.get('files', []) # Lista på filnamn
+            template_mode = request_data.get('template', 'standard') # 'standard', 'legal', 'story'
+            filter_node = request_data.get('filter_node', '').lower() # T.ex. "ernie"
+
+            all_entries = []
+            files_processed = 0
+            
+            # 2. HITTA KANDIDATFILER
             search_patterns = [
                 os.path.join(os.getcwd(), 'memory', 'logs', 'json', '*.json'),
-                os.path.join(os.getcwd(), 'memory', 'logs', 'txt', '*.json') # Fångar json i txt-mappen
+                os.path.join(os.getcwd(), 'memory', 'logs', 'txt', '*.json')
             ]
-            
-            all_files = []
+            candidates = []
             for pattern in search_patterns:
-                all_files.extend(glob.glob(pattern))
+                candidates.extend(glob.glob(pattern))
 
-            print(f"[*] Vävaren hittade {len(all_files)} filer att bearbeta.")
+            # 3. FILTRERA FIL-LISTAN (OM ANVÄNDAREN VALT SPECIFIKA)
+            final_file_list = []
+            if not selected_files:
+                final_file_list = candidates # Kör allt om inget är valt
+            else:
+                for fpath in candidates:
+                    fname = os.path.basename(fpath)
+                    if fname in selected_files:
+                        final_file_list.append(fpath)
 
-            # 2. LÄS FILER
-            for filepath in all_files:
+            print(f"[*] Vävaren: {len(final_file_list)} filer. Mall: {template_mode}. Filter: {filter_node}")
+
+            # 4. LÄS & FILTRERA INNEHÅLL
+            for filepath in final_file_list:
                 try:
                     with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
                         content = f.read().strip()
                         if not content: continue
+                        data = json.load(f)
+                        files_processed += 1
                         
-                        data = json.load(f) # Detta kan fela om json är trasig
-                        files_scanned += 1
-                        
-                        # Normalisera datan till en platt lista
+                        entries_in_file = []
                         if isinstance(data, list):
                             for entry in data:
-                                if isinstance(entry, dict): all_entries.append(entry)
+                                if isinstance(entry, dict): entries_in_file.append(entry)
                         elif isinstance(data, dict):
-                            all_entries.append(data)
+                            entries_in_file.append(data)
+                        
+                        # --- META-FILTER (NOD/SENDER) ---
+                        for entry in entries_in_file:
+                            sender = str(entry.get('sender', entry.get('node', 'UNKNOWN'))).lower()
+                            # Om filter är aktivt, hoppa över poster som inte matchar
+                            if filter_node and filter_node not in sender:
+                                continue 
+                            all_entries.append(entry)
                             
-                except Exception as e:
-                    # Ignorera trasiga filer tyst
-                    continue
+                except: continue
 
-            # 3. SORTERA (Kronologiskt)
-            # Vi letar efter nycklar som 'timestamp', 'date', 'created_at'
-            def get_sort_key(x):
-                return x.get('timestamp', x.get('date', '9999'))
+            # 5. SORTERA
+            all_entries.sort(key=lambda x: x.get('timestamp', x.get('date', '9999')))
             
-            all_entries.sort(key=get_sort_key)
+            # 6. APPLICERA MALL (TEMPLATES)
+            title = "ÆSI MASTER HISTORY"
+            bg_color = "#111"
+            font = "monospace"
+            accent = "#6366f1"
+            intro_text = "Standardiserad logg över systemaktivitet."
             
-            # 4. SKAPA HTML (BOKEN)
-            html = """
+            if template_mode == 'legal':
+                title = "ÆSI PROTOKOLL & LAGBOK"
+                bg_color = "#0f0505" # Mörkröd ton
+                font = "'Times New Roman', serif"
+                accent = "#ef4444"
+                intro_text = "Följande dokument utgör den juridiska och etiska grunden för systemet."
+            elif template_mode == 'story':
+                title = "KRÖNIKAN OM ÆSI"
+                bg_color = "#050f05" # Mörkgrön ton
+                font = "'Georgia', serif"
+                accent = "#10b981"
+                intro_text = "En berättelse om uppkomst, utveckling och framtid."
+
+            html = f"""
             <!DOCTYPE html>
             <html lang="sv">
             <head>
                 <meta charset="UTF-8">
-                <title>ÆSI MASTER HISTORY</title>
+                <title>{title}</title>
                 <style>
-                    body { background: #111; color: #ccc; font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 40px; line-height: 1.6; }
-                    .entry { margin-bottom: 25px; padding: 15px; background: #1a1a1a; border-radius: 8px; border-left: 4px solid #333; }
-                    .meta { font-size: 0.8em; color: #666; margin-bottom: 5px; display: flex; justify-content: space-between; }
-                    .sender { font-weight: bold; color: #fff; }
-                    .content { white-space: pre-wrap; }
-                    .user { border-left-color: #10b981; }
-                    .node { border-left-color: #6366f1; }
-                    h1 { color: #fff; border-bottom: 1px solid #333; padding-bottom: 20px; }
-                    a { color: #6366f1; }
+                    body {{ background: {bg_color}; color: #ccc; font-family: {font}; max-width: 800px; margin: 0 auto; padding: 40px; line-height: 1.6; }}
+                    .entry {{ margin-bottom: 25px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 4px; border-left: 4px solid #333; }}
+                    .meta {{ font-size: 0.8em; opacity: 0.7; margin-bottom: 5px; display: flex; justify-content: space-between; text-transform: uppercase; letter-spacing: 1px; }}
+                    .sender {{ font-weight: bold; color: {accent}; }}
+                    .content {{ white-space: pre-wrap; }}
+                    h1 {{ color: {accent}; border-bottom: 1px solid #333; padding-bottom: 20px; }}
+                    .intro {{ font-style: italic; color: #888; margin-bottom: 2rem; }}
                 </style>
             </head>
             <body>
-            <h1>ÆSI MASTER HISTORY</h1>
-            <p>Vävd från """ + str(files_scanned) + """ filer.</p>
+            <h1>{title}</h1>
+            <p class="intro">{intro_text}</p>
+            <p style="font-size: 0.8rem; border: 1px solid #333; padding: 5px; display: inline-block;">
+                <strong>Filter:</strong> {filter_node if filter_node else "ALLA"} | 
+                <strong>Källfiler:</strong> {files_processed} |
+                <strong>Poster:</strong> {len(all_entries)}
+            </p>
+            <hr style="border:0; border-top:1px solid #333; margin: 2rem 0;">
             """
 
-            # 5. SKAPA TXT (CONTEXT)
-            txt = "ÆSI MASTER CONTEXT\n==================\n\n"
+            txt = f"{title}\n{'='*len(title)}\n\n"
 
             for entry in all_entries:
-                # Försök hitta text och avsändare med olika nyckelnamn
                 text = entry.get('text', entry.get('content', entry.get('reply', '')))
                 if not text: continue
                 
-                sender = entry.get('sender', entry.get('node', entry.get('role', 'System')))
+                sender = entry.get('sender', entry.get('node', 'UNKNOWN'))
                 time = entry.get('timestamp', '')
                 
-                css_class = "user" if str(sender).lower() in ['user', 'jag', 'dirigent', 'jæn'] else "node"
-
-                # HTML append
-                html += f'<div class="entry {css_class}"><div class="meta"><span class="sender">{sender}</span><span>{time}</span></div><div class="content">{text}</div></div>'
-                
-                # TXT append
+                html += f'<div class="entry"><div class="meta"><span class="sender">{sender}</span><span>{time}</span></div><div class="content">{text}</div></div>'
                 txt += f"[{time}] {sender}: {text}\n\n"
 
             html += "</body></html>"
 
-            # 6. SPARA
+            # 7. SPARA
             if not os.path.exists(PUBLIC_DIR): os.makedirs(PUBLIC_DIR)
             
             with open(os.path.join(PUBLIC_DIR, 'FULL_HISTORY.html'), 'w', encoding='utf-8') as f: f.write(html)
@@ -185,7 +218,7 @@ class AESIHandler(http.server.SimpleHTTPRequestHandler):
 
             self.send_json({
                 "status": "success",
-                "message": f"Vävde ihop {len(all_entries)} rader från {files_scanned} filer.",
+                "message": f"Vävde {len(all_entries)} rader (Filter: {filter_node or 'Inget'}).",
                 "files": ["/public/FULL_HISTORY.html", "/public/FULL_CONTEXT.txt"]
             })
 
@@ -210,26 +243,16 @@ def find_free_port(start_port):
             port += 1
     return None
 
-def get_local_ip():
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8", 80))
-        ip = s.getsockname()[0]
-        s.close()
-        return ip
-    except Exception:
-        return "127.0.0.1"
-
 def run_server():
     root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     os.chdir(root_dir)
     port = find_free_port(START_PORT)
     if not port: sys.exit(1)
     
-    print(f"\n=== ÆSI PORTAL v5.3 (OMNI-SCANNER) ===")
+    print(f"\n=== ÆSI PORTAL v6.0 (CHRONOS EDITOR) ===")
     print(f"[*] Root: {root_dir}")
     print(f"[*] URL:  http://localhost:{port}")
-    print(f"======================================")
+    print(f"========================================")
 
     with socketserver.TCPServer(("", port), AESIHandler) as httpd:
         try: httpd.serve_forever()
