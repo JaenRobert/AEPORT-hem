@@ -1,44 +1,41 @@
-# ÆSI PORTAL v5.0 — SYSTEMSTATUS
+# ÆSI PORTAL v5.3 — OMNI-SCANNER STATUS
 
 ---
 
-## 🟢 CLEAN SLATE DEPLOYMENT — KLAR
+## 🟢 SYSTEM ACTIVE & READY
 
-- Backend: **Aktiv** (`system/server.py`, port 8000/8001/8002, auto-failover)
-- Frontend: **Aktiv** (`index.html`, modern dark mode, chat & memory viewer)
-- Startscript: **Aktiv** (`start_portal.bat`, dödar portkonflikter, skapar mappar)
-- Memory/Brunnen: **Aktiv** (`memory/logs/json`, `memory/logs/txt`)
-- API: **/chat** (POST), **/memory** (GET) — CORS aktiverat, fungerar direkt
-- Ingen Flask eller externa beroenden krävs
+- Backend: **Running on port 8000** (auto-failover to 8001/8002)
+- Frontend: **Portal dashboard** with chat & memory viewer
+- Memory: **Omni-Scanner** scanning json/txt/gdoc folders
+- Weaver: **Active** — weaves all JSON logs into master files
 
 ---
 
-## 📂 STRUKTUR
+## 🌐 ACCESS PORTAL
 
-- `/system/server.py` — Backend (ren Python, port-autofix)
-- `/index.html` — Portal (dashboard, chat, memory)
-- `/start_portal.bat` — Startscript (skapar mappar, dödar processer, startar server)
-- `/memory/logs/json/` & `/memory/logs/txt/` — Drop your log files here
+**Correct URL:** http://localhost:8000
 
----
-
-## 🚀 ANVÄNDNING
-
-1. Lägg loggfiler i `memory/logs/json/` och `memory/logs/txt/`
-2. Dubbelklicka på `start_portal.bat`
-3. Öppna länken som skrivs ut i terminalen (t.ex. http://localhost:8000)
-4. Chatta och se minnet direkt i webbläsaren
+**Do NOT use:** http://127.0.0.1:5500 (VS Code Live Server)
 
 ---
 
-## ✅ SYSTEMET ÄR 100% ROBUST OCH SJÄVLÄKANDE
+## 🚀 HOW TO ACCESS
 
-- Portkonflikter hanteras automatiskt
-- Ingen data raderas
-- Ingen pip install krävs
-- Allt fungerar direkt i Windows
+1. Double-click `start_portal.bat`
+2. Wait for console to show: "ÆSI PORTAL v5.3 (OMNI-SCANNER)"
+3. Open **http://localhost:8000** in browser
+4. Status should show "🟢 Online"
+5. Memory list should show your files
+6. Click "🧶 VÄV HISTORIA" to weave
 
 ---
 
-**Status:**  
-**ALLT KLART. SYSTEMET ÄR LIVE.**
+## ✅ TROUBLESHOOTING
+
+- If "Offline": Ensure backend is running on port 8000
+- If port conflict: Script auto-kills old processes
+- If no files: Place logs in memory/logs/json/ or txt/
+
+---
+
+**Portal is live at http://localhost:8000**
