@@ -2,7 +2,7 @@
 <html lang="sv">
 <head>
   <meta charset="UTF-8">
-  <title>ÆSI PORTAL v5.0</title>
+  <title>ÆSI PORTAL v5.1</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body { margin:0; padding:0; background:#080808; color:#00ffe0; font-family:monospace; }
@@ -129,8 +129,8 @@
           method: "POST"
         });
         const data = await res.json();
-        if (data.status === "woven") {
-          result.innerHTML = `<div style="color:#00ffe0;">✅ Väv klar! ${data.message_count} meddelanden.</div>
+        if (data.status === "success") {
+          result.innerHTML = `<div style="color:#00ffe0;">✅ ${data.message}</div>
             <a href="http://localhost:${backendPort}/public/FULL_HISTORY.html" target="_blank">📄 ÖPPNA BOKEN</a>
             <a href="http://localhost:${backendPort}/public/FULL_CONTEXT.txt" target="_blank">🤖 AI KONTEXT</a>`;
           result.style.display = "block";

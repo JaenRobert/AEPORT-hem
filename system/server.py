@@ -11,6 +11,7 @@ from datetime import datetime
 START_PORT = 8000
 MAX_PORT_RETRIES = 10
 MEMORY_DIR = "memory/logs"
+PUBLIC_DIR = "public"
 EXTENSIONS = {'.json', '.txt', '.md'}
 
 class AESIHandler(http.server.SimpleHTTPRequestHandler):
@@ -27,24 +28,29 @@ class AESIHandler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
+        # API: HÄMTA MINNE (BRUNNEN)
         if self.path == '/memory':
             self.handle_memory_request()
+        # API: SERVE PUBLIC FILES (Historik-filerna)
+        elif self.path.startswith('/public/'):
+            super().do_GET()
         else:
+            # Standard: Servera filer (index.html etc.)
             super().do_GET()
 
     def do_POST(self):
+        # API: CHATT (PORTALEN)
         if self.path == '/chat':
             self.handle_chat_request()
+        # API: VÄVAREN (SKAPA BOKEN)
         elif self.path == '/weave':
-            self.handle_weave()
+            self.handle_weave_request()
         else:
             self.send_error(404, "Endpoint not found")
 
     def handle_memory_request(self):
         """Scannar memory-mappen och returnerar lista på filer."""
         files_found = []
-        
-        # Sök i memory/logs/json och memory/logs/txt
         target_dirs = [
             os.path.join(os.getcwd(), 'memory', 'logs', 'json'),
             os.path.join(os.getcwd(), 'memory', 'logs', 'txt')
@@ -71,112 +77,112 @@ class AESIHandler(http.server.SimpleHTTPRequestHandler):
             data = json.loads(post_data)
             user_input = data.get('text', '')
             
-            # SIMULERAD NOD-RESPONS (Här kopplar vi senare in riktigt API)
-            # Detta säkerställer att UI fungerar direkt utan API-nyckel.
+            # SIMULERAD RESPONS (Tills riktig API-nyckel kopplas)
             response_data = {
                 "reply": f"Mottaget i Brunnen: '{user_input}'",
                 "node": "ERNIE (060)",
                 "status": "LOGGED"
             }
-            
             self.send_json(response_data)
-            
         except Exception as e:
             self.send_json({"error": str(e)}, status=500)
 
-    def handle_weave(self):
-        """Väver alla JSON-loggar till HTML och TXT."""
+    def handle_weave_request(self):
+        """VÄVAREN: Läser alla loggar och skapar Master-filer."""
         try:
-            messages = self.weave_logs()
-            html_content = self.generate_html_history(messages)
-            txt_content = self.generate_txt_context(messages)
+            # Sökväg till JSON-loggar
+            json_path = os.path.join(os.getcwd(), 'memory', 'logs', 'json', '*.json')
+            files = glob.glob(json_path)
+            all_entries = []
+
+            # 1. LÄS ALLA FILER
+            for filepath in files:
+                try:
+                    with open(filepath, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                        # Hantera om filen är en lista av meddelanden eller ett objekt
+                        if isinstance(data, list):
+                            for entry in data:
+                                all_entries.append(entry)
+                        elif isinstance(data, dict):
+                            all_entries.append(data)
+                except Exception as e:
+                    print(f"Kunde inte läsa {filepath}: {e}")
+
+            # 2. SORTERA (Försök hitta timestamp, annars lita på ordningen)
+            # Vi sorterar baserat på timestamp om det finns, annars lägger vi dem sist
+            all_entries.sort(key=lambda x: x.get('timestamp', '9999-99-99'))
             
-            # Skriv HTML
-            html_path = os.path.join(os.getcwd(), 'public', 'FULL_HISTORY.html')
-            os.makedirs(os.path.dirname(html_path), exist_ok=True)
-            with open(html_path, 'w', encoding='utf-8') as f:
+            # 3. SKAPA HTML & TXT
+            html_content = """
+            <!DOCTYPE html>
+            <html lang="sv">
+            <head>
+                <meta charset="UTF-8">
+                <title>ÆSI MASTER HISTORY</title>
+                <style>
+                    body { background: #050505; color: #e5e5e5; font-family: 'Courier New', monospace; padding: 2rem; max-width: 900px; margin: 0 auto; line-height: 1.6; }
+                    .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 2rem; margin-bottom: 2rem; }
+                    .header h1 { color: #6366f1; margin: 0; }
+                    .entry { border-left: 3px solid #333; padding-left: 1.5rem; margin-bottom: 2rem; background: #0a0a0a; padding: 1rem; border-radius: 4px; }
+                    .meta { font-size: 0.75rem; color: #666; margin-bottom: 0.5rem; display: flex; justify-content: space-between; text-transform: uppercase; letter-spacing: 1px; }
+                    .sender { font-weight: bold; color: #818cf8; }
+                    .text { white-space: pre-wrap; color: #d1d5db; }
+                    .user-entry { border-left-color: #22c55e; }
+                    .node-entry { border-left-color: #6366f1; }
+                </style>
+            </head>
+            <body>
+            <div class="header">
+                <h1>ÆSI MASTER HISTORY</h1>
+                <p>THE WEAVE PROTOCOL • FULL CHRONICLE</p>
+            </div>
+            """
+            
+            txt_content = "ÆSI MASTER CONTEXT FILE (THE WEAVE)\n===================================\n\n"
+
+            for entry in all_entries:
+                sender = entry.get('sender', entry.get('node', 'UNKNOWN'))
+                text = entry.get('text', entry.get('reply', ''))
+                timestamp = entry.get('timestamp', 'UNKNOWN TIME')
+                
+                # Bestäm CSS-klass baserat på avsändare
+                css_class = "user-entry" if sender.upper() in ['USER', 'DIRIGENT', 'JAG'] else "node-entry"
+
+                # HTML
+                html_content += f"""
+                <div class="entry {css_class}">
+                    <div class="meta">
+                        <span class="sender">{sender}</span>
+                        <span class="time">{timestamp}</span>
+                    </div>
+                    <div class="text">{text}</div>
+                </div>
+                """
+                
+                # TXT
+                txt_content += f"[{timestamp}] {sender}:\n{text}\n\n{'-'*40}\n\n"
+
+            html_content += "</body></html>"
+
+            # 4. SPARA TILL PUBLIC
+            if not os.path.exists(PUBLIC_DIR):
+                os.makedirs(PUBLIC_DIR)
+                
+            with open(os.path.join(PUBLIC_DIR, 'FULL_HISTORY.html'), 'w', encoding='utf-8') as f:
                 f.write(html_content)
-            
-            # Skriv TXT
-            txt_path = os.path.join(os.getcwd(), 'public', 'FULL_CONTEXT.txt')
-            with open(txt_path, 'w', encoding='utf-8') as f:
+                
+            with open(os.path.join(PUBLIC_DIR, 'FULL_CONTEXT.txt'), 'w', encoding='utf-8') as f:
                 f.write(txt_content)
-            
+
             self.send_json({
-                "status": "woven",
-                "files_created": ["FULL_HISTORY.html", "FULL_CONTEXT.txt"],
-                "message_count": len(messages)
+                "status": "success", 
+                "message": f"Vävde ihop {len(all_entries)} fragment till Master-filerna.",
+                "files": ["/public/FULL_HISTORY.html", "/public/FULL_CONTEXT.txt"]
             })
+
         except Exception as e:
             self.send_json({"error": str(e)}, status=500)
-
-    def weave_logs(self):
-        """Läser alla JSON-loggar och extraherar meddelanden."""
-        messages = []
-        json_files = glob.glob(os.path.join(os.getcwd(), 'memory', 'logs', 'json', '*.json'))
-        
-        for filepath in sorted(json_files):
-            try:
-                with open(filepath, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                    if isinstance(data, list):
-                        messages.extend(data)
-                    elif isinstance(data, dict):
-                        messages.append(data)
-            except Exception as e:
-                print(f"Fel vid läsning av {filepath}: {e}")
-        
-        return messages
-
-    def generate_html_history(self, messages):
-        """Skapar vacker HTML för alla meddelanden."""
-        html = """<!DOCTYPE html>
-<html lang="sv">
-<head>
-  <meta charset="UTF-8">
-  <title>ÆSI Väv Historia</title>
-  <style>
-    body { background: #080808; color: #00ffe0; font-family: monospace; padding: 20px; margin: 0; }
-    .container { max-width: 900px; margin: 0 auto; }
-    h1 { color: #00ffe0; border-bottom: 2px solid #00ffe0; padding-bottom: 10px; }
-    .meta { color: #666; font-size: 0.9em; margin-bottom: 20px; }
-    .message { background: #181818; padding: 12px; margin: 10px 0; border-left: 3px solid #00ffe0; border-radius: 4px; }
-    .sender { color: #00bfa0; font-weight: bold; }
-    .timestamp { color: #666; font-size: 0.85em; margin-top: 4px; }
-    .text { margin-top: 8px; color: #fff; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>🧶 ÆSI Väv Historia</h1>
-    <div class="meta">Genererad: """ + datetime.now().isoformat() + """</div>
-"""
-        for msg in messages:
-            sender = msg.get('sender') or msg.get('node') or 'OKÄND'
-            text = msg.get('text') or msg.get('reply') or msg.get('message') or ''
-            timestamp = msg.get('timestamp') or msg.get('date') or ''
-            html += f"""    <div class="message">
-      <div class="sender">{sender}</div>
-      <div class="text">{text}</div>
-      <div class="timestamp">{timestamp}</div>
-    </div>
-"""
-        html += """  </div>
-</body>
-</html>"""
-        return html
-
-    def generate_txt_context(self, messages):
-        """Skapar plaintext för AI-läsning."""
-        lines = ["ÆSI VÄV HISTORIA - KONTEXT", "=" * 50, ""]
-        for msg in messages:
-            sender = msg.get('sender') or msg.get('node') or 'OKÄND'
-            text = msg.get('text') or msg.get('reply') or msg.get('message') or ''
-            timestamp = msg.get('timestamp') or msg.get('date') or ''
-            lines.append(f"[{sender}] {timestamp}")
-            lines.append(text)
-            lines.append("")
-        return "\n".join(lines)
 
     def send_json(self, data, status=200):
         self.send_response(status)
@@ -194,9 +200,18 @@ def find_free_port(start_port):
                 s.bind(('', port))
                 return port
         except OSError:
-            print(f"Port {port} upptagen. Försöker nästa...")
             port += 1
     return None
+
+def get_local_ip():
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return "127.0.0.1"
 
 def run_server():
     # Sätt arbetskatalog till roten (AESI_PORTAL_ROOT)
@@ -206,24 +221,23 @@ def run_server():
     
     port = find_free_port(START_PORT)
     if port is None:
-        print("CRITICAL: Inga lediga portar hittades. Döda gamla Python-processer!")
+        print("CRITICAL: Inga lediga portar.")
         sys.exit(1)
 
+    local_ip = get_local_ip()
+
     print(f"\n========================================")
-    print(f"   ÆSI PORTAL v5.0 (CLEAN SLATE)   ")
+    print(f"   ÆSI PORTAL v5.1 (WEAVER ACTIVE)   ")
     print(f"========================================")
-    print(f"[*] Server startad i rot: {root_dir}")
-    print(f"[*] Brunnen (Memory) sökväg: memory/logs/")
-    print(f"[*] Backend aktiv på: http://localhost:{port}")
-    print(f"========================================")
-    print(f"--> ÖPPNA DENNA LÄNK I WEBBLÄSAREN: http://localhost:{port}")
+    print(f"[*] Server Root: {root_dir}")
+    print(f"[*] Local:  http://localhost:{port}")
+    print(f"[*] Network: http://{local_ip}:{port}")
     print(f"========================================")
 
     with socketserver.TCPServer(("", port), AESIHandler) as httpd:
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:
-            print("\nStänger ner servern...")
             httpd.server_close()
 
 if __name__ == "__main__":
