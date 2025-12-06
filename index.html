@@ -3,367 +3,413 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ÆSI PORTAL v6.2 | NEURAL LINK</title>
+    <title>ÆSI PORTAL v5.0 | NEURAL CANVAS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
     <style>
-        /* ÆSI MASTER THEME v6.2 */
-        :root {
-            --bg-deep: #050505;
-            --bg-panel: #0a0a0a;
-            --border: #222;
-            --accent: #6366f1; /* Indigo */
-            --archivarius: #facc15; /* Yellow */
-            --text-main: #e5e5e5;
-            --text-dim: #888;
+        :root { 
+            --bg-dark: #020204; 
+            --panel-bg: #0a0a0a; 
+            --border: #1f1f1f; 
+            --accent: #6366f1; 
+            --text-muted: #666;
+            --node-ernie: #10b981;
+            --node-reflex: #3b82f6;
+            --node-claude: #ef4444;
+            --node-hafted: #78716c;
+            --node-smile: #eab308;
+            --node-flygtva: #a855f7;
         }
-        
-        body { 
-            background: var(--bg-deep); 
-            color: var(--text-main); 
-            height: 100vh; 
-            display: grid; 
-            grid-template-columns: 320px 1fr 300px; 
-            font-family: 'JetBrains Mono', 'Courier New', monospace; 
-            overflow: hidden; 
-        }
-        
-        /* --- PANEL STRUCTURE --- */
-        .panel { 
-            display: flex; 
-            flex-direction: column; 
-            background: var(--bg-panel); 
-            border-right: 1px solid var(--border); 
-            position: relative;
-        }
-        
-        .header { 
-            padding: 15px; 
-            border-bottom: 1px solid var(--border); 
-            font-weight: 700; 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            color: #fff; 
-            background: #000; 
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.75rem;
-        }
-        
-        .content { flex: 1; overflow-y: auto; padding: 15px; scrollbar-width: thin; scrollbar-color: #333 #000; }
-        
-        /* --- VÄNSTER: CHATT (NEURAL LINK) --- */
-        .msg { 
-            padding: 12px; 
-            margin-bottom: 15px; 
-            background: #111; 
-            border-radius: 6px; 
-            border-left: 3px solid #333; 
-            font-size: 0.8rem; 
-            line-height: 1.5; 
-            animation: fadeIn 0.3s ease;
-        }
-        .msg strong { display: block; margin-bottom: 4px; font-size: 0.7rem; opacity: 0.7; }
-        .msg.user { border-left-color: var(--accent); background: #0f0f15; }
-        .msg.archivarius { border-left-color: var(--archivarius); background: rgba(250, 204, 21, 0.05); color: #fef9c3; }
-        .msg.system { border-left-color: #ef4444; color: #fca5a5; }
-        
-        .chat-input-area { padding: 15px; border-top: 1px solid var(--border); background: #000; }
-        .chat-input {
-            width: 100%; background: #111; border: 1px solid #333; padding: 12px; 
-            color: #fff; outline: none; border-radius: 4px; font-family: inherit;
-            transition: border-color 0.2s;
-        }
-        .chat-input:focus { border-color: var(--accent); }
-
-        /* --- MITTEN: COCKPIT (WEAVER) --- */
-        .preview-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; }
-        .control-deck { padding: 25px; background: #080808; border-top: 1px solid var(--border); }
-        
-        .setting-group { margin-bottom: 15px; }
-        label { display: block; font-size: 0.65rem; color: var(--text-dim); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
-        
-        select, input[type="text"] { 
-            width: 100%; background: #111; border: 1px solid #333; padding: 10px; 
-            color: #fff; outline: none; font-family: inherit; font-size: 0.8rem; border-radius: 4px;
-        }
-        select:focus, input:focus { border-color: var(--accent); }
-
-        .action-btn { 
-            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); 
-            color: #818cf8; border: 1px solid #4338ca; 
-            padding: 15px; width: 100%; cursor: pointer; font-weight: bold; 
-            display: flex; align-items: center; justify-content: center; gap: 10px; 
-            border-radius: 4px; transition: all 0.2s; text-transform: uppercase; font-size: 0.8rem;
-        }
-        .action-btn:hover { filter: brightness(1.2); box-shadow: 0 0 20px rgba(99, 102, 241, 0.2); }
-        .action-btn:active { transform: translateY(1px); }
-
-        /* --- HÖGER: MINNET (DATA BANK) --- */
-        .file-list { padding: 0; }
-        .file-row { 
-            display: flex; align-items: center; gap: 10px; padding: 8px 15px; 
-            border-bottom: 1px solid #1a1a1a; font-size: 0.75rem; color: var(--text-dim); 
-            cursor: pointer; transition: all 0.1s; 
-        }
-        .file-row:hover { background: #151515; color: #fff; padding-left: 18px; }
-        .file-row input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; }
-        .file-icon { width: 14px; height: 14px; opacity: 0.7; }
-
-        /* --- UTILS --- */
-        .result-link { 
-            display: flex; align-items: center; justify-content: center; gap: 8px; 
-            padding: 12px; background: #111; border: 1px solid #333; color: #4ade80; 
-            text-decoration: none; margin-top: 8px; font-size: 0.75rem; border-radius: 4px; 
-            transition: all 0.2s; width: 100%; font-weight: bold;
-        }
-        .result-link:hover { border-color: #4ade80; background: rgba(74, 222, 128, 0.1); }
-        .result-link.txt { color: #60a5fa; }
-        .result-link.txt:hover { border-color: #60a5fa; background: rgba(96, 165, 250, 0.1); }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* Status dots */
-        .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
-        .dot.online { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
-        .dot.offline { background: #ef4444; }
+        body { background-color: var(--bg-dark); color: #e5e5e5; font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; margin: 0; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .master-grid { display: grid; grid-template-columns: 60px 260px 1fr 300px; grid-template-rows: 100vh; height: 100vh; }
+        .icon-bar { background: #000; border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding-top: 1rem; gap: 1rem; z-index: 20; }
+        .icon-btn { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #555; cursor: pointer; transition: all 0.2s; }
+        .icon-btn:hover { background: #1a1a1a; color: #fff; }
+        .icon-btn.active { background: var(--accent); color: #fff; box-shadow: 0 0 15px rgba(99, 102, 241, 0.4); }
+        .sidebar { background: var(--panel-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+        .nav-header { padding: 1.5rem 1rem; border-bottom: 1px solid var(--border); }
+        .nav-scroll { overflow-y: auto; flex: 1; padding: 1rem; }
+        .nav-group { margin-bottom: 2rem; }
+        .nav-label { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.8rem; }
+        .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px; font-size: 0.8rem; color: #888; cursor: pointer; border-radius: 4px; transition: 0.2s; }
+        .nav-item:hover { background: #151515; color: #fff; }
+        .nav-item.active { background: #1a1b2e; color: var(--accent); border-left: 2px solid var(--accent); }
+        .stage { background: #050505; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+        .stage-content { flex: 1; overflow-y: auto; padding: 0; position: relative; }
+        #neural-canvas { width: 100%; height: 100%; display: block; background: radial-gradient(circle at center, #0a0a0a 0%, #000 100%); }
+        .canvas-overlay { position: absolute; top: 20px; left: 20px; pointer-events: none; }
+        .node-label { position: absolute; background: rgba(0,0,0,0.8); padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; color: #fff; pointer-events: none; border: 1px solid #333; backdrop-filter: blur(4px); transform: translate(-50%, -150%); display: none; z-index: 100; }
+        .text-area { padding: 3rem 4rem; max-width: 900px; margin: 0 auto; }
+        .prose p { margin-bottom: 1.2rem; line-height: 1.7; color: #a3a3a3; }
+        .prose h1 { font-size: 2rem; font-weight: 800; color: #fff; margin-bottom: 0.5rem; }
+        .prose h2 { font-size: 1.5rem; font-weight: 700; color: #fff; margin-top: 2rem; margin-bottom: 1rem; }
+        .tag { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; margin-right: 5px; background: #222; border: 1px solid #333; }
+        .ops-panel { background: #080808; border-left: 1px solid var(--border); display: flex; flex-direction: column; }
+        .terminal-window { flex: 1; padding: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; overflow-y: auto; color: #888; }
+        .log-line { margin-bottom: 6px; display: flex; gap: 8px; }
+        .log-time { color: #444; min-width: 40px; }
+        .log-msg { color: #aaa; }
+        .log-sys { color: var(--accent); }
+        .input-area { padding: 1rem; border-top: 1px solid var(--border); }
+        .cmd-input { width: 100%; background: #111; border: 1px solid #333; color: #fff; padding: 8px 12px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; border-radius: 4px; outline: none; }
+        .cmd-input:focus { border-color: var(--accent); }
     </style>
 </head>
-<body>
+    <div id="portal-nav">
+        <label for="portal-select"><i data-lucide="menu" class="w-4 h-4"></i> PORTAL:</label>
+        <select id="portal-select" onchange="switchPortal(this.value)">
+            <option value="archivarius">Archivarius (AI)</option>
+            <option value="chronos">Chronos Editor</option>
+            <option value="memory">Minnet</option>
+            <option value="upload">Uppladdning</option>
+            <option value="stats">Statistik</option>
+            <option value="search">Sök</option>
+            <option value="export">Exportera</option>
+            <option value="settings">Inställningar</option>
+        </select>
+    </div>
 
     <!-- 1. VÄNSTER: NEURAL CHATT -->
-    <div class="panel">
-        <div class="header" style="color: var(--archivarius);">
-            <i data-lucide="brain-circuit" class="w-4 h-4"></i> ARCHIVARIUS (AI)
-        </div>
-        <div id="chat-log" class="content">
-            <div class="msg archivarius">
-                <strong>SYSTEM [v6.2]:</strong> Neural koppling redo.<br>
-                Jag har tillgång till dina API-nycklar i .env.<br>
-                Ställ en fråga om dina loggar eller be mig analysera mönster.
-            </div>
-        </div>
-        <div class="chat-input-area">
-            <input type="text" id="chat-in" class="chat-input" placeholder="Fråga Brunnen..." onkeydown="handleChat(event)" autocomplete="off">
-            <div class="text-[10px] text-gray-600 mt-2 flex justify-between">
-                <span>MODEL: AUTO</span>
-                <span id="connection-status"><span class="dot online"></span>CONNECTED</span>
-            </div>
-        </div>
+    <div id="panel-archivarius" class="panel">
+        <div class="header" style="color:#facc15"><i data-lucide="bot" class="w-4 h-4"></i> ARCHIVARIUS</div>
+        <div id="chat-log" class="content"><div class="msg arch"><strong>SYSTEM:</strong> Chronos v6.2 Online.</div></div>
+        <div style="padding:15px; border-top:1px solid #222"><input id="chat-in" style="width:100%; background:#111; border:1px solid #333; padding:10px; color:#fff" placeholder="Kommando..." onkeydown="chat(event)"></div>
     </div>
 
     <!-- 2. MITTEN: CHRONOS COCKPIT -->
-    <div class="panel">
-        <div class="preview-area">
-            <div id="weave-status" class="text-center p-8">
-                <div class="mb-6 relative">
-                    <div class="absolute inset-0 bg-indigo-500 blur-2xl opacity-10 rounded-full"></div>
-                    <i data-lucide="layers" class="w-20 h-20 mx-auto text-indigo-500 relative z-10"></i>
-                </div>
-                <h2 class="text-xl font-bold text-white mb-2">CHRONOS EDITOR</h2>
-                <div class="text-xs text-gray-500 uppercase tracking-widest mb-6">Master Weaving Engine</div>
-                <div id="download-links" class="w-72 mx-auto"></div>
+    <div id="panel-chronos" class="panel" style="display:none;">
+        <div class="content flex flex-col justify-center items-center">
+            <div id="status" class="text-center mb-8"><i data-lucide="layers" class="w-16 h-16 mx-auto text-gray-800"></i></div>
+            <div style="width:100%; max-width:400px; background:#111; padding:20px; border:1px solid #333">
+                <label class="block text-xs text-gray-500 mb-2">FORMAT</label>
+                <select id="tpl" style="width:100%; background:#000; border:1px solid #333; padding:8px; color:#fff; margin-bottom:15px">
+                    <option value="standard">Standard</option><option value="legal">Lagbok</option><option value="story">Krönika</option>
+                </select>
+                <label class="block text-xs text-gray-500 mb-2">FILTER (NOD)</label>
+                <input id="flt" type="text" style="width:100%; background:#000; border:1px solid #333; padding:8px; color:#fff; margin-bottom:20px" placeholder="Alla...">
+                <button onclick="weave()" class="btn"><i data-lucide="loom" class="w-4 h-4"></i> VÄV HISTORIA</button>
             </div>
-        </div>
-        
-        <div class="control-deck">
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label><i data-lucide="layout-template" class="inline w-3 h-3 mr-1"></i> FORMAT</label>
-                    <select id="template-select">
-                        <option value="standard">Standard (Master)</option>
-                        <option value="legal">⚖️ Lagbok (Röd)</option>
-                        <option value="story">🌲 Krönika (Grön)</option>
-                    </select>
-                </div>
-                <div>
-                    <label><i data-lucide="filter" class="inline w-3 h-3 mr-1"></i> NOD FILTER</label>
-                    <input type="text" id="node-filter" placeholder="Alla noder...">
-                </div>
-            </div>
-            
-            <button onclick="triggerWeave()" class="action-btn">
-                <i data-lucide="loom" class="w-5 h-5"></i> INITIERA VÄVNING
-            </button>
         </div>
     </div>
 
     <!-- 3. HÖGER: MINNESBANK -->
-    <div class="panel memory-panel">
-        <div class="header" style="color: var(--accent); justify-content: space-between;">
-            <span class="flex items-center gap-2"><i data-lucide="database" class="w-4 h-4"></i> MINNET</span>
-            <button onclick="toggleAll()" class="text-[10px] bg-[#111] px-2 py-1 border border-[#333] hover:bg-[#fff] hover:text-black transition-colors rounded">VÄLJ ALLA</button>
+    <div id="panel-memory" class="panel memory-panel" style="display:none;">
+        <div class="header" style="color:#6366f1">MINNET <button onclick="tog()" class="ml-auto text-[10px] border px-2">ALLA</button></div>
+        <div id="mem-list" class="content" style="padding:0"></div>
+    </div>
+
+    <!-- 4. UPPLADDNINGSPANEL -->
+    <div id="panel-upload" class="panel" style="display:none;">
+        <div class="header" style="color:#f97316">
+            <i data-lucide="upload" class="w-4 h-4"></i> UPPLADDNING
         </div>
-        
-        <div id="memory-list" class="content file-list">
-            <!-- Filer laddas här -->
-            <div class="text-center p-8 text-gray-600 text-xs animate-pulse">Scanner Brunnen...</div>
-        </div>
-        
-        <div class="p-3 border-t border-[#222] bg-[#050505] text-[10px] text-gray-500 flex justify-between items-center">
-            <span id="file-count">Scanning...</span>
-            <span onclick="loadMem()" class="cursor-pointer hover:text-white flex items-center gap-1"><i data-lucide="refresh-cw" class="w-3 h-3"></i> SYNC</span>
+        <div class="content" style="display:flex;flex-direction:column;gap:10px">
+            <input type="file" id="file-input" style="display:none" multiple>
+            <button onclick="document.getElementById('file-input').click()" class="btn">
+                <i data-lucide="file-plus" class="w-4 h-4"></i> VÄLJ FILER
+            </button>
+            <div id="file-list" style="max-height:200px; overflow-y:auto; background:#111; padding:10px; border:1px solid #333; border-radius:4px;"></div>
+            <button onclick="uploadFiles()" class="btn" style="background:#4ade80;color:#000">
+                <i data-lucide="cloud-upload" class="w-4 h-4"></i> UPPLADDNA
+            </button>
+            <div id="upload-status" style="font-size:0.85rem; color:#ccc;"></div>
         </div>
     </div>
 
+    <!-- 5. STATISTIK (NY) -->
+    <div id="panel-stats" class="panel" style="display:none;">
+        <div class="header" style="color:var(--accent);">
+            <i data-lucide="bar-chart-3" class="w-4 h-4"></i> STATISTIK
+        </div>
+        <div class="content flex flex-col items-center justify-center">
+            <div id="stats-area" style="margin-top:40px;">
+                <div class="text-lg font-bold mb-2">Systemstatistik</div>
+                <div id="stats-summary" class="text-sm text-gray-400"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. SÖK (NY) -->
+    <div id="panel-search" class="panel" style="display:none;">
+        <div class="header" style="color:var(--accent);">
+            <i data-lucide="search" class="w-4 h-4"></i> SÖK I MINNET
+        </div>
+        <div class="content flex flex-col items-center justify-center">
+            <input type="text" id="search-query" placeholder="Söktext..." style="width:100%;max-width:400px;background:#222;color:#fff;border:1px solid #333;padding:10px;border-radius:4px;margin-bottom:16px;">
+            <button onclick="searchMemory()" style="background:var(--accent);color:#fff;padding:10px 0;width:100%;border:none;border-radius:4px;font-weight:bold;">Sök</button>
+            <div id="search-results" style="margin-top:24px;width:100%;max-width:600px;"></div>
+        </div>
+    </div>
+
+    <!-- 7. EXPORTERA (NY) -->
+    <div id="panel-export" class="panel" style="display:none;">
+        <div class="header" style="color:var(--accent);">
+            <i data-lucide="download" class="w-4 h-4"></i> EXPORTERA DATA
+        </div>
+        <div class="content flex flex-col items-center justify-center">
+            <button onclick="exportAll()" style="background:var(--accent);color:#fff;padding:10px 0;width:100%;border:none;border-radius:4px;font-weight:bold;margin-top:40px;">Exportera hela minnet (ZIP)</button>
+            <div id="export-status" style="margin-top:16px;font-size:0.95rem;"></div>
+        </div>
+    </div>
+
+    <!-- 8. INSTÄLLNINGAR (NY) -->
+    <div id="panel-settings" class="panel" style="display:none;">
+        <div class="header" style="color:var(--accent);">
+            <i data-lucide="settings" class="w-4 h-4"></i> INSTÄLLNINGAR
+        </div>
+        <div class="content flex flex-col items-center justify-center">
+            <div style="margin-top:40px;">
+                <label class="block text-xs text-gray-500 mb-2">API-nyckel:</label>
+                <input type="text" id="settings-apikey" style="width:100%;max-width:400px;background:#222;color:#fff;border:1px solid #333;padding:10px;border-radius:4px;" placeholder="AESI_API_KEY">
+                <button onclick="saveApiKey()" style="background:var(--accent);color:#fff;padding:10px 0;width:100%;border:none;border-radius:4px;font-weight:bold;margin-top:16px;">Spara</button>
+                <div id="settings-status" style="margin-top:16px;font-size:0.95rem;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHATTRUTA (Always visible, bottom right) -->
+    <div id="chattruta" style="
+        position: fixed; 
+        right: 24px; 
+        bottom: 24px; 
+        width: 340px; 
+        background: #18181b; 
+        border: 1px solid #333; 
+        border-radius: 10px; 
+        box-shadow: 0 4px 24px #000a; 
+        z-index: 9999; 
+        display: flex; 
+        flex-direction: column;
+        ">
+        <div style="padding: 12px 16px; border-bottom: 1px solid #222; background: #111; color: #facc15; font-weight: bold; font-size: 0.9rem;">
+            <i data-lucide="message-circle" class="w-4 h-4 inline"></i> CHATTRUTA <span id="chattruta-status" style="float:right;"><span class="dot offline"></span>OFFLINE</span>
+        </div>
+        <div id="chattruta-log" style="flex:1; min-height:80px; max-height:180px; overflow-y:auto; padding:10px; font-size:0.85rem; color:#e5e5e5;"></div>
+        <div style="padding:10px; border-top:1px solid #222; background:#111;">
+            <input id="chattruta-in" type="text" style="width:100%; background:#222; border:1px solid #333; color:#fff; padding:8px; border-radius:4px;" placeholder="Skriv meddelande..." autocomplete="off">
+        </div>
+    </div>
     <script>
         lucide.createIcons();
         const API = window.location.origin;
 
-        // --- 1. LADDA MINNET ---
-        async function loadMem() {
-            const list = document.getElementById('memory-list');
+        // --- PORTAL NAVIGATION LOGIC ---
+        function switchPortal(val) {
+            const panels = ['archivarius','chronos','memory','upload','stats','search','export','settings'];
+            panels.forEach(p => {
+                document.getElementById('panel-'+p).style.display = (val === p) ? 'flex' : 'none';
+            });
+        }
+        switchPortal(document.getElementById('portal-select').value);
+
+        // --- FILE UPLOAD LOGIC ---
+        document.getElementById('file-input').addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            const list = document.getElementById('file-list');
+            list.innerHTML = files.map(f => `<div class="row">${f.name} <span class="text-xs text-gray-500">${(f.size/1024).toFixed(1)} KB</span></div>`).join('');
+        });
+
+        async function uploadFiles() {
+            const status = document.getElementById('upload-status');
+            const files = document.getElementById('file-input').files;
+            if(files.length === 0) {
+                status.textContent = 'Inga filer valda.';
+                return;
+            }
+            status.textContent = 'Laddar upp...';
+            const formData = new FormData();
+            Array.from(files).forEach(f => { formData.append('files[]', f); });
             try {
-                const r = await fetch(API + '/memory');
+                const r = await fetch(API + '/upload', { method: 'POST', body: formData });
                 const d = await r.json();
-                list.innerHTML = '';
-                document.getElementById('file-count').innerText = `${d.count} OBJEKT SÄKRADE`;
-                
-                d.files.forEach(f => {
-                    const isWeavable = f.type === 'json';
-                    const iconName = isWeavable ? 'file-json' : (f.type === 'link' ? 'link' : 'file-text');
-                    const colorClass = isWeavable ? 'text-indigo-400' : 'text-gray-600';
-                    const opacity = isWeavable ? '1' : '0.5';
-                    
-                    const row = document.createElement('label');
-                    row.className = 'file-row';
-                    row.style.opacity = opacity;
-                    
-                    const checkbox = isWeavable 
-                        ? `<input type="checkbox" class="file-check" value="${f.name}" checked>` 
-                        : `<i data-lucide="lock" class="w-3 h-3 text-gray-700"></i>`;
-                    
-                    row.innerHTML = `
-                        ${checkbox}
-                        <i data-lucide="${iconName}" class="file-icon ${colorClass}"></i>
-                        <span class="truncate w-full" title="${f.name}">${f.name}</span>
-                        ${f.folder !== 'json' ? `<span class="text-[9px] bg-[#222] px-1 rounded text-gray-500">${f.folder}</span>` : ''}
-                    `;
-                    list.appendChild(row);
-                });
-                lucide.createIcons();
-            } catch(e) {
-                list.innerHTML = '<div class="text-red-500 p-4 text-xs text-center">Kunde inte nå Servern.<br>Kontrollera start_portal.bat</div>';
-                document.getElementById('connection-status').innerHTML = '<span class="dot offline"></span>OFFLINE';
-            }
-        }
-
-        // --- 2. VÄVAREN (LOGIK) ---
-        async function triggerWeave() {
-            const statusDiv = document.getElementById('weave-status');
-            const linksDiv = document.getElementById('download-links');
-            
-            // UI Feedback
-            statusDiv.innerHTML = `
-                <div class="mb-6"><i data-lucide="loader-2" class="w-16 h-16 mx-auto text-yellow-500 animate-spin"></i></div>
-                <h2 class="text-xl font-bold text-white mb-2">BEARBETAR DATA</h2>
-                <div class="text-xs text-yellow-500 uppercase tracking-widest">Väver samman tidslinjer...</div>
-            `;
-            lucide.createIcons();
-            linksDiv.innerHTML = '';
-
-            const template = document.getElementById('template-select').value;
-            const filterNode = document.getElementById('node-filter').value;
-            const checkboxes = document.querySelectorAll('.file-check:checked');
-            const selectedFiles = Array.from(checkboxes).map(cb => cb.value);
-            
-            addLog('DIRIGENT', `Initiera vävning. Mall: ${template.toUpperCase()}. Filer: ${selectedFiles.length || 'ALLA'}.`);
-
-            try {
-                const res = await fetch(API + '/weave', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        template: template,
-                        filter_node: filterNode,
-                        files: selectedFiles.length > 0 ? selectedFiles : [] 
-                    })
-                });
-                
-                const data = await res.json();
-                
-                if (data.status === 'success') {
-                    statusDiv.innerHTML = `
-                        <div class="mb-6"><i data-lucide="check-circle" class="w-16 h-16 mx-auto text-green-500"></i></div>
-                        <h2 class="text-xl font-bold text-white mb-2">VÄVNING KLAR</h2>
-                        <div class="text-xs text-gray-500 uppercase tracking-widest">${data.message}</div>
-                    `;
-                    
-                    linksDiv.innerHTML = `
-                        <a href="/public/FULL_HISTORY.html" target="_blank" class="result-link">
-                            <i data-lucide="book-open" class="w-4 h-4"></i> ÖPPNA BOKEN (HTML)
-                        </a>
-                        <a href="/public/FULL_CONTEXT.txt" target="_blank" class="result-link txt">
-                            <i data-lucide="cpu" class="w-4 h-4"></i> HÄMTA KONTEXT (TXT)
-                        </a>
-                    `;
-                    lucide.createIcons();
-                    addLog('ARCHIVARIUS', `Generering slutförd. Boken är redo.`);
-                } else { throw new Error(data.error); }
-            } catch (err) {
-                statusDiv.innerHTML = `<div class="text-red-500 font-bold">KRITISKT FEL</div><div class="text-xs text-red-400 mt-2">${err.message}</div>`;
-                addLog('SYSTEM', `Fel vid vävning: ${err.message}`);
-            }
-        }
-
-        // --- 3. CHATT LOGIK ---
-        async function handleChat(e) {
-            if(e.key === 'Enter') {
-                const input = e.target;
-                const txt = input.value.trim();
-                if(!txt) return;
-                
-                addLog('DIRIGENT', txt);
-                input.value = '';
-                input.disabled = true; // Lås input medan AI tänker
-                
-                // Visa laddar-indikator i chatten
-                const loadingId = 'loading-' + Date.now();
-                const log = document.getElementById('chat-log');
-                log.innerHTML += `<div id="${loadingId}" class="msg archivarius opacity-50"><i data-lucide="loader" class="w-3 h-3 animate-spin inline mr-2"></i> Tänker...</div>`;
-                lucide.createIcons();
-                log.scrollTop = log.scrollHeight;
-
-                try {
-                    const r = await fetch(API + '/chat', { method:'POST', body: JSON.stringify({text:txt}) });
-                    const d = await r.json();
-                    
-                    // Ta bort laddar-indikator
-                    document.getElementById(loadingId).remove();
-                    addLog(d.node, d.reply);
-                } catch(e) {
-                    document.getElementById(loadingId).remove();
-                    addLog('SYSTEM', 'Kunde inte nå Archivarius API.');
+                if(d.status === 'success') {
+                    status.innerHTML = 'Uppladdning klar! <a href="/public/FULL_HISTORY.html" target="_blank" style="color:#4ade80;text-decoration:underline;">Visa historia</a>';
+                } else {
+                    status.textContent = 'Uppladdning misslyckades.';
                 }
-                
-                input.disabled = false;
-                input.focus();
+            } catch(e) {
+                status.textContent = 'Kunde inte ladda upp.';
             }
         }
 
-        function addLog(who, txt) {
-            const l = document.getElementById('chat-log');
-            const cls = (who.includes('ARCHIVARIUS') || who === 'SYSTEM') ? 'msg archivarius' : 'msg user';
-            
-            // Konvertera enkla radbrytningar till <br>
-            const cleanTxt = txt.replace(/\n/g, '<br>');
-            
-            l.innerHTML += `
-                <div class="${cls}">
-                    <strong>${who}</strong>
-                    ${cleanTxt}
-                </div>`;
-            l.scrollTop = l.scrollHeight;
-        }
-        
-        function toggleAll() {
-            const boxes = document.querySelectorAll('.file-check');
-            const allChecked = Array.from(boxes).every(b => b.checked);
-            boxes.forEach(b => b.checked = !allChecked);
+        // --- VIEWS ---
+        const VIEWS = {
+            'stats': `
+                <h1 class="text-2xl font-bold text-white mb-2">Statistik</h1>
+                <div id="stats-summary" class="text-sm text-gray-400"></div>
+                <button class="btn btn-primary mt-4" onclick="loadStats()">Uppdatera statistik</button>
+            `,
+            'search': `
+                <h1 class="text-2xl font-bold text-white mb-2">Sök i Minnet</h1>
+                <input type="text" id="search-query" placeholder="Söktext..." class="w-full max-w-md bg-[#222] text-white border border-[#333] px-3 py-2 rounded mb-4">
+                <button class="btn btn-primary" onclick="searchMemory()">Sök</button>
+                <div id="search-results" class="mt-6"></div>
+            `,
+            'export': `
+                <h1 class="text-2xl font-bold text-white mb-2">Exportera Data</h1>
+                <button class="btn btn-primary" onclick="exportAll()">Exportera hela minnet (ZIP)</button>
+                <div id="export-status" class="mt-6"></div>
+            `,
+            'settings': `
+                <h1 class="text-2xl font-bold text-white mb-2">Inställningar</h1>
+                <label class="block text-xs text-gray-500 mb-2">API-nyckel:</label>
+                <input type="text" id="settings-apikey" class="w-full max-w-md bg-[#222] text-white border border-[#333] px-3 py-2 rounded mb-4" placeholder="AESI_API_KEY">
+                <button class="btn btn-primary" onclick="saveApiKey()">Spara</button>
+                <div id="settings-status" class="mt-6"></div>
+            `
+        };
+
+        // --- VIEWS HANDLER ---
+        function setView(view) {
+            const panels = ['archivarius','chronos','memory','upload','stats','search','export','settings'];
+            panels.forEach(p => {
+                document.getElementById('panel-'+p).style.display = 'none';
+            });
+            document.getElementById('panel-'+view).style.display = 'flex';
+            document.getElementById('portal-select').value = view;
+            if(view === 'stats') loadStats();
         }
 
-        loadMem();
+        // --- STATISTIK FUNKTION ---
+        async function loadStats() {
+            try {
+                const r = await fetch('/memory');
+                const d = await r.json();
+                document.getElementById('stats-summary').innerHTML =
+                    `<div>Antal filer: <b>${d.count}</b></div>` +
+                    `<div>JSON: ${d.files.filter(f=>f.type==='json').length}</div>` +
+                    `<div>TXT: ${d.files.filter(f=>f.type==='text').length}</div>` +
+                    `<div>GDOC: ${d.files.filter(f=>f.type==='link').length}</div>`;
+            } catch(e) {
+                document.getElementById('stats-summary').innerHTML = '<span class="text-red-500">Kunde inte läsa statistik.</span>';
+            }
+        }
+
+        // --- SÖK FUNKTION ---
+        async function searchMemory() {
+            const q = document.getElementById('search-query').value.toLowerCase();
+            const resDiv = document.getElementById('search-results');
+            resDiv.innerHTML = 'Söker...';
+            try {
+                const r = await fetch('/memory');
+                const d = await r.json();
+                const hits = d.files.filter(f => f.name.toLowerCase().includes(q));
+                resDiv.innerHTML = hits.length ? hits.map(f => `<div class="row">${f.name} <span class="text-xs text-gray-500">${f.folder}</span></div>`).join('') : '<div class="text-red-500">Inga träffar.</div>';
+            } catch(e) {
+                resDiv.innerHTML = '<div class="text-red-500">Kunde inte söka.</div>';
+            }
+        }
+
+        // --- EXPORTERA FUNKTION ---
+        async function exportAll() {
+            const status = document.getElementById('export-status');
+            status.textContent = 'Skapar ZIP...';
+            try {
+                // Simulerad export, backend måste hantera /export
+                const r = await fetch('/export');
+                const d = await r.json();
+                if(d.status==='success' && d.file) {
+                    status.innerHTML = `<a href="${d.file}" target="_blank" style="color:#4ade80;text-decoration:underline;">Ladda ner ZIP</a>`;
+                } else {
+                    status.textContent = 'Export misslyckades.';
+                }
+            } catch(e) {
+                status.textContent = 'Kunde inte exportera.';
+            }
+        }
+
+        // --- INSTÄLLNINGAR FUNKTION ---
+        function saveApiKey() {
+            const key = document.getElementById('settings-apikey').value.trim();
+            const status = document.getElementById('settings-status');
+            if(!key) { status.textContent = 'Ingen nyckel angiven.'; return; }
+            // Simulerad spara, backend måste hantera /settings
+            fetch('/settings', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({apikey:key})})
+                .then(r=>r.json())
+                .then(d=>{
+                    status.textContent = d.status==='success' ? 'Nyckel sparad!' : 'Kunde inte spara.';
+                }).catch(()=>{status.textContent='Kunde inte spara.';});
+        }
+
+        // --- CHATTRUTA LOGIC ---
+        function chattrutaAdd(who, txt) {
+            const log = document.getElementById('chattruta-log');
+            log.innerHTML += `<div><strong style="color:#facc15">${who}:</strong> ${txt}</div>`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        async function chattrutaSend(e) {
+            if(e.key !== 'Enter') return;
+            const input = e.target;
+            const txt = input.value.trim();
+            if(!txt) return;
+            chattrutaAdd('Du', txt);
+            input.value = '';
+            input.disabled = true;
+            // Show loading
+            chattrutaAdd('Archivarius', '<span style="opacity:0.6"><i data-lucide="loader" class="w-3 h-3 animate-spin inline"></i> Tänker...</span>');
+            try {
+                const r = await fetch(window.location.origin + '/chat', {method:'POST', body:JSON.stringify({text:txt})});
+                const d = await r.json();
+                document.getElementById('chattruta-log').lastChild.remove(); // Remove loading
+                chattrutaAdd(d.node, d.reply);
+            } catch {
+                document.getElementById('chattruta-log').lastChild.remove();
+                chattrutaAdd('SYSTEM', 'Kunde inte nå Archivarius API.');
+            }
+            input.disabled = false;
+            input.focus();
+        }
+
+        document.getElementById('chattruta-in').addEventListener('keydown', chattrutaSend);
+
+        // --- Connection Status ---
+        async function chattrutaCheckConn() {
+            try {
+                await fetch(window.location.origin + '/memory');
+                document.getElementById('chattruta-status').innerHTML = '<span class="dot online"></span>CONNECTED';
+            } catch {
+                document.getElementById('chattruta-status').innerHTML = '<span class="dot offline"></span>OFFLINE';
+            }
+        }
+        chattrutaCheckConn();
+        setInterval(chattrutaCheckConn, 5000);
+
+        // --- INITIAL LOAD ---
+        async function load() {
+            try {
+                const r = await fetch(API+'/memory'); const d = await r.json();
+                document.getElementById('mem-list').innerHTML = d.files.map(f => 
+                    `<label class="row"><input type="checkbox" class="chk" value="${f.name}" ${f.type==='json'?'checked':''} ${f.type!=='json'?'disabled':''}> ${f.name}</label>`
+                ).join('');
+            } catch(e){}
+        }
+        async function weave() {
+            const stat = document.getElementById('status');
+            stat.innerHTML = '<div class="text-yellow-500">Väver...</div>';
+            const files = Array.from(document.querySelectorAll('.chk:checked')).map(c=>c.value);
+            const res = await fetch(API+'/weave', {method:'POST', body:JSON.stringify({
+                template:document.getElementById('tpl').value, filter_node:document.getElementById('flt').value, files:files
+            })});
+            const d = await res.json();
+            stat.innerHTML = d.status==='success' ? `<a href="/public/FULL_HISTORY.html" target="_blank" class="link">ÖPPNA BOKEN</a>` : `<div class="text-red-500">Fel.</div>`;
+        }
+        async function chat(e) {
+            if(e.key!=='Enter') return;
+            const i=e.target; const txt=i.value; i.value='';
+            log('DIRIGENT', txt);
+            const r = await fetch(API+'/chat', {method:'POST', body:JSON.stringify({text:txt})});
+            const d = await r.json();
+            log(d.node, d.reply, 'arch');
+        }
+        function log(who, txt, cls='') {
+            document.getElementById('chat-log').innerHTML += `<div class="msg ${cls}"><strong>${who}:</strong> ${txt}</div>`;
+        }
+        function tog() { document.querySelectorAll('.chk').forEach(c=>c.checked=!c.checked); }
+
+        load();
     </script>
 </body>
 </html>
