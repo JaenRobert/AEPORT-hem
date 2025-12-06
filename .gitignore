@@ -5,6 +5,13 @@ yarn-debug.log*
 yarn-error.log*
 package-lock.json
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+*.so
+
 # Environment
 .env
 .env.local

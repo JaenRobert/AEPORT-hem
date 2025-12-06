@@ -2,53 +2,217 @@
 <html lang="sv">
 <head>
   <meta charset="UTF-8">
-  <title>ÆSI LIVE Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ÆSI LIVE Console</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.4/dist/tailwind.min.css">
-  <script src="menu.js" defer></script>
-  <script src="functions.js" defer></script>
+  <script src="js/nav_menu.js" defer></script>
   <style>
-    body { background:#000; color:#0f0; font-family:monospace; }
-    #chat { height:40vh; overflow-y:auto; border:1px solid #0f0; padding:8px; margin-top:10px; }
-    #portal { min-height:40vh; border:1px dashed #0f0; margin-top:10px; padding:8px; }
-    button { background:#004d40; color:#fff; border:none; padding:8px 16px; border-radius:6px; }
+    body { background:#000; color:#0f0; font-family:'Courier New', monospace; }
+    .node-msg { 
+      border-left: 4px solid; 
+      padding-left: 12px; 
+      margin-bottom: 10px; 
+      animation: fadeIn 0.3s; 
+    }
+    .reflex { border-color: #3b82f6; color: #93c5fd; }
+    .dirigent { border-color: #22c55e; color: #86efac; font-weight: bold; }
+    .server-log { border-color: #f59e0b; color: #fcd34d; }
+    .news-item { border-left: 3px solid #10b981; padding-left: 8px; margin-bottom: 10px; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
-<body>
+<body class="h-screen flex flex-col">
+  <!-- Global Navigation -->
   <div id="global-nav"></div>
-  <h1 class="text-2xl font-bold mt-4">ÆSI LIVE v4.0</h1>
-  <div id="chat"></div>
-  <div class="mt-4 flex gap-2">
-    <input id="msg" class="border p-2 text-black w-full" placeholder="Skriv till Reflex..." />
-    <button onclick="send()">Skicka</button>
+  
+  <div class="flex-1 flex overflow-hidden">
+    <!-- Main Chat Window (70% bredd) -->
+    <div class="flex-1 flex flex-col bg-black relative" style="width:70%;">
+      <div class="p-4 border-b border-green-600">
+        <h1 class="text-2xl font-bold text-green-400">ÆSI LIVE v5.0</h1>
+        <div class="text-xs text-gray-500">WebSocket: <span id="ws-status" class="text-red-500">Disconnected</span></div>
+      </div>
+      
+      <div id="chat" class="flex-1 overflow-y-auto p-6 space-y-2"></div>
+      
+      <!-- Input Bar -->
+      <div class="p-4 bg-gray-900 border-t border-gray-800 flex items-center gap-2">
+        <div class="text-green-500 font-bold">></div>
+        <input type="text" id="msg" placeholder="Skriv till Reflex (använd '/' för CMD)..." 
+               aria-label="Meddelande till Reflex"
+               class="flex-1 bg-transparent border-none text-white focus:ring-0 outline-none" autocomplete="off">
+        <button onclick="send()" class="px-4 py-2 bg-green-700 text-white rounded hover:bg-green-600">SÄND</button>
+      </div>
+      
+      <!-- Control Buttons -->
+      <div class="p-2 bg-gray-800 border-t border-gray-700 flex justify-center space-x-4">
+        <button onclick="reconnect()" class="px-3 py-1 text-xs bg-yellow-600 rounded hover:bg-yellow-500">Återanslut</button>
+        <button onclick="disconnect()" class="px-3 py-1 text-xs bg-red-600 rounded hover:bg-red-500">Koppla bort</button>
+      </div>
+    </div>
+    
+    <!-- Portal/Book Panel (30% bredd) -->
+    <div id="portal" class="bg-gray-900 border-l border-green-600 p-4 overflow-y-auto" style="width:30%;">
+      <h2 class="text-sm font-bold text-green-400 uppercase mb-4">ÆSI NEWS FEED</h2>
+      <div id="news-feed" class="text-sm text-gray-400 space-y-4">
+        <!-- News items injected here -->
+      </div>
+    </div>
   </div>
-  <div id="portal"></div>
+  
   <script>
     let ws;
+    let isClosing = false;
     const chatBox = document.getElementById("chat");
     const msgInput = document.getElementById("msg");
+    const wsStatus = document.getElementById("ws-status");
+    const newsFeed = document.getElementById("news-feed");
 
-    function log(msg, cls="") {
-      chatBox.innerHTML += `<div class="${cls}">${msg}</div>`;
+    function log(msg, cls="server-log") {
+      const div = document.createElement('div');
+      div.className = `node-msg ${cls}`;
+      div.innerHTML = `<div class="text-xs opacity-50 mb-1">${cls.toUpperCase()}</div><div>${msg}</div>`;
+      chatBox.appendChild(div);
       chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    function connect() {
-      ws = new WebSocket("wss://aesi-live.onrender.com");
-      ws.onopen = () => log("✅ Ansluten till Reflex");
-      ws.onmessage = e => {
-        if (e.data.startsWith("PORTAL_CMD:")) eval(e.data.replace("PORTAL_CMD:", "").trim());
-        else log(e.data);
-      };
-      ws.onclose = () => setTimeout(connect, 3000);
+    function addNewsItem(source, message) {
+      const div = document.createElement('div');
+      div.className = 'news-item';
+      div.innerHTML = `<span class="text-green-500 font-bold">[${source}]</span> ${message}`;
+      newsFeed.prepend(div);
     }
-    connect();
+
+    function connect() {
+      if (ws && ws.readyState === WebSocket.OPEN) return;
+      
+      wsStatus.textContent = 'Connecting...';
+      wsStatus.className = 'text-yellow-500';
+      
+      try {
+        // Ansluter till lokal server på port 8767
+        ws = new WebSocket("ws://127.0.0.1:8767");
+      } catch (e) {
+        log("Kunde inte initiera WebSocket-anslutning", "server-log");
+        scheduleReconnect();
+        return;
+      }
+
+      ws.onopen = () => {
+        wsStatus.textContent = 'Connected';
+        wsStatus.className = 'text-green-500';
+        log("✅ Ansluten till Reflex (ws://127.0.0.1:8767)", "dirigent");
+        // Update nav status indicator
+        if (window.updateNavServerStatus) window.updateNavServerStatus(true);
+        // Request news feed on connect
+        ws.send("CMD:/get_news");
+      };
+
+      ws.onmessage = e => {
+        const data = e.data;
+        
+        // Handle News Items
+        if (data.startsWith('NEWS_ITEM:')) {
+          try {
+            const newsData = JSON.parse(data.substring(10).trim());
+            addNewsItem(newsData.source, newsData.message);
+          } catch (err) {
+            log("Kunde inte tolka nyhetsdata", "server-log");
+          }
+        }
+        // Handle Chat Messages
+        else if (data.startsWith('CHAT_MSG:')) {
+          log(data.substring(9), "reflex");
+        }
+        // Handle Server Logs
+        else if (data.startsWith('SERVER_LOG:')) {
+          log(data.substring(11), "server-log");
+        }
+        // Handle Portal Commands (WARNING: eval is used - only trust server)
+        else if (data.startsWith("PORTAL_CMD:")) {
+          try {
+            // Note: This uses eval() for PORTAL_CMD - ensure server is trusted
+            eval(data.replace("PORTAL_CMD:", "").trim());
+          } catch (err) {
+            log("Portal-kommando misslyckades: " + err.message, "server-log");
+          }
+        }
+        else {
+          log(data, "server-log");
+        }
+      };
+
+      ws.onerror = () => {
+        console.error('WebSocket-fel: Anslutningen misslyckades.');
+      };
+
+      ws.onclose = (event) => {
+        wsStatus.textContent = 'Disconnected';
+        wsStatus.className = 'text-red-500';
+        // Update nav status indicator
+        if (window.updateNavServerStatus) window.updateNavServerStatus(false);
+        
+        if (event.code !== 1000 && !isClosing) {
+          log(`Anslutningen stängd (Kod: ${event.code}). Försöker återansluta...`, "dirigent");
+          scheduleReconnect();
+        }
+      };
+    }
+
+    function scheduleReconnect() {
+      setTimeout(connect, 3000);
+    }
+
+    function disconnect() {
+      isClosing = true;
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.close(1000, "Manuell stängning");
+        log("Anslutning stängd manuellt", "dirigent");
+      }
+    }
+
+    function reconnect() {
+      isClosing = false;
+      if (ws) {
+        ws.close();
+      }
+      log("Försöker ansluta manuellt...", "dirigent");
+      setTimeout(connect, 500);
+    }
 
     function send() {
       const text = msgInput.value.trim();
       if (!text) return;
-      ws.send("CHAT:" + text);
-      msgInput.value = "";
+      
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        log("Kan inte skicka. Anslutningen är inte öppen.", "dirigent");
+        connect();
+        return;
+      }
+
+      let messageToSend;
+      if (text.startsWith('/')) {
+        messageToSend = `CMD:${text.substring(1)}`;
+        log(`Kör CMD: ${text}`, "dirigent");
+      } else {
+        messageToSend = `CHAT:${text}`;
+        log(`Chatt: ${text}`, "dirigent");
+      }
+
+      ws.send(messageToSend);
+      msgInput.value = '';
     }
+
+    // Enter key to send
+    msgInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        send();
+      }
+    });
+
+    // Start connection on load
+    connect();
   </script>
 </body>
 </html>

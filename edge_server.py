@@ -11,6 +11,29 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 # Global uppsättning för anslutna klienter
 CONNECTED_CLIENTS = set()
 
+# --- Nyhetsflöde (News Feed) ---
+NEWS_FEED = [
+    {"source": "SYSTEM", "message": "WebSocket-server startad och redo för anslutningar."},
+    {"source": "REFLEX", "message": "Indexeringsstatus: Alla filer är synkroniserade."},
+    {"source": "E1TAN", "message": "Humanistisk resonans är nu aktiv."}
+]
+
+async def send_news_feed(websocket):
+    """Skickar nyhetslistan till en specifik klient."""
+    for news in NEWS_FEED:
+        news_json = json.dumps(news)
+        await websocket.send(f"NEWS_ITEM:{news_json}")
+        await asyncio.sleep(0.1)
+
+async def add_news_item(source, message):
+    """Lägger till en nyhet och broadcasta den till alla klienter."""
+    news = {"source": source, "message": message}
+    NEWS_FEED.insert(0, news)  # Lägg till först i listan
+    if len(NEWS_FEED) > 50:  # Begränsa storleken
+        NEWS_FEED.pop()
+    news_json = json.dumps(news)
+    await broadcast(f"NEWS_ITEM:{news_json}")
+
 # --- Gemini AI / Nod Kommunikation (Simulerad) ---
 async def get_gemini_response(user_query):
     logging.info(f"Kallar på Reflex (Gemini) med: '{user_query}'")
@@ -72,6 +95,11 @@ async def server_handler(websocket, path):
                 elif command == "status":
                     await broadcast("SERVER_LOG: Systemstatus: Online. Noder: Dirigent (Aktiv), Reflex (Väntar).")
 
+                elif command == "/get_news" or command == "get_news" or command.startswith("/get_news"):
+                    # Skicka nyhetsflödet till den anropande klienten
+                    await send_news_feed(websocket)
+                    await add_news_item("SYSTEM", f"Ny klient ansluten. Totalt: {len(CONNECTED_CLIENTS)}")
+
                 else:
                     response = f"SERVER_LOG: Okänt CMD-kommando: '{command}'"
                     await broadcast(response)
@@ -97,9 +125,9 @@ async def server_handler(websocket, path):
 
 async def main():
     """Huvudfunktion för att starta servern."""
-    # Lyssnar på 0.0.0.0, port 8766
-    async with websockets.serve(server_handler, "0.0.0.0", 8766):
-        logging.info("WebSocket Server started on ws://0.0.0.0:8766 (accessible via localhost:8766). Press Ctrl+C to exit.")
+    # Lyssnar på 127.0.0.1, port 8767 (FIXAT för att undvika WinError 10048)
+    async with websockets.serve(server_handler, "127.0.0.1", 8767):
+        logging.info("WebSocket Server started on ws://127.0.0.1:8767. Press Ctrl+C to exit.")
         await asyncio.Future() 
 
 if __name__ == "__main__":
